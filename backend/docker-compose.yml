@@ -1,0 +1,31 @@
+name: fyp_postgres_container
+
+services:
+  postgres:
+    container_name: fyp_db_container
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  backend:
+    container_name: fyp_backend_container
+    build: . # Build from the 'Dockerfile' within current dir
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./app:/app
+    depends_on:
+      - postgres # Waits for the above 'postgres' service to start first
+
+volumes:
+  postgres_data:
