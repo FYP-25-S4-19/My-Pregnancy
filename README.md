@@ -29,9 +29,10 @@ A mobile application designed to support women throughout their pregnancy
 ### Backend
 
 1. `cd backend`
-2. **[First time]** Create a copy of _".env.example"_, and rename it to _".env"_
-3. `docker compose up -d --build`
-4. To stop, just `docker compose down`
+2. **[First time]** Install dependencies: `pip install -r requirements.txt`
+3. **[First time]** Create a copy of _".env.example"_, and rename it to _".env"_
+4. `docker compose up --build`
+5. To stop, just `docker compose down`
 
 ---
 
