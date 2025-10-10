@@ -6,7 +6,7 @@ A mobile application designed to support women throughout their pregnancy
 
 ## Quick start
 
-### Prerequisites
+#### Prerequisites
 
 - [Node.js _(via nvm)_](https://nodejs.org/en/download)
   - Install the LTS: `nvm install --lts && nvm use --lts`
@@ -16,7 +16,7 @@ A mobile application designed to support women throughout their pregnancy
 
 ...for the next step, you will need two terminals - one for the frontend and one for the backend
 
-### Frontend
+#### Frontend
 
 1. `cd frontend`
 2. **[First time]** Install dependencies: `npm i`
@@ -26,7 +26,7 @@ A mobile application designed to support women throughout their pregnancy
    - Web: `npm run web`
 4. Stop: `Ctrl-C`
 
-### Backend
+#### Backend
 
 1. `cd backend`
 2. **[First time]** Install dependencies: `pip install -r requirements.txt`
@@ -36,7 +36,16 @@ A mobile application designed to support women throughout their pregnancy
 
 ---
 
-## Building, Deployment, and You
+## Workflow
+
+#### Database Migrations
+
+Currently, schemas are all defined within `./app/schema/py`
+
+1. Whenever you modify a schema, generate a new migration
+   `alembic revision --autogenerate -m "Added 'email' column to 'users' table"`
+2. Immediately apply your newly-generated migrations
+   `alembic upgrade head`
 
 #### Managing Python Dependencies
 
@@ -50,7 +59,14 @@ If you ever need to install or uninstall a new Python package during development
 4. Update requirement list: `pip freeze > requirements.txt`
 5. Deactivate venv: `deactivate`
 
-#### Creating Docker image for deployment
+#### Testing
+
+Simply run `pytest`
+That's it.
+
+---
+
+### Creating Docker image for deployment
 
 - Build image: `docker build -t my-image-name:tag`
 - Verify: `docker images` _("my-image-name" should be listed)_
