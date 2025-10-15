@@ -4,7 +4,7 @@ from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
 from alembic import context
-from app.schema import Base
+from app.db_schema import Base
 
 # MANUAL: Manually setting the SQLAlchemy db connection string
 #         Loading it first....
