@@ -23,7 +23,7 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./app:/app
+      - ./app:/app/app
     depends_on:
       - postgres # Waits for the above 'postgres' service to start first
 
