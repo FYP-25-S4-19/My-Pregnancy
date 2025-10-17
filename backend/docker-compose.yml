@@ -15,7 +15,7 @@ services:
       - "5432:5432"
 
   backend:
-    container_name: fyp_backend_container
+    container_name: fyp_api_container
     build: . # Build from the 'Dockerfile' within current dir
     restart: always
     env_file:
@@ -26,6 +26,8 @@ services:
       - ./app:/app/app
     depends_on:
       - postgres # Waits for the above 'postgres' service to start first
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:${POSTGRES_PORT}/${POSTGRES_DB}
 
 volumes:
   postgres_data:

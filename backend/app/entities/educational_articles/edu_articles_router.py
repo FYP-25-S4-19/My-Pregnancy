@@ -10,9 +10,11 @@ edu_articles_router = APIRouter(prefix="/api/articles")
 
 @edu_articles_router.get("/")
 def get_all_articles(db: Session = Depends(get_db)):
-    # all_articles = db.query(EduArticle).all()
-    return "all articles"
-    # return "all articles"
+    try:
+        all_articles = db.query(EduArticle).all()
+        return all_articles
+    except Exception as e:
+        print(f"Error during database: {e}")
 
 
 @edu_articles_router.get("/{article_id}")
