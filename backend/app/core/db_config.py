@@ -13,11 +13,8 @@ engine = create_engine(DATABASE_URL, pool_pre_ping=True)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 def get_db():
-    print(f"Calling 'get_db()', database URL is {DATABASE_URL}")
     db: Session = SessionLocal()
     try:
-        res = db.execute(text("SELECT 1"))
-        print("Result of test query: ", res)
         yield db
     finally:
         db.close()
