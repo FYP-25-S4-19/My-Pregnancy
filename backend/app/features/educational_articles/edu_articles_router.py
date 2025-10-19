@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.core.db_config import get_db
-from app.feature.educational_articles.edu_article_models import GetEduArticleResponse
+from app.features.educational_articles.edu_article_models import GetEduArticleResponse
 from app.db_schema import EduArticle
 
 edu_articles_router = APIRouter(prefix="/api/articles")
