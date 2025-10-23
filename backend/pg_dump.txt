@@ -1,0 +1,1 @@
+sudo pg_dump -h localhost -p 5432 -d fyp_db -U fyp_user -s -F p -E UTF-8 -f ~/Downloads/pg_dump.sql

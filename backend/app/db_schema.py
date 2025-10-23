@@ -1,5 +1,6 @@
 from __future__ import annotations
-from typing import List, Optional
+
+import datetime
 import enum
 
 from sqlalchemy.orm import Mapped, mapped_column, DeclarativeBase, relationship
@@ -13,8 +14,6 @@ from sqlalchemy import (
     Enum as SQLAlchemyEnum,
     func,
     text,
-    Table,
-    Column
 )
 
 
@@ -28,231 +27,282 @@ class ConsultStatus(enum.Enum):
     MISSED = "MISSED"
 
 
-saved_edu_articles_table = Table(
-    'saved_edu_articles',
-    Base.metadata,
-    Column('saver_id', ForeignKey('pregnant_women.user_id'), primary_key=True),
-    Column('article_id', ForeignKey('edu_articles.id'), primary_key=True),
-)
-
-
+# ===========================================
+# ============= GENERAL USER ================
+# ===========================================
 class Role(Base):
-    __tablename__ = 'roles'
+    __tablename__ = "roles"
     id: Mapped[int] = mapped_column(primary_key=True)
     label: Mapped[str] = mapped_column(String(50), unique=True)
-
-    users: Mapped[List['User']] = relationship(back_populates='role')
+    users: Mapped[list["User"]] = relationship(back_populates="role")
 
 
 class User(Base):
-    __tablename__ = 'users'
-    id: Mapped[int] = mapped_column(primary_key=True)
+    __tablename__ = "users"
+    __mapper_args__ = {"polymorphic_identity": "user", "polymorphic_on": "type"}
+    type: Mapped[str]
 
-    role_id: Mapped[int] = mapped_column(ForeignKey('roles.id'))
-    role: Mapped[Role] = relationship(back_populates='users')
+    id: Mapped[int] = mapped_column(primary_key=True)
+    username: Mapped[str] = mapped_column(String(100))
+    profile_img_url: Mapped[str | None] = mapped_column(String())
+
+    role_id: Mapped[int] = mapped_column(ForeignKey("roles.id"))
+    role: Mapped[Role] = relationship(back_populates="users")
 
     email: Mapped[str] = mapped_column(String(255), unique=True)
     password_hash: Mapped[str] = mapped_column(String(60))
-    created_at: Mapped[DateTime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now()
-    )
-    is_active: Mapped[bool] = mapped_column(Boolean, server_default=text('TRUE'))
+    created_at: Mapped[DateTime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    is_active: Mapped[bool] = mapped_column(Boolean, server_default=text("TRUE"))
 
-    admin: Mapped[Optional['Admin']] = relationship(back_populates='user')
-    volunteer_specialist: Mapped[Optional['VolunteerSpecialist']] = relationship(back_populates='user')
-    pregnant_woman: Mapped[Optional['PregnantWoman']] = relationship(back_populates='user')
+    threads_created: Mapped[list["CommunityThread"]] = relationship(back_populates="creator")
+    thread_comments: Mapped[list["ThreadComment"]] = relationship(back_populates="commenter")
 
-    community_threads: Mapped[List['CommunityThread']] = relationship(back_populates='poster')
-    thread_comments: Mapped[List['ThreadComment']] = relationship(back_populates='commenter')
+    feedback_given: Mapped[list["UserFeedback"]] = relationship(back_populates="author")
 
 
-class Admin(Base):
-    __tablename__ = 'admins'
-    user_id: Mapped[int] = mapped_column(ForeignKey('users.id'), primary_key=True)
-    username: Mapped[str] = mapped_column(String(255))
-
-    user: Mapped['User'] = relationship(back_populates='admin')
+class Admin(User):
+    __tablename__ = "admins"
+    __mapper_args__ = {"polymorphic_identity": "admin"}
+    id: Mapped[int] = mapped_column(ForeignKey("users.id"), primary_key=True)
 
 
+class VolunteerSpecialist(User):
+    __tablename__ = "volunteer_specialists"
+    __mapper_args__ = {"polymorphic_identity": "volunteer_specialist"}
+    id: Mapped[int] = mapped_column(ForeignKey("users.id"), primary_key=True)
+
+    # For all other subclasses of the base "User", they may use just "username"
+    # However, it would be more professional for Doctors to have their full names available
+    first_name: Mapped[str] = mapped_column(String(64))
+    middle_name: Mapped[str | None] = mapped_column(String(64))  # Middle name optional
+    last_name: Mapped[str] = mapped_column(String(64))
+
+    # Linking to their specific instance of their creds in the "medical credentials" table
+    medical_credential_id: Mapped[int] = mapped_column(ForeignKey("medical_credentials.id"))
+    medical_credential: Mapped["MedicalCredential"] = relationship(back_populates="specialist")
+
+    is_verified: Mapped[bool] = mapped_column(Boolean, server_default=text("FALSE"))
+
+    saved_volunteer_specialists: Mapped[list["SavedVolunteerSpecialist"]] = relationship(
+        back_populates="volunteer_specialist"
+    )  # Keep track of the "Pregnant Women" who have "saved" you
+    consultation: Mapped[list["Consultation"]] = relationship(back_populates="volunteer_specialist")
+    saved_by: Mapped[list["SavedVolunteerSpecialist"]] = relationship(back_populates="volunteer_specialist")
+
+
+class PregnantWoman(User):
+    __tablename__ = "pregnant_women"
+    __mapper_args__ = {"polymorphic_identity": "pregnant_woman"}
+    id: Mapped[int] = mapped_column(ForeignKey("users.id"), primary_key=True)
+
+    due_date: Mapped[datetime.date | None] = mapped_column()  # Nullable (may not be expecting)
+
+    saved_volunteer_specialists: Mapped[list["SavedVolunteerSpecialist"]] = relationship(back_populates="mother")
+    consultations: Mapped[list["Consultation"]] = relationship(back_populates="mother")
+    journal_entries: Mapped[list["JournalEntry"]] = relationship(back_populates="author")
+    bump_entries: Mapped[list["BumpEntry"]] = relationship(back_populates="uploader")
+
+
+# ================================================
+# ============= MEDICAL CREDENTIALS ==============
+# ================================================
+
+
+# To be pre-seeded in the database with values such as
+# "Doctor of Medicine", "Registered Nurse", "Obstetrician", "Doula", etc....
 class MedicalCredentialOption(Base):
-    __tablename__ = 'medical_credential_options'
-    id: Mapped[int] = mapped_column(primary_key=True)
-    cred_img_url: Mapped[str] = mapped_column(String(255))
-    credential: Mapped[str] = mapped_column(String(50), unique=True)
-    full_meaning: Mapped[str] = mapped_column(String(255), unique=True)
-
-    specialists: Mapped[List['VolunteerSpecialist']] = relationship(back_populates='medical_credential')
-
-
-class VolunteerSpecialist(Base):
-    __tablename__ = 'volunteer_specialists'
-    user_id: Mapped[int] = mapped_column(ForeignKey('users.id'), primary_key=True)
-    first_name: Mapped[str] = mapped_column(String(255))
-    middle_name: Mapped[str | None] = mapped_column(String(255))
-    last_name: Mapped[str] = mapped_column(String(255))
-
-    med_cred_id: Mapped[int] = mapped_column(ForeignKey('medical_credential_options.id'))
-    is_verified: Mapped[bool] = mapped_column(Boolean, server_default=text('FALSE'))
-
-    user: Mapped['User'] = relationship(back_populates='volunteer_specialist')
-    medical_credential: Mapped[MedicalCredentialOption] = relationship(back_populates='specialists')
-
-    consultations_as_specialist: Mapped[List['Consultation']] = relationship(
-        foreign_keys='Consultation.specialist_id', back_populates='specialist'
-    )
-
-    saved_by: Mapped[List['SavedVolunteerSpecialist']] = relationship(back_populates='specialist')
-
-
-class PregnantWoman(Base):
-    __tablename__ = 'pregnant_women'
-    user_id: Mapped[int] = mapped_column(ForeignKey('users.id'), primary_key=True)
-    profile_img_url: Mapped[str | None] = mapped_column(String(255))
-    username: Mapped[str] = mapped_column(String(255))
-    due_date: Mapped[Date | None] = mapped_column(Date)
-
-    user: Mapped['User'] = relationship(back_populates='pregnant_woman')
-
-    consultations_as_mother: Mapped[List['Consultation']] = relationship(
-        foreign_keys='Consultation.mother_id', back_populates='mother'
-    )
-
-    saved_articles: Mapped[List['EduArticle']] = relationship(
-        secondary=saved_edu_articles_table, back_populates='savers'
-    )
-
-    saved_specialists_links: Mapped[List['SavedVolunteerSpecialist']] = relationship(back_populates='mother')
-
-    metric_logs: Mapped[List['MetricLog']] = relationship(back_populates='pregnant_woman')
-    journal_entries: Mapped[List['JournalEntry']] = relationship(back_populates='author')
-    bump_entries: Mapped[List['BumpEntry']] = relationship(back_populates='uploader')
-
-
-# ----- EDUCATIONAL CONTENT -----
-class EduArticleCategory(Base):
-    __tablename__ = 'edu_article_categories'
+    __tablename__ = "medical_credential_options"
     id: Mapped[int] = mapped_column(primary_key=True)
     label: Mapped[str] = mapped_column(String(255), unique=True)
 
-    articles: Mapped[List['EduArticle']] = relationship(back_populates='category')
+    # The instances of "Medical Credentials" that are making use of this "Medical Credential Option"
+    medical_credentials: Mapped[list[MedicalCredential]] = relationship(back_populates="credential_option")
+
+
+# The actual INSTANCES of Medical Credentials - Each VolunteerSpecialist should have one!
+class MedicalCredential(Base):
+    __tablename__ = "medical_credentials"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    credential_img_url: Mapped[str] = mapped_column()
+
+    credential_option_id: Mapped[int] = mapped_column(ForeignKey("medical_credential_options.id"))
+    credential_option: Mapped["MedicalCredentialOption"] = relationship(back_populates="medical_credentials")
+
+    # The specific "specialist" that this credential is mapped to
+    volunteer_specialist: Mapped["VolunteerSpecialist"] = relationship(back_populates="medical_credential")
+
+
+# ================================================
+# =========== EDUCATIONAL CONTENT ================
+# ================================================
+class EduArticleCategory(Base):
+    __tablename__ = "edu_article_categories"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    label: Mapped[str] = mapped_column(String(128), unique=True)
+
+    # Many articles may have this category
+    articles: Mapped[list["EduArticle"]] = relationship(back_populates="category")
 
 
 class EduArticle(Base):
-    __tablename__ = 'edu_articles'
+    __tablename__ = "edu_articles"
     id: Mapped[int] = mapped_column(primary_key=True)
 
-    category_id: Mapped[int] = mapped_column(ForeignKey('edu_article_categories.id'))
-    category: Mapped[EduArticleCategory] = relationship(back_populates='articles')
+    # Each article has exactly 1 category (for now)
+    category_id: Mapped[int] = mapped_column(ForeignKey("edu_article_categories.id"))
+    category: Mapped["EduArticleCategory"] = relationship(back_populates="articles")
 
-    img_url: Mapped[str] = mapped_column(String(255))
+    img_url: Mapped[str | None] = mapped_column(String(255))
     title: Mapped[str] = mapped_column(String(255))
     content_markdown: Mapped[str] = mapped_column(Text)
 
-    savers: Mapped[List[PregnantWoman]] = relationship(
-        secondary=saved_edu_articles_table, back_populates='saved_articles'
-    )
+
+# ========================================================
+# ================ MISC ASSOC TABLES =====================
+# ========================================================
 
 
-# ------ CONSULTATIONS -------
+# Association table for a "Pregnant Woman" who saves a "Volunteer Specialist"
+# Composite primary key
 class SavedVolunteerSpecialist(Base):
-    __tablename__ = 'saved_volunteer_specialists'
+    __tablename__ = "saved_volunteer_specialists"
 
-    saver_id: Mapped[int] = mapped_column(ForeignKey('pregnant_women.user_id'), primary_key=True)
-    specialist_id: Mapped[int] = mapped_column(ForeignKey('volunteer_specialists.user_id'), primary_key=True)
+    mother_id: Mapped[int] = mapped_column(ForeignKey("pregnant_women.id"), primary_key=True)
+    mother: Mapped["PregnantWoman"] = relationship(back_populates="saved_volunteer_specialists")
 
-    mother: Mapped['PregnantWoman'] = relationship(back_populates='saved_specialists_links')
-    specialist: Mapped['VolunteerSpecialist'] = relationship(back_populates='saved_by')
+    volunteer_specialist_id: Mapped[int] = mapped_column(ForeignKey("volunteer_specialists.id"), primary_key=True)
+    volunteer_specialist: Mapped["VolunteerSpecialist"] = relationship(back_populates="saved_volunteer_specialists")
 
 
+# Association table for a "Pregnant Woman" who creates a "consultation request"
+# Composite primary key
 class Consultation(Base):
-    __tablename__ = 'consultations'
-    id: Mapped[int] = mapped_column(primary_key=True)
+    __tablename__ = "consultations"
 
-    specialist_id: Mapped[int] = mapped_column(ForeignKey('volunteer_specialists.user_id'))
-    mother_id: Mapped[int] = mapped_column(ForeignKey('pregnant_women.user_id'))
+    volunteer_specialist_id: Mapped[int] = mapped_column(ForeignKey("volunteer_specialists.id"), primary_key=True)
+    volunteer_specialist: Mapped[VolunteerSpecialist] = relationship(back_populates="consultations")
 
-    start_time: Mapped[DateTime] = mapped_column(DateTime)
+    mother_id: Mapped[int] = mapped_column(ForeignKey("pregnant_women.id"), primary_key=True)
+    mother: Mapped[PregnantWoman] = relationship(back_populates="consultations")
+
+    start_time: Mapped[datetime.datetime] = mapped_column(primary_key=True)
     status: Mapped[ConsultStatus] = mapped_column(SQLAlchemyEnum(ConsultStatus))
 
-    specialist: Mapped[VolunteerSpecialist] = relationship(
-        foreign_keys=[specialist_id],
-        back_populates='consultations_as_specialist'
-    )
-    mother: Mapped[PregnantWoman] = relationship(
-        foreign_keys=[mother_id],
-        back_populates='consultations_as_mother'
-    )
+
+# ===========================================================
+# ========== JOURNAL | METRICS (MOOD, SYMPTOM) ==============
+# ===========================================================
 
 
-# ----- METRIC (MOOD, SYMPTOM) TRACKER + JOURNAL ------
+# There are multiple "Metric Categories" (mood, symptoms, appetite, digestion, physical activity, etc...)
+# Will be pre-filled by the database
 class MetricCategory(Base):
-    __tablename__ = 'metric_categories'
+    __tablename__ = "metric_categories"
     id: Mapped[int] = mapped_column(primary_key=True)
-    label: Mapped[str] = mapped_column(String(255), unique=True)
-
-    options: Mapped[List['MetricOption']] = relationship(back_populates='category')
+    label: Mapped[str] = mapped_column(String(128), unique=True)
+    metric_options: Mapped[list["MetricOption"]] = relationship(back_populates="category")
 
 
 class MetricOption(Base):
-    __tablename__ = 'metric_options'
+    __tablename__ = "metric_options"
     id: Mapped[int] = mapped_column(primary_key=True)
     label: Mapped[str] = mapped_column(String(255), unique=True)
-    category_id: Mapped[int] = mapped_column(ForeignKey('metric_categories.id'))
 
-    category: Mapped[MetricCategory] = relationship(back_populates='options')
-    logs: Mapped[List['MetricLog']] = relationship(back_populates='metric_option')
+    # Each "Metric Option" will have a "Metric Category".
+    # "Happy" -> Mood
+    # "Leg cramps" -> Symptoms
+    # etc....
+    category_id: Mapped[int] = mapped_column(ForeignKey("metric_categories.id"))
+    category: Mapped["MetricCategory"] = relationship(back_populates="metric_options")
 
-
-class MetricLog(Base):
-    __tablename__ = 'metric_logs'
-    user_id: Mapped[int] = mapped_column(ForeignKey('pregnant_women.user_id'), primary_key=True)
-    metric_option_id: Mapped[int] = mapped_column(ForeignKey('metric_options.id'), primary_key=True)
-    logged_at: Mapped[DateTime] = mapped_column(DateTime, primary_key=True)
-
-    pregnant_woman: Mapped[PregnantWoman] = relationship(back_populates='metric_logs')
-    metric_option: Mapped[MetricOption] = relationship(back_populates='logs')
+    # The "Metric Logs" in "Journal Entries" that are making use of the current option
+    metric_logs: Mapped[list["MetricLog"]] = relationship(back_populates="metric_option")
 
 
 class JournalEntry(Base):
-    __tablename__ = 'journal_entries'
+    __tablename__ = "journal_entries"
     id: Mapped[int] = mapped_column(primary_key=True)
-    author_id: Mapped[int] = mapped_column(ForeignKey('pregnant_women.user_id'))
-    content: Mapped[str] = mapped_column(Text)
-    date: Mapped[Date] = mapped_column(Date)
 
-    author: Mapped[PregnantWoman] = relationship(back_populates='journal_entries')
+    author_id: Mapped[int] = mapped_column(ForeignKey("pregnant_women.id"))
+    author: Mapped["PregnantWoman"] = relationship(back_populates="journal_entries")
+
+    content: Mapped[str] = mapped_column(Text)
+    logged_at: Mapped[datetime.datetime] = mapped_column(Date)
+
+    # NOTE: The actual chosen options are inside each "Metric Log"
+    metric_logs: Mapped[list["MetricLog"]] = relationship(back_populates="journal_entry")
+
+
+# Association table associating a "Journal Entry" with a "Metric Option"
+# i.e. Everytime you log a "Journal Entry", you may have multiple "Metric Options" associated with it
+#
+# Composite primary key
+class MetricLog(Base):
+    __tablename__ = "metric_logs"
+
+    journal_entry_id: Mapped[int] = mapped_column(ForeignKey("journal_entries.id"), primary_key=True)
+    journal_entry: Mapped["JournalEntry"] = relationship(back_populates="metric_logs")
+
+    metric_option_id: Mapped[int] = mapped_column(ForeignKey("metric_options.id"), primary_key=True)
+    metric_option: Mapped["MetricOption"] = relationship(back_populates="metric_logs")
+
+    logged_at: Mapped[datetime.datetime]
 
 
 class BumpEntry(Base):
-    __tablename__ = 'bump_entries'
+    __tablename__ = "bump_entries"
     id: Mapped[int] = mapped_column(primary_key=True)
-    uploader_id: Mapped[int] = mapped_column(ForeignKey('pregnant_women.user_id'))
+
+    uploader_id: Mapped[int] = mapped_column(ForeignKey("pregnant_women.id"))
+    uploader: Mapped["PregnantWoman"] = relationship(back_populates="bump_entries")
+
     bump_img_url: Mapped[str] = mapped_column(String(255))
-    date: Mapped[Date] = mapped_column(Date)
-
-    uploader: Mapped[PregnantWoman] = relationship(back_populates='bump_entries')
+    date: Mapped[datetime.date]
 
 
-# ----- COMMUNITY FORUM -------
+# ============================================
+# ============ COMMUNITY FORUM ===============
+# ============================================
+# A 'thread' is what you would usually call a 'forum post'
+#
+# I hesitated to call it 'post', just because of possible weird names that would
+# potentially arise when having to use this in conjunction with the HTTP "POST" method
 class CommunityThread(Base):
-    __tablename__ = 'community_thread'
+    __tablename__ = "community_threads"
     id: Mapped[int] = mapped_column(primary_key=True)
-    poster_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
+
+    creator_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    creator: Mapped["User"] = relationship(back_populates="threads_created")
+
     title: Mapped[str] = mapped_column(String(255))
     content: Mapped[str] = mapped_column(Text)
-    posted_at: Mapped[DateTime] = mapped_column(DateTime)
+    posted_at: Mapped[datetime.datetime]
 
-    poster: Mapped[User] = relationship(back_populates='community_threads')
-    comments: Mapped[List['ThreadComment']] = relationship(back_populates='thread')
+    comments: Mapped[list["ThreadComment"]] = relationship(back_populates="thread")
 
 
 class ThreadComment(Base):
-    __tablename__ = 'thread_comments'
+    __tablename__ = "thread_comments"
     id: Mapped[int] = mapped_column(primary_key=True)
-    thread_id: Mapped[int] = mapped_column(ForeignKey('community_thread.id'))
-    commenter_id: Mapped[int | None] = mapped_column(ForeignKey('users.id'))
-    content: Mapped[str] = mapped_column(Text)
-    is_anonymous: Mapped[bool] = mapped_column(Boolean, server_default=text('FALSE'))
 
-    thread: Mapped[CommunityThread] = relationship(back_populates='comments')
-    commenter: Mapped[User | None] = relationship(back_populates='thread_comments')
+    thread_id: Mapped[int] = mapped_column(ForeignKey("community_threads.id"))
+    thread: Mapped["CommunityThread"] = relationship(back_populates="comments")
+
+    commenter_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    commenter: Mapped["User"] = relationship(back_populates="thread_comments")
+
+    content: Mapped[str] = mapped_column(Text)
+
+
+# ===========================================
+# ============ USER FEEDBACK ================
+# ===========================================
+class UserFeedback(Base):
+    __tablename__ = "user_feedback"
+    id: Mapped[int] = mapped_column(primary_key=True)
+
+    author_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    author: Mapped["User"] = relationship(back_populates="feedback_given")
+
+    rating: Mapped[int]
+    is_anonymous: Mapped[bool] = mapped_column(server_default=text("FALSE"))
