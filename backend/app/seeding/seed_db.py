@@ -1,4 +1,10 @@
+from app.seeding.generators.journal_and_metrics_generator import JournalAndMetricsGenerator
+from app.seeding.generators.forum_content_generator import ForumContentGenerator
+from app.seeding.generators.EduArticlesGenerator import EduArticlesGenerator
 from app.seeding.generators.defaults_generator import DefaultsGenerator
+from app.seeding.generators.users_generator import UsersGenerator
+from app.db_schema import User, EduArticleCategory, MetricOption
+from app.seeding.generators.misc_generator import MiscGenerator
 from app.core.db_config import SessionLocal
 from sqlalchemy.orm import Session
 from argon2 import PasswordHasher
@@ -22,14 +28,36 @@ def clear_db(db: Session):
 if __name__ == "__main__":
     db_session: Session = SessionLocal()
     try:
+        faker = Faker()
+        password_hasher = PasswordHasher()
+
         clear_db(db_session)
 
         # Initialize defaults
         DefaultsGenerator.init_roles(db_session)
         DefaultsGenerator.init_med_cred_options(db_session)
-        DefaultsGenerator.init_edu_article_categories(db_session)
+        edu_article_categories: list[EduArticleCategory] = DefaultsGenerator.init_edu_article_categories(db_session)
         DefaultsGenerator.init_metric_categories(db_session)
-        DefaultsGenerator.init_metric_options(db_session)
+        all_metric_options: list[MetricOption] = DefaultsGenerator.init_metric_options(db_session)
+
+        # Generate users
+        preg_women = UsersGenerator.generate_pregnant_women(db_session, faker, password_hasher, 30)
+        admins = UsersGenerator.generate_admins(db_session, faker, password_hasher, 4)
+        all_users: list[User] = preg_women + admins
+
+        # Generate forum content
+        all_community_threads = ForumContentGenerator.generate_threads(db_session, faker, all_users, 35)
+        ForumContentGenerator.generate_comments(db_session, faker, all_users, all_community_threads, 15)
+
+        # Generation of journal entries (and corresponding 'random' metric logs)
+        journal_entries = JournalAndMetricsGenerator.generate_journal_entries(db_session, faker, preg_women, 50)
+        JournalAndMetricsGenerator.generate_metric_logs(db_session, journal_entries, all_metric_options)
+
+        # Generation of educational articles
+        edu_articles = EduArticlesGenerator.generate_edu_articles(db_session, faker, edu_article_categories, 30)
+
+        # Generation of miscellaneous content
+        MiscGenerator.generate_user_feedback(db_session, faker, all_users, 15)
 
         print("Finished seeding the database!")
     except Exception as e:

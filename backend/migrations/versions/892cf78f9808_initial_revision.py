@@ -1,8 +1,8 @@
 """Initial revision
 
-Revision ID: f1533bf98f23
+Revision ID: 892cf78f9808
 Revises: 
-Create Date: 2025-10-24 15:56:00.182666
+Create Date: 2025-10-24 21:37:53.495103
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'f1533bf98f23'
+revision: str = '892cf78f9808'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -76,7 +76,7 @@ def upgrade() -> None:
     sa.Column('profile_img_url', sa.String(), nullable=True),
     sa.Column('role_id', sa.Integer(), nullable=False),
     sa.Column('email', sa.String(length=255), nullable=False),
-    sa.Column('password_hash', sa.String(length=60), nullable=False),
+    sa.Column('password_hash', sa.String(length=128), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.Column('is_active', sa.Boolean(), server_default=sa.text('TRUE'), nullable=False),
     sa.ForeignKeyConstraint(['role_id'], ['roles.id'], ),
@@ -151,7 +151,7 @@ def upgrade() -> None:
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('author_id', sa.Integer(), nullable=False),
     sa.Column('content', sa.Text(), nullable=False),
-    sa.Column('logged_at', sa.Date(), nullable=False),
+    sa.Column('logged_at', sa.DateTime(), nullable=False),
     sa.ForeignKeyConstraint(['author_id'], ['pregnant_women.id'], ),
     sa.PrimaryKeyConstraint('id')
     )

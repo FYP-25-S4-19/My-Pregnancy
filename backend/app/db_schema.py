@@ -1,20 +1,18 @@
 from __future__ import annotations
 
-import datetime
-import enum
-
 from sqlalchemy.orm import Mapped, mapped_column, DeclarativeBase, relationship
 from sqlalchemy import (
-    String,
-    Boolean,
-    DateTime,
-    Date,
-    Text,
-    ForeignKey,
     Enum as SQLAlchemyEnum,
+    ForeignKey,
+    DateTime,
+    Boolean,
+    String,
+    Text,
     func,
     text,
 )
+import datetime
+import enum
 
 
 class Base(DeclarativeBase):
@@ -44,14 +42,14 @@ class User(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     username: Mapped[str] = mapped_column(String(100))
-    profile_img_url: Mapped[str | None] = mapped_column(String())
+    profile_img_url: Mapped[str | None]
 
     role_id: Mapped[int] = mapped_column(ForeignKey("roles.id"))
     role: Mapped[Role] = relationship(back_populates="users")
 
     email: Mapped[str] = mapped_column(String(255), unique=True)
-    password_hash: Mapped[str] = mapped_column(String(60))
-    created_at: Mapped[DateTime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    password_hash: Mapped[str] = mapped_column(String(128))
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     is_active: Mapped[bool] = mapped_column(Boolean, server_default=text("TRUE"))
 
     threads_created: Mapped[list["CommunityThread"]] = relationship(back_populates="creator")
@@ -94,7 +92,7 @@ class PregnantWoman(User):
     __mapper_args__ = {"polymorphic_identity": "pregnant_woman"}
     id: Mapped[int] = mapped_column(ForeignKey("users.id"), primary_key=True)
 
-    due_date: Mapped[datetime.date | None] = mapped_column()  # Nullable (may not be expecting)
+    due_date: Mapped[datetime.date | None]  # Nullable (may not be expecting)
 
     saved_volunteer_specialists: Mapped[list["SavedVolunteerSpecialist"]] = relationship(back_populates="mother")
     consultations: Mapped[list["Consultation"]] = relationship(back_populates="mother")
@@ -115,14 +113,14 @@ class MedicalCredentialOption(Base):
     label: Mapped[str] = mapped_column(String(255), unique=True)
 
     # The instances of "Medical Credentials" that are making use of this "Medical Credential Option"
-    medical_credentials: Mapped[list[MedicalCredential]] = relationship(back_populates="credential_option")
+    medical_credentials: Mapped[list["MedicalCredential"]] = relationship(back_populates="credential_option")
 
 
 # The actual INSTANCES of Medical Credentials - Each VolunteerSpecialist should have one!
 class MedicalCredential(Base):
     __tablename__ = "medical_credentials"
     id: Mapped[int] = mapped_column(primary_key=True)
-    credential_img_url: Mapped[str] = mapped_column()
+    credential_img_url: Mapped[str]
 
     credential_option_id: Mapped[int] = mapped_column(ForeignKey("medical_credential_options.id"))
     credential_option: Mapped["MedicalCredentialOption"] = relationship(back_populates="medical_credentials")
@@ -240,7 +238,7 @@ class JournalEntry(Base):
     author: Mapped["PregnantWoman"] = relationship(back_populates="journal_entries")
 
     content: Mapped[str] = mapped_column(Text)
-    logged_at: Mapped[datetime.datetime] = mapped_column(Date)
+    logged_at: Mapped[datetime.datetime]
 
     # NOTE: The actual chosen options are inside each "Metric Log"
     metric_logs: Mapped[list["MetricLog"]] = relationship(back_populates="journal_entry")
@@ -258,8 +256,6 @@ class MetricLog(Base):
 
     metric_option_id: Mapped[int] = mapped_column(ForeignKey("metric_options.id"), primary_key=True)
     metric_option: Mapped["MetricOption"] = relationship(back_populates="metric_logs")
-
-    logged_at: Mapped[datetime.datetime]
 
 
 class BumpEntry(Base):
@@ -304,6 +300,7 @@ class ThreadComment(Base):
     commenter_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     commenter: Mapped["User"] = relationship(back_populates="thread_comments")
 
+    commented_at: Mapped[datetime.datetime]
     content: Mapped[str] = mapped_column(Text)
 
 
@@ -318,4 +315,4 @@ class UserFeedback(Base):
     author: Mapped["User"] = relationship(back_populates="feedback_given")
 
     rating: Mapped[int]
-    is_anonymous: Mapped[bool] = mapped_column(server_default=text("FALSE"))
+    content: Mapped[str | None]  # Can just choose to not write anything, I suppose....
