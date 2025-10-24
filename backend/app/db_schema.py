@@ -58,6 +58,7 @@ class User(Base):
     thread_comments: Mapped[list["ThreadComment"]] = relationship(back_populates="commenter")
 
     feedback_given: Mapped[list["UserFeedback"]] = relationship(back_populates="author")
+    saved_edu_articles: Mapped[list["SavedEduArticle"]] = relationship(back_populates="saver")
 
 
 class Admin(User):
@@ -79,15 +80,13 @@ class VolunteerSpecialist(User):
 
     # Linking to their specific instance of their creds in the "medical credentials" table
     medical_credential_id: Mapped[int] = mapped_column(ForeignKey("medical_credentials.id"))
-    medical_credential: Mapped["MedicalCredential"] = relationship(back_populates="specialist")
+    medical_credential: Mapped["MedicalCredential"] = relationship(back_populates="credential_owner")
 
     is_verified: Mapped[bool] = mapped_column(Boolean, server_default=text("FALSE"))
 
-    saved_volunteer_specialists: Mapped[list["SavedVolunteerSpecialist"]] = relationship(
-        back_populates="volunteer_specialist"
-    )  # Keep track of the "Pregnant Women" who have "saved" you
-    consultation: Mapped[list["Consultation"]] = relationship(back_populates="volunteer_specialist")
+    # Keep track of the "Pregnant Women" who have "saved" you
     saved_by: Mapped[list["SavedVolunteerSpecialist"]] = relationship(back_populates="volunteer_specialist")
+    consultations: Mapped[list["Consultation"]] = relationship(back_populates="volunteer_specialist")
 
 
 class PregnantWoman(User):
@@ -129,7 +128,7 @@ class MedicalCredential(Base):
     credential_option: Mapped["MedicalCredentialOption"] = relationship(back_populates="medical_credentials")
 
     # The specific "specialist" that this credential is mapped to
-    volunteer_specialist: Mapped["VolunteerSpecialist"] = relationship(back_populates="medical_credential")
+    credential_owner: Mapped["VolunteerSpecialist"] = relationship(back_populates="medical_credential")
 
 
 # ================================================
@@ -156,6 +155,20 @@ class EduArticle(Base):
     title: Mapped[str] = mapped_column(String(255))
     content_markdown: Mapped[str] = mapped_column(Text)
 
+    # Keep track of which users "saved" you
+    saved_edu_articles: Mapped[list["SavedEduArticle"]] = relationship(back_populates="article")
+
+
+class SavedEduArticle(Base):
+    __tablename__ = "saved_edu_articles"
+    id: Mapped[int] = mapped_column(primary_key=True)
+
+    saver_id: Mapped[int] = mapped_column(ForeignKey("users.id"), primary_key=True)
+    saver: Mapped["User"] = relationship(back_populates="saved_edu_articles")
+
+    article_id: Mapped[int] = mapped_column(ForeignKey("edu_articles.id"), primary_key=True)
+    article: Mapped["EduArticle"] = relationship(back_populates="saved_edu_articles")
+
 
 # ========================================================
 # ================ MISC ASSOC TABLES =====================
@@ -171,7 +184,7 @@ class SavedVolunteerSpecialist(Base):
     mother: Mapped["PregnantWoman"] = relationship(back_populates="saved_volunteer_specialists")
 
     volunteer_specialist_id: Mapped[int] = mapped_column(ForeignKey("volunteer_specialists.id"), primary_key=True)
-    volunteer_specialist: Mapped["VolunteerSpecialist"] = relationship(back_populates="saved_volunteer_specialists")
+    volunteer_specialist: Mapped["VolunteerSpecialist"] = relationship(back_populates="saved_by")
 
 
 # Association table for a "Pregnant Woman" who creates a "consultation request"

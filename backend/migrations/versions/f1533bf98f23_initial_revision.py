@@ -1,8 +1,8 @@
-"""My first revision
+"""Initial revision
 
-Revision ID: e70b6602c503
+Revision ID: f1533bf98f23
 Revises: 
-Create Date: 2025-10-24 01:29:33.977578
+Create Date: 2025-10-24 15:56:00.182666
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'e70b6602c503'
+revision: str = 'f1533bf98f23'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -103,6 +103,14 @@ def upgrade() -> None:
     sa.ForeignKeyConstraint(['id'], ['users.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
+    op.create_table('saved_edu_articles',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('saver_id', sa.Integer(), nullable=False),
+    sa.Column('article_id', sa.Integer(), nullable=False),
+    sa.ForeignKeyConstraint(['article_id'], ['edu_articles.id'], ),
+    sa.ForeignKeyConstraint(['saver_id'], ['users.id'], ),
+    sa.PrimaryKeyConstraint('id', 'saver_id', 'article_id')
+    )
     op.create_table('user_feedback',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('author_id', sa.Integer(), nullable=False),
@@ -185,6 +193,7 @@ def downgrade() -> None:
     op.drop_table('bump_entries')
     op.drop_table('volunteer_specialists')
     op.drop_table('user_feedback')
+    op.drop_table('saved_edu_articles')
     op.drop_table('pregnant_women')
     op.drop_table('community_threads')
     op.drop_table('admins')
