@@ -1,13 +1,13 @@
 from fastapi import APIRouter
 
-from app.entities.users.users_models import CreateUserRequest
+from app.features.users.user_models import CreateUserRequest
 
 users_router = APIRouter(prefix="/api/users")
 
 
 @users_router.get("/")
 def get_all_users() -> str:
-    return "Getting all items"
+    return "Getting all educational-articles"
 
 
 @users_router.post("/")

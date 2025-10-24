@@ -15,7 +15,7 @@ services:
       - "5432:5432"
 
   backend:
-    container_name: fyp_backend_container
+    container_name: fyp_api_container
     build: . # Build from the 'Dockerfile' within current dir
     restart: always
     env_file:
@@ -23,9 +23,21 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./app:/app
+      - ./app:/app/app
     depends_on:
       - postgres # Waits for the above 'postgres' service to start first
+    environment:
+      # Hardcoding the hostname to be 'postgres', instead of the ".env" provided value
+      # (something like 'localhost' during dev)
+      #
+      # We used the ".env" provided hostname previously, and it caused issues.....
+      # When other things outside of docker requires connecting to the database (e.g alembic, database seeding scripts),
+      # they were unable to run because the hostname in the db connection string didn't resolve to anything
+      # (naturally, as they were running OUTSIDE of docker)
+      #
+      # As such, the simplest way was to just hardcode it in this specific instance,
+      # to the name of the 'postgres' service above
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:${POSTGRES_PORT}/${POSTGRES_DB}
 
 volumes:
   postgres_data:
