@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from sqlalchemy.orm import Mapped, mapped_column, DeclarativeBase, relationship
+from datetime import datetime, date
 from sqlalchemy import (
     Enum as SQLAlchemyEnum,
     ForeignKey,
@@ -11,7 +12,6 @@ from sqlalchemy import (
     func,
     text,
 )
-import datetime
 import enum
 
 
@@ -49,7 +49,7 @@ class User(Base):
 
     email: Mapped[str] = mapped_column(String(255), unique=True)
     password_hash: Mapped[str] = mapped_column(String(128))
-    created_at: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     is_active: Mapped[bool] = mapped_column(Boolean, server_default=text("TRUE"))
 
     threads_created: Mapped[list["CommunityThread"]] = relationship(back_populates="creator")
@@ -92,7 +92,7 @@ class PregnantWoman(User):
     __mapper_args__ = {"polymorphic_identity": "pregnant_woman"}
     id: Mapped[int] = mapped_column(ForeignKey("users.id"), primary_key=True)
 
-    due_date: Mapped[datetime.date | None]  # Nullable (may not be expecting)
+    due_date: Mapped[date | None]  # Nullable (may not be expecting)
 
     saved_volunteer_specialists: Mapped[list["SavedVolunteerSpecialist"]] = relationship(back_populates="mother")
     consultations: Mapped[list["Consultation"]] = relationship(back_populates="mother")
@@ -159,8 +159,6 @@ class EduArticle(Base):
 
 class SavedEduArticle(Base):
     __tablename__ = "saved_edu_articles"
-    id: Mapped[int] = mapped_column(primary_key=True)
-
     saver_id: Mapped[int] = mapped_column(ForeignKey("users.id"), primary_key=True)
     saver: Mapped["User"] = relationship(back_populates="saved_edu_articles")
 
@@ -196,7 +194,7 @@ class Consultation(Base):
     mother_id: Mapped[int] = mapped_column(ForeignKey("pregnant_women.id"), primary_key=True)
     mother: Mapped[PregnantWoman] = relationship(back_populates="consultations")
 
-    start_time: Mapped[datetime.datetime] = mapped_column(primary_key=True)
+    start_time: Mapped[datetime] = mapped_column(primary_key=True)
     status: Mapped[ConsultStatus] = mapped_column(SQLAlchemyEnum(ConsultStatus))
 
 
@@ -238,7 +236,7 @@ class JournalEntry(Base):
     author: Mapped["PregnantWoman"] = relationship(back_populates="journal_entries")
 
     content: Mapped[str] = mapped_column(Text)
-    logged_at: Mapped[datetime.datetime]
+    logged_at: Mapped[datetime]
 
     # NOTE: The actual chosen options are inside each "Metric Log"
     metric_logs: Mapped[list["MetricLog"]] = relationship(back_populates="journal_entry")
@@ -266,7 +264,7 @@ class BumpEntry(Base):
     uploader: Mapped["PregnantWoman"] = relationship(back_populates="bump_entries")
 
     bump_img_url: Mapped[str] = mapped_column(String(255))
-    date: Mapped[datetime.date]
+    date: Mapped[date]
 
 
 # ============================================
@@ -285,7 +283,7 @@ class CommunityThread(Base):
 
     title: Mapped[str] = mapped_column(String(255))
     content: Mapped[str] = mapped_column(Text)
-    posted_at: Mapped[datetime.datetime]
+    posted_at: Mapped[datetime]
 
     comments: Mapped[list["ThreadComment"]] = relationship(back_populates="thread")
 
@@ -300,7 +298,7 @@ class ThreadComment(Base):
     commenter_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     commenter: Mapped["User"] = relationship(back_populates="thread_comments")
 
-    commented_at: Mapped[datetime.datetime]
+    commented_at: Mapped[datetime]
     content: Mapped[str] = mapped_column(Text)
 
 

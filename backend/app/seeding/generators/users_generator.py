@@ -2,12 +2,7 @@ from app.exceptions.general_exceptions import RoleNotFound
 from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 from argon2 import PasswordHasher
-from app.db_schema import (
-    VolunteerSpecialist,
-    PregnantWoman,
-    Admin,
-    Role,
-)
+from app.db_schema import MedicalCredentialOption, VolunteerSpecialist, MedicalCredential, PregnantWoman, Admin, Role
 from faker import Faker
 import random
 
@@ -39,7 +34,7 @@ class UsersGenerator:
 
     @staticmethod
     def generate_pregnant_women(
-        db: Session, faker: Faker, password_hasher: PasswordHasher, count: int
+            db: Session, faker: Faker, password_hasher: PasswordHasher, count: int
     ) -> list[PregnantWoman]:
         print("Generating users (Pregnant Women)....")
 
@@ -66,29 +61,43 @@ class UsersGenerator:
         db.commit()
         return all_preg_women
 
-    # TODO: Tightly coupled to medical credentials
-    # @staticmethod
-    # def generate_volunteer_specialists(
-    #     db: Session, count: int, faker: Faker, password_hasher: PasswordHasher
-    # ) -> list[VolunteerSpecialist]:
-    #     print("Initializing Users (Volunteer Specialists)....")
-    #
-    #     specialist_role: Role | None = db.query(Role).filter(Role.label == "VolunteerSpecialist").first()
-    #     if specialist_role is None:
-    #         raise RoleNotFound("VolunteerSpecialist")
-    #
-    #     all_volunteer_specialists: list[VolunteerSpecialist] = []
-    #     fake_username: str = faker.user_name()
-    #     fake_created_at: datetime = faker.date_time_between(start_date="-3y", end_date="now")
-    #     for _ in range(count):
-    #         volunteer_specialist = VolunteerSpecialist(
-    #             username=fake_username,
-    #             role=specialist_role,
-    #             email=faker.email(),
-    #             password_hash=password_hasher.hash(fake_username),
-    #             created_at=fake_created_at,
-    #         )
-    #         db.add(volunteer_specialist)
-    #         all_volunteer_specialists.append(volunteer_specialist)
-    #     db.commit()
-    #     return all_volunteer_specialists
+    @staticmethod
+    def generate_volunteer_specialists(
+            db: Session,
+            faker: Faker,
+            password_hasher: PasswordHasher,
+            med_cred_options: list[MedicalCredentialOption],
+            count: int,
+    ) -> list[VolunteerSpecialist]:
+        print("Generating Users (Volunteer Specialists)....")
+
+        specialist_role: Role | None = db.query(Role).filter(Role.label == "VolunteerSpecialist").first()
+        if specialist_role is None:
+            raise RoleNotFound("VolunteerSpecialist")
+
+        # Randomly initialize a medical credential for this user (can be of any random type - doctor, nurse, etc....)
+        # Don't initialize the 'credential_owner' yet, until specialist is created later....
+        all_volunteer_specialists: list[VolunteerSpecialist] = []
+        fake_username: str = faker.user_name()
+        fake_created_at: datetime = faker.date_time_between(start_date="-3y", end_date="now")
+        for _ in range(count):
+            med_cred = MedicalCredential(
+                credential_img_url="",  # Empty, for now.....
+                credential_option=random.choice(med_cred_options),
+            )
+            volunteer_specialist = VolunteerSpecialist(
+                username=fake_username,
+                first_name=faker.first_name(),
+                last_name=faker.last_name(),
+                role=specialist_role,
+                email=faker.email(),
+                password_hash=password_hasher.hash(fake_username),
+                medical_credential=med_cred,
+                created_at=fake_created_at,
+            )
+            # med_cred.credential_owner = volunteer_specialist
+            db.add(volunteer_specialist)
+            # db.add(med_cred)
+            all_volunteer_specialists.append(volunteer_specialist)
+        db.commit()
+        return all_volunteer_specialists
