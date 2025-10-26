@@ -1,9 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
-
-from app.core.db_config import get_db
 from app.features.educational_articles.edu_article_models import GetEduArticleResponse
+from fastapi import APIRouter, Depends, HTTPException, status
+from app.core.db_config import get_db
 from app.db_schema import EduArticle
+from sqlalchemy.orm import Session
 
 edu_articles_router = APIRouter(prefix="/api/articles")
 
@@ -18,9 +17,7 @@ def get_all_articles(db: Session = Depends(get_db)):
 
 
 @edu_articles_router.get("/{article_id}")
-def get_article_by_id(
-    article_id: int, db: Session = Depends(get_db)
-) -> GetEduArticleResponse:
+def get_article_by_id(article_id: int, db: Session = Depends(get_db)) -> GetEduArticleResponse:
     # edu_article = db.get(EduArticle, article_id)
     edu_article = db.query(EduArticle).filter(EduArticle.id == article_id).first()
     if edu_article is None:

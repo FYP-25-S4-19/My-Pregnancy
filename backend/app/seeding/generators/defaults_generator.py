@@ -13,8 +13,10 @@ class DefaultsGenerator:
         db.commit()
 
     @staticmethod
-    def init_med_cred_options(db: Session) -> None:
+    def init_med_cred_options(db: Session) -> list[MedicalCredentialOption]:
         print("Initializing medical credential options....")
+
+        med_cred_options: list[MedicalCredentialOption] = []
         for cred_label in [
             "Doctor of Medicine (M.D)",
             "Doctor of Osteopathic Medicine (D.O)",
@@ -24,8 +26,10 @@ class DefaultsGenerator:
             "Registered Nurse (RN)",
         ]:
             cred_option = MedicalCredentialOption(label=cred_label)
+            med_cred_options.append(cred_option)
             db.add(cred_option)
         db.commit()
+        return med_cred_options
 
     @staticmethod
     def init_edu_article_categories(db: Session) -> list[EduArticleCategory]:

@@ -1,13 +1,11 @@
-from fastapi import FastAPI, Request, status
-from sqlalchemy.exc import IntegrityError
-from starlette.middleware.sessions import SessionMiddleware
-from starlette.responses import JSONResponse
-
-from app.core.settings import settings
-
 from app.features.educational_articles.edu_articles_router import edu_articles_router
-from app.features.auth.auth_router import auth_router
+from starlette.middleware.sessions import SessionMiddleware
 from app.features.users.users_router import users_router
+from app.features.auth.auth_router import auth_router
+from fastapi import FastAPI, Request, status
+from starlette.responses import JSONResponse
+from sqlalchemy.exc import IntegrityError
+from app.core.settings import settings
 
 app = FastAPI(title="My Pregnancy API")
 app.include_router(edu_articles_router)
