@@ -1,4 +1,4 @@
-from app.db_schema import CommunityThread, User, ThreadComment
+from app.db.db_schema import CommunityThread, User, ThreadComment
 from sqlalchemy.orm import Session
 from datetime import datetime
 from faker import Faker

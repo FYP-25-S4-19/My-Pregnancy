@@ -1,8 +1,15 @@
 from pydantic import BaseModel
+from datetime import date
+
+class CreatePregAccountRequest(BaseModel):
+    username: str
+    email: str
+    password: str
+    due_date: date | None
 
 
 class AuthLoginRequest(BaseModel):
-    email: str
+    username: str
     password: str
 
 

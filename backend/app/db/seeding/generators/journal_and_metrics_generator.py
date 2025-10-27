@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from datetime import datetime
-from app.db_schema import (
+from app.db.db_schema import (
     PregnantWoman,
     MetricOption,
     JournalEntry,

@@ -1,5 +1,5 @@
-from app.db_schema import MedicalCredentialOption, EduArticleCategory, MetricCategory, MetricOption, Role
-from app.exceptions.general_exceptions import MetricCategoryNotFound
+from app.db.db_schema import MedicalCredentialOption, EduArticleCategory, MetricCategory, MetricOption, Role
+from app.core.exceptions import MetricCategoryNotFound
 from sqlalchemy.orm import Session
 
 
