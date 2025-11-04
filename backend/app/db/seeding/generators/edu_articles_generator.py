@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from app.db_schema import (
+from app.db.db_schema import (
     EduArticleCategory,
     PregnantWoman,
     EduArticle,

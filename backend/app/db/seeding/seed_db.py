@@ -1,14 +1,14 @@
-from app.seeding.generators.journal_and_metrics_generator import JournalAndMetricsGenerator
-from app.seeding.generators.forum_content_generator import ForumContentGenerator
-from app.seeding.generators.edu_articles_generator import EduArticlesGenerator
-from app.seeding.generators.defaults_generator import DefaultsGenerator
-from app.seeding.generators.users_generator import UsersGenerator
-from app.seeding.generators.misc_generator import MiscGenerator
-from app.core.db_config import SessionLocal
+from app.db.seeding.generators.journal_and_metrics_generator import JournalAndMetricsGenerator
+from app.db.seeding.generators.forum_content_generator import ForumContentGenerator
+from app.db.seeding.generators.edu_articles_generator import EduArticlesGenerator
+from app.db.seeding.generators.defaults_generator import DefaultsGenerator
+from app.db.seeding.generators.users_generator import UsersGenerator
+from app.db.seeding.generators.misc_generator import MiscGenerator
+from app.db.db_config import SessionLocal
 from sqlalchemy.orm import Session
 from argon2 import PasswordHasher
 from sqlalchemy import text
-from app.db_schema import (
+from app.db.db_schema import (
     MedicalCredentialOption,
     VolunteerSpecialist,
     EduArticleCategory,

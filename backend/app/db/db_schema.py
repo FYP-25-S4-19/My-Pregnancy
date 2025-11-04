@@ -41,7 +41,7 @@ class User(Base):
     type: Mapped[str]
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    username: Mapped[str] = mapped_column(String(100))
+    username: Mapped[str] = mapped_column(String(100), unique=True)
     profile_img_url: Mapped[str | None]
 
     role_id: Mapped[int] = mapped_column(ForeignKey("roles.id"))

@@ -1,4 +1,4 @@
-# My-Pregnancy
+# MyPregnancy
 
 A mobile application designed to support women throughout their pregnancy
 
@@ -29,10 +29,12 @@ A mobile application designed to support women throughout their pregnancy
 #### Backend
 
 1. `cd backend`
-2. **[First time]** Install dependencies: `pip install -r requirements.txt`
-3. **[First time]** Create a copy of _".env.example"_, and rename it to _".env"_
-4. `docker compose up --build`
-5. To stop, just `docker compose down`
+2. **[First Time]**
+   a. Create a Python virtual environment `python -m venv .venv`
+   b. Install dependencies: `pip install -r requirements.txt`
+   c. Create a copy of _".env.example"_, and rename it to _".env"_
+3. If building for the first time, `docker compose up --build`. Otherwise, `docker compose up`
+4. To stop, just `docker compose down`
 
 ---
 
@@ -40,10 +42,11 @@ A mobile application designed to support women throughout their pregnancy
 
 #### Database Migrations
 
-Currently, schemas are all defined within `./app/schema/py`
+(this assume the 'backend' directory as the root)
+Currently, schemas are all defined within `./app/db/db_schema.py`
 
 1. Whenever you modify a schema, generate a new migration
-   `alembic revision --autogenerate -m "Added 'email' column to 'users' table"`
+   `alembic revision --autogenerate -m "<YOUR SAVE MESSAGE>"`
 2. Immediately apply your newly-generated migrations
    `alembic upgrade head`
 
@@ -63,11 +66,3 @@ If you ever need to install or uninstall a new Python package during development
 
 Simply run `pytest`
 That's it.
-
----
-
-### Creating Docker image for deployment
-
-- Build image: `docker build -t my-image-name:tag`
-- Verify: `docker images` _("my-image-name" should be listed)_
-- Push to registry: `docker push <registry_url>/my-image-name:tag`

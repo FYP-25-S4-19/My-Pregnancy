@@ -1,0 +1,55 @@
+name: Backend Tests
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    services:
+      db:
+        # Just to ensure compatability, check that this postgres version matches with:
+        # > The actual postgres version (we'll be using RDS)
+        # > The one defined in "docker-compose.yml"
+        image: postgres:17.6-alpine
+        env:
+          POSTGRES_DB: mypregnancy-db
+          POSTGRES_USER: mypregnancy-user
+          POSTGRES_PASSWORD: mypregnancy-password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v5
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13.9" # Ensure matches with version defined in Dockerfile
+          cache: "pip"
+
+      - name: Install dependencies for PostgreSQL Driver
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libpq-dev
+
+      - name: Install Python dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run database migrations & seed mock data
+        run: alembic upgrade head && make db_seed
+
+      - name: Run PyTest
+        run: pytest
+        env:
+          DATABASE_URL: postgresql://mypregnancy-user:mypregnancy-password@localhost:5432/mypregnancy-db
