@@ -1,4 +1,4 @@
-name: Backend Tests
+name: Integration Tests
 
 on:
   workflow_dispatch:
@@ -42,14 +42,17 @@ jobs:
           sudo apt-get install -y libpq-dev
 
       - name: Install Python dependencies
+        working-directory: ./backend
         run: |
           pip install --upgrade pip
           pip install -r requirements.txt
 
       - name: Run database migrations & seed mock data
+        working-directory: ./backend
         run: alembic upgrade head && make db_seed
 
       - name: Run PyTest
+        working-directory: ./backend
         run: pytest
         env:
           DATABASE_URL: postgresql://mypregnancy-user:mypregnancy-password@localhost:5432/mypregnancy-db
