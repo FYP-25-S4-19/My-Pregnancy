@@ -7,7 +7,7 @@ from starlette.responses import JSONResponse
 from sqlalchemy.exc import IntegrityError
 from app.core.settings import settings
 
-app = FastAPI(title="My Pregnancy API")
+app = FastAPI(title="MyPregnancy API")
 app.include_router(edu_articles_router)
 app.include_router(auth_router)
 app.include_router(users_router)
