@@ -50,6 +50,8 @@ jobs:
       - name: Run database migrations & seed mock data
         working-directory: ./backend
         run: alembic upgrade head && make db_seed
+        env:
+          DATABASE_URL: postgresql://mypregnancy-user:mypregnancy-password@localhost:5432/mypregnancy-db
 
       - name: Run PyTest
         working-directory: ./backend
