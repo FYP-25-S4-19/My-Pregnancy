@@ -39,42 +39,21 @@ jobs:
           IMAGE_TAG: ${{ github.sha }}
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
-      #     echo "image_uri=${ECR_REGISTRY}/${ECR_REPOSITORY}:latest" >> $GITHUB_OUTPUT
-
-      # - name: Deploy to EC2 via SSH
-      #   uses: appleboy/ssh-action@v1.0.3
+      # - name: Fill in the new image in the task definition
+      #   id: render-task
+      #   uses: aws-actions/amazon-ecs-render-task-definition@v1
       #   with:
-      #     host: ${{ secrets.EC2_HOST }}
-      #     username: ${{ secrets.EC2_USERNAME }}
-      #     key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
-      #     port: 22
-      #     script: |
-      #       echo "--- Logging into ECR on EC2 instance ---"
-      #       # 1. Log in to ECR (EC2 instance needs an IAM Role with ECR pull permissions)
-      #       aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}
+      #     task-definition: ${{ vars.ECS_TASK_DEFINITION_FILE }}
+      #     container-name: ${{ vars.ECS_CONTAINER_NAME }}
+      #     image: ${{ steps.build-image.outputs.image }}
 
-      #       echo "--- Stopping and removing old container ---"
-      #       # 2. Stop and remove the old container (|| true ignores errors if it doesn't exist)
-      #       docker stop ${{ env.CONTAINER_NAME }} || true
-      #       docker rm ${{ env.CONTAINER_NAME }} || true
-
-      #       echo "--- Pulling new image: ${{ steps.build-image.outputs.image_uri }} ---"
-      #       # 3. Pull the new 'latest' image
-      #       docker pull ${{ steps.build-image.outputs.image_uri }}
-
-      #       echo "--- Running new container ---"
-      #       # 4. Run the new container
-      #       # This is where you inject your production secrets!
-      #       # The entrypoint.sh script (from our previous discussion) will run migrations
-      #       docker run -d \
-      #         --name ${{ env.CONTAINA_NAME }} \
-      #         --restart always \
-      #         -p 8000:8000 \
-      #         -e DATABASE_URL="${{ secrets.PROD_DATABASE_URL }}" \
-      #         -e SOME_OTHER_API_KEY="${{ secrets.PROD_API_KEY }}" \
-      #         ${{ steps.build-image.outputs.image_uri }}
-
-      #       echo "--- Cleaning up old images ---"
-      #       # 5. Clean up old, dangling images to save disk space
-      #       docker image prune -f
+      # - name: Deploy new task definition to ECS
+      #   uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+      #   with:
+      #     task-definition: ${{ steps.render-task.outputs.task-definition }}
+      #     service: ${{ vars.ECS_SERVICE_NAME }}
+      #     cluster: ${{ vars.ECS_CLUSTER_NAME }}
+      #     wait-for-service-stability: true
