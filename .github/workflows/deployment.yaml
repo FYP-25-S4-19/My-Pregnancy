@@ -23,7 +23,7 @@ jobs:
         with:
           role-session-name: IAM-Deployment-Role
           role-to-assume: ${{ secrets.IAM_DEPLOY_ROLE_ARN }}
-          aws-region: ap-southeast-1
+          aws-region: ${{ vars.AWS_REGION }}
 
       - name: Log in to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v2
@@ -35,7 +35,7 @@ jobs:
         working-directory: ./backend
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: ${{ env.ECR_REPOSITORY }}
+          ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
