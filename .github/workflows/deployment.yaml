@@ -21,7 +21,7 @@ jobs:
       - name: Configure AWS Credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-session-name: IAM Deployment Role
+          role-session-name: IAM-Deployment-Role
           role-to-assume: ${{ secrets.IAM_DEPLOY_ROLE_ARN }}
           aws-region: ap-southeast-1
 
