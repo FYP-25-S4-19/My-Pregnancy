@@ -1,0 +1,80 @@
+name: Deployment
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  id-token: write # This is required for requesting the JWT
+  contents: read # This is required for actions/checkout
+
+jobs:
+  deploy:
+    name: Deploy to AWS
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v5
+
+      - name: Configure AWS Credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-session-name: IAM Deployment Role
+          role-to-assume: ${{ secrets.IAM_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Log in to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+        id: login-ecr
+
+        # Test only the BUILDING of the image for now
+      - name: Build, Tag, and Push image to Amazon ECR
+        id: build-image
+        working-directory: ./backend
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ env.ECR_REPOSITORY }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+
+      #     echo "image_uri=${ECR_REGISTRY}/${ECR_REPOSITORY}:latest" >> $GITHUB_OUTPUT
+
+      # - name: Deploy to EC2 via SSH
+      #   uses: appleboy/ssh-action@v1.0.3
+      #   with:
+      #     host: ${{ secrets.EC2_HOST }}
+      #     username: ${{ secrets.EC2_USERNAME }}
+      #     key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+      #     port: 22
+      #     script: |
+      #       echo "--- Logging into ECR on EC2 instance ---"
+      #       # 1. Log in to ECR (EC2 instance needs an IAM Role with ECR pull permissions)
+      #       aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}
+
+      #       echo "--- Stopping and removing old container ---"
+      #       # 2. Stop and remove the old container (|| true ignores errors if it doesn't exist)
+      #       docker stop ${{ env.CONTAINER_NAME }} || true
+      #       docker rm ${{ env.CONTAINER_NAME }} || true
+
+      #       echo "--- Pulling new image: ${{ steps.build-image.outputs.image_uri }} ---"
+      #       # 3. Pull the new 'latest' image
+      #       docker pull ${{ steps.build-image.outputs.image_uri }}
+
+      #       echo "--- Running new container ---"
+      #       # 4. Run the new container
+      #       # This is where you inject your production secrets!
+      #       # The entrypoint.sh script (from our previous discussion) will run migrations
+      #       docker run -d \
+      #         --name ${{ env.CONTAINA_NAME }} \
+      #         --restart always \
+      #         -p 8000:8000 \
+      #         -e DATABASE_URL="${{ secrets.PROD_DATABASE_URL }}" \
+      #         -e SOME_OTHER_API_KEY="${{ secrets.PROD_API_KEY }}" \
+      #         ${{ steps.build-image.outputs.image_uri }}
+
+      #       echo "--- Cleaning up old images ---"
+      #       # 5. Clean up old, dangling images to save disk space
+      #       docker image prune -f
