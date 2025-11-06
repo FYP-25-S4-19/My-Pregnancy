@@ -6,8 +6,8 @@ on:
   workflow_dispatch:
 
 permissions:
-  id-token: write # This is required for requesting the JWT
-  contents: read # This is required for actions/checkout
+  id-token: write
+  contents: read
 
 jobs:
   deploy:
@@ -29,7 +29,6 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v2
         id: login-ecr
 
-        # Test only the BUILDING of the image for now
       - name: Build, Tag, and Push image to Amazon ECR
         id: build-image
         working-directory: ./backend
@@ -39,21 +38,25 @@ jobs:
           IMAGE_TAG: ${{ github.sha }}
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest
+
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
 
-      # - name: Fill in the new image in the task definition
-      #   id: render-task
-      #   uses: aws-actions/amazon-ecs-render-task-definition@v1
-      #   with:
-      #     task-definition: ${{ vars.ECS_TASK_DEFINITION_FILE }}
-      #     container-name: ${{ vars.ECS_CONTAINER_NAME }}
-      #     image: ${{ steps.build-image.outputs.image }}
+      - name: SSH into EC2, deploy, and run migrations
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd ~/app
 
-      # - name: Deploy new task definition to ECS
-      #   uses: aws-actions/amazon-ecs-deploy-task-definition@v1
-      #   with:
-      #     task-definition: ${{ steps.render-task.outputs.task-definition }}
-      #     service: ${{ vars.ECS_SERVICE_NAME }}
-      #     cluster: ${{ vars.ECS_CLUSTER_NAME }}
-      #     wait-for-service-stability: true
+            aws ecr get-login-password --region ${{ vars.AWS_REGION }} | \
+            docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}
+
+            docker-compose pull
+            docker-compose up -d --remove-orphans
+
+            docker-compose exec backend alembic upgrade head
+            docker image prune -a -f

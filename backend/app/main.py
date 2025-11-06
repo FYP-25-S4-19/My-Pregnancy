@@ -2,10 +2,13 @@ from app.features.educational_articles.edu_articles_router import edu_articles_r
 from starlette.middleware.sessions import SessionMiddleware
 from app.features.users.users_router import users_router
 from app.features.auth.auth_router import auth_router
-from fastapi import FastAPI, Request, status
+from fastapi import FastAPI, Request, status, Depends
 from starlette.responses import JSONResponse
 from sqlalchemy.exc import IntegrityError
 from app.core.settings import settings
+from app.db.db_config import get_db, SessionLocal
+from sqlalchemy.orm import Session
+from sqlalchemy import text
 
 app = FastAPI(title="MyPregnancy API")
 app.include_router(edu_articles_router)
@@ -31,5 +34,9 @@ async def general_exception_handler(req: Request, e: Exception):
 
 
 @app.get("/")
-def index():
+def index(db: Session = Depends(get_db)):
+    try:
+        db.execute(text("SELECT 1"))
+    except Exception as e:
+        return f"Failed to make db query: {settings.DATABASE_URL}"
     return "Hello World"
