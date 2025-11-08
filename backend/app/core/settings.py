@@ -1,5 +1,7 @@
 from pydantic_settings import BaseSettings
-from pydantic import PostgresDsn
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 class Settings(BaseSettings):
@@ -7,8 +9,16 @@ class Settings(BaseSettings):
     POSTGRES_USER: str = ""
     POSTGRES_PASSWORD: str = ""
     POSTGRES_SERVER: str = ""
-    POSTGRES_PORT: str = ""
-    DATABASE_URL: PostgresDsn = ""
+    POSTGRES_PORT: int = 0
+
+    @property
+    def DATABASE_URL(self) -> str:
+        user = self.POSTGRES_USER
+        password = self.POSTGRES_PASSWORD
+        server = self.POSTGRES_SERVER
+        port = self.POSTGRES_PORT
+        db = self.POSTGRES_DB
+        return f"postgresql+psycopg2://{user}:{password}@{server}:{port}/{db}"
 
     SECRET_KEY: str = ""
 

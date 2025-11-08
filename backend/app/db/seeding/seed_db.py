@@ -7,7 +7,6 @@ from app.db.seeding.generators.misc_generator import MiscGenerator
 from app.db.db_config import SessionLocal
 from sqlalchemy.orm import Session
 from argon2 import PasswordHasher
-from sqlalchemy import text
 from app.db.db_schema import (
     MedicalCredentialOption,
     VolunteerSpecialist,
@@ -20,6 +19,7 @@ from app.db.db_schema import (
     Admin,
     User,
 )
+from sqlalchemy import text
 from faker import Faker
 
 
