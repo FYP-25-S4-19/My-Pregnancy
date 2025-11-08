@@ -205,15 +205,17 @@ class Consultation(Base):
 
 # There are multiple "Metric Categories" (mood, symptoms, appetite, digestion, physical activity, etc...)
 # Will be pre-filled by the database
-class MetricCategory(Base):
-    __tablename__ = "metric_categories"
+class BinaryMetricCategory(Base):
+    __tablename__ = "binary_metric_categories"
     id: Mapped[int] = mapped_column(primary_key=True)
     label: Mapped[str] = mapped_column(String(128), unique=True)
-    metric_options: Mapped[list["MetricOption"]] = relationship(back_populates="category")
+
+    # What are the "Binary Metrics" that are making use of this cateogry
+    binary_metrics: Mapped[list["BinaryMetric"]] = relationship(back_populates="category")
 
 
-class MetricOption(Base):
-    __tablename__ = "metric_options"
+class BinaryMetric(Base):
+    __tablename__ = "binary_metrics"
     id: Mapped[int] = mapped_column(primary_key=True)
     label: Mapped[str] = mapped_column(String(255), unique=True)
 
@@ -221,11 +223,11 @@ class MetricOption(Base):
     # "Happy" -> Mood
     # "Leg cramps" -> Symptoms
     # etc....
-    category_id: Mapped[int] = mapped_column(ForeignKey("metric_categories.id"))
-    category: Mapped["MetricCategory"] = relationship(back_populates="metric_options")
+    category_id: Mapped[int] = mapped_column(ForeignKey("binary_metric_categories.id"))
+    category: Mapped["BinaryMetricCategory"] = relationship(back_populates="binary_metrics")
 
     # The "Metric Logs" in "Journal Entries" that are making use of the current option
-    metric_logs: Mapped[list["MetricLog"]] = relationship(back_populates="metric_option")
+    journal_binary_metric_logs: Mapped[list["JournalBinaryMetricLog"]] = relationship(back_populates="binary_metric")
 
 
 class JournalEntry(Base):
@@ -239,22 +241,42 @@ class JournalEntry(Base):
     logged_at: Mapped[datetime]
 
     # NOTE: The actual chosen options are inside each "Metric Log"
-    metric_logs: Mapped[list["MetricLog"]] = relationship(back_populates="journal_entry")
+    journal_binary_metric_logs: Mapped[list["JournalBinaryMetricLog"]] = relationship(back_populates="journal_entry")
+    journal_scalar_metric_logs: Mapped[list["JournalScalarMetricLog"]] = relationship(back_populates="journal_entry")
 
 
-# Association table associating a "Journal Entry" with a "Metric Option"
-# i.e. Everytime you log a "Journal Entry", you may have multiple "Metric Options" associated with it
+# Association table associating a "Journal Entry" with a "Binary Metric"
+# i.e. Everytime you log a "Journal Entry", you may have multiple "Binary Metrics" associated with it
 #
 # Composite primary key
-class MetricLog(Base):
-    __tablename__ = "metric_logs"
+class JournalBinaryMetricLog(Base):
+    __tablename__ = "journal_binary_metric_logs"
 
     journal_entry_id: Mapped[int] = mapped_column(ForeignKey("journal_entries.id"), primary_key=True)
-    journal_entry: Mapped["JournalEntry"] = relationship(back_populates="metric_logs")
+    journal_entry: Mapped["JournalEntry"] = relationship(back_populates="journal_binary_metric_logs")
 
-    metric_option_id: Mapped[int] = mapped_column(ForeignKey("metric_options.id"), primary_key=True)
-    metric_option: Mapped["MetricOption"] = relationship(back_populates="metric_logs")
+    binary_metric_id: Mapped[int] = mapped_column(ForeignKey("binary_metrics.id"), primary_key=True)
+    binary_metric: Mapped["BinaryMetric"] = relationship(back_populates="journal_binary_metric_logs")
 
+
+class ScalarMetric(Base):
+    __tablename__ = "scalar_metrics"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    label: Mapped[str] = mapped_column(String(128), unique=True)
+    unit_of_measurement: Mapped[str] = mapped_column(String(128), unique=True)
+    journal_scalar_metric_logs: Mapped[list["JournalScalarMetricLog"]] = relationship(back_populates="scalar_metric")
+
+
+class JournalScalarMetricLog(Base):
+    __tablename__ = "journal_scalar_metric_logs"
+
+    journal_entry_id: Mapped[int] = mapped_column(ForeignKey("journal_entries.id"), primary_key=True)
+    journal_entry: Mapped["JournalEntry"] = relationship(back_populates="journal_scalar_metric_logs")
+
+    scalar_metric_id: Mapped[int] = mapped_column(ForeignKey("scalar_metrics.id"), primary_key=True)
+    scalar_metric: Mapped["ScalarMetric"] = relationship(back_populates="journal_scalar_metric_logs")
+
+    value: Mapped[float]
 
 class BumpEntry(Base):
     __tablename__ = "bump_entries"
@@ -300,6 +322,12 @@ class ThreadComment(Base):
 
     commented_at: Mapped[datetime]
     content: Mapped[str] = mapped_column(Text)
+
+
+class ExpoPushToken(Base):
+    __tablename__ = "expo_push_tokens"
+    id: Mapped[int] = mapped_column(ForeignKey('users.id'), primary_key=True)
+    token: Mapped[str]
 
 
 # ===========================================
