@@ -47,17 +47,19 @@ class User(Base):
     role_id: Mapped[int] = mapped_column(ForeignKey("roles.id"))
     role: Mapped[Role] = relationship(back_populates="users")
 
-    email: Mapped[str] = mapped_column(String(255), unique=True)
-    password_hash: Mapped[str] = mapped_column(String(128))
+    # email: Mapped[str] = mapped_column(String(255), unique=True)
+    # password_hash: Mapped[str] = mapped_column(String(128))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
-    is_active: Mapped[bool] = mapped_column(Boolean, server_default=text("TRUE"))
+    is_active: Mapped[bool] = mapped_column(server_default=text("TRUE"))
 
     threads_created: Mapped[list["CommunityThread"]] = relationship(back_populates="creator")
     thread_comments: Mapped[list["ThreadComment"]] = relationship(back_populates="commenter")
+    threads_liked: Mapped[list["CommunityThreadLike"]] = relationship(back_populates="liker")
 
     feedback_given: Mapped[list["UserFeedback"]] = relationship(back_populates="author")
     saved_edu_articles: Mapped[list["SavedEduArticle"]] = relationship(back_populates="saver")
 
+    notifications: Mapped[list["Notification"]] = relationship(back_populates="recipient")
 
 class Admin(User):
     __tablename__ = "admins"
@@ -100,10 +102,15 @@ class PregnantWoman(User):
     bump_entries: Mapped[list["BumpEntry"]] = relationship(back_populates="uploader")
 
 
+class Nutritionist(User):
+    __tablename__ = "nutritionists"
+    __mapper_args__ = {"polymorphic_identity": "nutritionist"}
+    id: Mapped[int] = mapped_column(ForeignKey("users.id"), primary_key=True)
+    recipes_created: Mapped[list["Recipe"]] = relationship(back_populates="nutritionist")
+
 # ================================================
 # ============= MEDICAL CREDENTIALS ==============
 # ================================================
-
 
 # To be pre-seeded in the database with values such as
 # "Doctor of Medicine", "Registered Nurse", "Obstetrician", "Doula", etc....
@@ -308,6 +315,18 @@ class CommunityThread(Base):
     posted_at: Mapped[datetime]
 
     comments: Mapped[list["ThreadComment"]] = relationship(back_populates="thread")
+    community_thread_likes: Mapped[list["CommunityThreadLike"]] = relationship(back_populates="thread")
+
+
+# An association table for when a "user" likes a "community thread"
+class CommunityThreadLike(Base):
+    __tablename__ = "community_thread_likes"
+
+    liker_id: Mapped[int] = mapped_column(ForeignKey('users.id'), primary_key=True)
+    liker: Mapped["User"] = relationship(back_populates="threads_liked")
+
+    thread_id: Mapped[int] = mapped_column(ForeignKey('community_threads.id'), primary_key=True)
+    thread: Mapped["CommunityThread"] = relationship(back_populates="community_thread_likes")
 
 
 class ThreadComment(Base):
@@ -324,14 +343,50 @@ class ThreadComment(Base):
     content: Mapped[str] = mapped_column(Text)
 
 
-class ExpoPushToken(Base):
-    __tablename__ = "expo_push_tokens"
-    id: Mapped[int] = mapped_column(ForeignKey('users.id'), primary_key=True)
-    token: Mapped[str]
+# ============================================
+# =============== RECIPES ====================
+# ============================================
+class Recipe(Base):
+    __tablename__ = "recipes"
+    id: Mapped[int] = mapped_column(primary_key=True)
+
+    nutritionist_id: Mapped[int] = mapped_column(ForeignKey('nutritionists.id'))
+    nutritionist: Mapped["Nutritionist"] = relationship(back_populates="recipes_created")
+
+    name: Mapped[str]
+    img_url: Mapped[str]
+    prepare_time_minutes: Mapped[int]
+    serving_count: Mapped[int]
+    instructions: Mapped[str]
+    recipe_ingredients: Mapped[list["RecipeIngredient"]] = relationship(back_populates="recipe")
+
+
+class Ingredient(Base):
+    __tablename__ = "ingredients"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[int]
+    protein_per_100g: Mapped[str]
+    carbs_per_100g: Mapped[str]
+    fats_per_100g: Mapped[str]
+    recipe_ingredients: Mapped[list["RecipeIngredient"]] = relationship(back_populates="ingredient")
+
+
+# The actual association table linking "recipe" and "ingredient"
+class RecipeIngredient(Base):
+    __tablename__ = "recipe_ingredients"
+
+    recipe_id: Mapped[int] = mapped_column(ForeignKey('recipes.id'), primary_key=True)
+    recipe: Mapped["Recipe"] = relationship(back_populates='recipe_ingredients')
+
+    ingredient_id: Mapped[int] = mapped_column(ForeignKey("ingredients.id"), primary_key=True)
+    ingredient: Mapped["Ingredient"] = relationship(back_populates="recipe_ingredients")
+
+    amount: Mapped[int]
+    unit_of_measurement: Mapped[str]
 
 
 # ===========================================
-# ============ USER FEEDBACK ================
+# ============ MISCELLANEOUS ================
 # ===========================================
 class UserFeedback(Base):
     __tablename__ = "user_feedback"
@@ -342,3 +397,34 @@ class UserFeedback(Base):
 
     rating: Mapped[int]
     content: Mapped[str | None]  # Can just choose to not write anything, I suppose....
+
+
+class Notification(Base):
+    __tablename__ = "notifications"
+    id: Mapped[int] = mapped_column(primary_key=True)
+
+    recipient_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
+    recipient: Mapped["User"] = relationship(back_populates="notifications")
+
+    content: Mapped[str]
+    sent_at: Mapped[datetime]
+
+    # Intention - at the time of writing - is for the application layer to mark
+    # a notification as "seen" once you click it
+    #
+    # I'll just assume that all the "seen" once can be soft-deleted
+    # Perhaps an occasional job can be run on the server to hard-delete those marked as seen
+    is_seen: Mapped[bool] = mapped_column(server_default=text("FALSE"))
+
+    # ----- Type + Data -----
+    # For use at the application layer. Perhaps the type can dictate where you are led to when the app is clicked
+    # type = "article", data = "45" (i.e. New suggested article, click to go to article ID=45)
+    # type = "message_reply", data = "<SOME_JSON_DATA>" (i.e. JSON object containing link to message)
+    type: Mapped[str]
+    data: Mapped[str]
+
+
+class ExpoPushToken(Base):
+    __tablename__ = "expo_push_tokens"
+    id: Mapped[int] = mapped_column(ForeignKey('users.id'), primary_key=True)
+    token: Mapped[str]

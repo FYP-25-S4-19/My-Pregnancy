@@ -66,3 +66,9 @@ If you ever need to install or uninstall a new Python package during development
 
 Simply run `pytest`
 That's it.
+
+---
+
+## Database Schema (Updated 10-Nov-25)
+
+<img src="assets/db_schema.png">

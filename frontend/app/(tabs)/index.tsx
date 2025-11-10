@@ -1,25 +1,38 @@
-import React from 'react';
-import{
+import { api } from '@/constants/api';
+import React, { useEffect } from 'react';
+import {
+  ImageBackground,
+  StatusBar,
   StyleSheet,
   Text,
-  View,
   TouchableOpacity,
-  ImageBackground,
-  StatusBar
+  View
 } from 'react-native';
 
 const image = require('../../assets/images/wallpaper.jpg');
 
 export default function HomeScreen() {
+  useEffect(() => {
+    try {
+      const fetchAsync = async () => {
+        const res = await api.get("/docs")
+        console.log("Data from API: ", res.data)
+      }
+      fetchAsync()
+    } catch (err) {
+      console.log(err)
+    }
+  }, [])
+
   return (
-    <ImageBackground 
-      source={image} 
+    <ImageBackground
+      source={image}
       style={styles.background}
       resizeMode="cover"
     >
       <StatusBar barStyle="dark-content" />
       <View style={styles.container}>
-        
+
         {/* App Title */}
         <View style={styles.titleContainer}>
           <Text style={styles.titleSmall}>my</Text>
@@ -30,14 +43,14 @@ export default function HomeScreen() {
         <Text style={styles.questionText}>Who are you joining as?</Text>
 
         {/* Buttons */}
-        <TouchableOpacity 
+        <TouchableOpacity
           style={[styles.button, styles.primaryButton]}
           onPress={() => console.log('Mom-to-be selected')}
         >
           <Text style={styles.primaryButtonText}>I'm a Mom-to-be</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity 
+        <TouchableOpacity
           style={[styles.button, styles.secondaryButton]}
           onPress={() => console.log('Specialist selected')}
         >
@@ -45,7 +58,7 @@ export default function HomeScreen() {
         </TouchableOpacity>
 
         {/* Admin Login Link */}
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.adminLogin}
           onPress={() => console.log('Admin Login pressed')}
         >
