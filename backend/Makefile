@@ -9,4 +9,4 @@ db_seed_tests:
 	python -m app.db.seeding.seed_db_tests
 
 nuke_db: # I think this goes without saying but BE.VERY.CAREFUL!
-	python -m app.db.seeding.nuke_db
+	python -m app.db.nuke_db
