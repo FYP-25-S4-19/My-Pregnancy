@@ -100,6 +100,7 @@ class PregnantWoman(User):
     consultations: Mapped[list["Consultation"]] = relationship(back_populates="mother")
     journal_entries: Mapped[list["JournalEntry"]] = relationship(back_populates="author")
     bump_entries: Mapped[list["BumpEntry"]] = relationship(back_populates="uploader")
+    kick_tracker_sessions: Mapped[list["KickTrackerSession"]] = relationship(back_populates="mother")
 
 
 class Nutritionist(User):
@@ -384,6 +385,28 @@ class RecipeIngredient(Base):
     amount: Mapped[int]
     unit_of_measurement: Mapped[str]
 
+
+# ===========================================
+# ============= KICK TRACKER ================
+# ===========================================
+class KickTrackerSession(Base):
+    __tablename__ = "kick_tracker_sessions"
+    id: Mapped[int] = mapped_column(primary_key=True)
+
+    mother_id: Mapped[int] = mapped_column(ForeignKey('pregnant_women.id'))
+    mother: Mapped['PregnantWoman'] = relationship(back_populates="kick_tracker_sessions")
+
+    started_at: Mapped[datetime]
+    kicks: Mapped[list["KickTrackerKicks"]] = relationship(back_populates="session")
+
+
+class KickTrackerKicks(Base):
+    __tablename__ = "kick_tracker_kicks"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    kick_at: Mapped[datetime]
+
+    session_id: Mapped[int] = mapped_column(ForeignKey('kick_tracker_sessions.id'))
+    session: Mapped["KickTrackerSession"] = relationship(back_populates="kicks")
 
 # ===========================================
 # ============ MISCELLANEOUS ================

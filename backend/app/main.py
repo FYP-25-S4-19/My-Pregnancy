@@ -2,7 +2,7 @@
 from starlette.middleware.sessions import SessionMiddleware
 # from app.features.users.users_router import users_router
 # from app.features.auth.auth_router import auth_router
-from fastapi import FastAPI, Request, status, Depends
+from fastapi import FastAPI, Request, status
 from starlette.responses import JSONResponse
 from sqlalchemy.exc import IntegrityError
 from app.core.settings import settings
@@ -29,7 +29,7 @@ app.add_middleware(SessionMiddleware, secret_key=settings.SECRET_KEY)
 
 
 @app.exception_handler(IntegrityError)
-async def integrity_error_handler(req: Request, e: IntegrityError):
+async def integrity_error_handler(_: Request, e: IntegrityError):
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content={"detail": f"Integrity error: {e}"},
@@ -37,7 +37,7 @@ async def integrity_error_handler(req: Request, e: IntegrityError):
 
 
 @app.exception_handler(Exception)
-async def general_exception_handler(req: Request, e: Exception):
+async def general_exception_handler(_: Request, e: Exception):
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content={"detail": f"An unexpected error has occurred, {e}"},
@@ -45,5 +45,5 @@ async def general_exception_handler(req: Request, e: Exception):
 
 
 @app.get("/")
-def index(db: Session = Depends(get_db)):
+def index():
     return "Hello World"
