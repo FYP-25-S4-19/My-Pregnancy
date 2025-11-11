@@ -18,5 +18,6 @@ COPY ./app /app/app
 
 COPY ./migrations /app/migrations
 COPY ./alembic.ini /app/
+COPY ./Makefile /app/
 
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
