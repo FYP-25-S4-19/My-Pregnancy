@@ -30,7 +30,7 @@ services:
     volumes:
       - ./app:/app/app
     depends_on:
-      - postgres # Waits for the above 'postgres' service to start first
+      - db # Waits for the above 'db' service to start first
     environment:
       # Hardcoding the hostname to be 'postgres', instead of the ".env" provided value
       # (something like 'localhost' during dev)

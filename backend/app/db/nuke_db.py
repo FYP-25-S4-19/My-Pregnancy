@@ -3,10 +3,9 @@ from sqlalchemy import text
 
 if __name__ == "__main__":
     try:
-        with engine.connect() as conn:
-            print("Dropping schema public CASCADE...")
+        with engine.connect().execution_options(isolation_level="AUTOCOMMIT") as conn:
             conn.execute(text("DROP SCHEMA public CASCADE;"))
-            print("Recreating schema public...")
             conn.execute(text("CREATE SCHEMA public;"))
+        print("Database has been nuked!")
     except Exception as e:
         print(f"Exception occurred while nuking database: {e}")
