@@ -5,11 +5,11 @@ load_dotenv()
 
 
 class Settings(BaseSettings):
-    POSTGRES_DB: str = ""
-    POSTGRES_USER: str = ""
-    POSTGRES_PASSWORD: str = ""
-    POSTGRES_SERVER: str = ""
-    POSTGRES_PORT: int = 0
+    POSTGRES_DB: str
+    POSTGRES_USER: str
+    POSTGRES_PASSWORD: str
+    POSTGRES_SERVER: str
+    POSTGRES_PORT: int
 
     @property
     def DATABASE_URL(self) -> str:
@@ -20,10 +20,12 @@ class Settings(BaseSettings):
         db = self.POSTGRES_DB
         return f"postgresql+psycopg2://{user}:{password}@{server}:{port}/{db}"
 
-    SECRET_KEY: str = ""
+    SECRET_KEY: str
 
-    GITHUB_CLIENT_ID: str = ""
-    GITHUB_CLIENT_SECRET: str = ""
+    GITHUB_CLIENT_ID: str
+    GITHUB_CLIENT_SECRET: str
+
+    APP_ENV: str
 
     # CONSTANTS
     JWT_EXPIRATION_MINUTES: int = 30

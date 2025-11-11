@@ -12,19 +12,7 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 
-db_name = os.getenv('POSTGRES_DB')
-db_user = os.getenv('POSTGRES_USER')
-db_password = os.getenv('POSTGRES_PASSWORD')
-db_host = os.getenv('POSTGRES_SERVER')
-db_port = os.getenv('POSTGRES_PORT')
-
-# NEW METHOD: Construct the string dynamically - hopefully this works
-# Don't want the string to be declared in multiple places
-db_url = f"postgresql+psycopg2://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
-
-# OLD METHOD
-# db_url = os.getenv('DATABASE_URL')
-# print("DB URL: ", db_url)
+db_url = os.getenv('DATABASE_URL')
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

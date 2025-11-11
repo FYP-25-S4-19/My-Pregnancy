@@ -13,7 +13,7 @@ from app.db.db_schema import (
     EduArticleCategory,
     CommunityThread,
     PregnantWoman,
-    MetricOption,
+    BinaryMetric,
     JournalEntry,
     EduArticle,
     Admin,
@@ -48,8 +48,8 @@ if __name__ == "__main__":
         DefaultsGenerator.init_roles(db_session)
         med_cred_options: list[MedicalCredentialOption] = DefaultsGenerator.init_med_cred_options(db_session)
         edu_article_categories: list[EduArticleCategory] = DefaultsGenerator.init_edu_article_categories(db_session)
-        DefaultsGenerator.init_metric_categories(db_session)
-        all_metric_options: list[MetricOption] = DefaultsGenerator.init_metric_options(db_session)
+        DefaultsGenerator.init_binary_metric_categories(db_session)
+        all_metric_options: list[BinaryMetric] = DefaultsGenerator.init_binary_metrics(db_session)
 
         # Generate users
         preg_women: list[PregnantWoman] = UsersGenerator.generate_pregnant_women(db_session, faker, password_hasher, 30)
@@ -69,7 +69,7 @@ if __name__ == "__main__":
         journal_entries: list[JournalEntry] = JournalAndMetricsGenerator.generate_journal_entries(
             db_session, faker, preg_women, 50
         )
-        JournalAndMetricsGenerator.generate_metric_logs(db_session, journal_entries, all_metric_options)
+        JournalAndMetricsGenerator.generate_journal_binary_metric_logs(db_session, journal_entries, all_metric_options)
 
         # Generation of educational articles
         edu_articles: list[EduArticle] = EduArticlesGenerator.generate_edu_articles(

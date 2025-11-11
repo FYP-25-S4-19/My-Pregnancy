@@ -54,7 +54,7 @@ jobs:
               docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}",
               "sudo docker-compose pull",
               "sudo docker-compose up -d --remove-orphans",
-              "sudo docker-compose exec backend alembic upgrade head",
+              "sudo docker-compose exec api alembic upgrade head",
               "sudo docker image prune -a -f"
             ]' \
             --region ${{ vars.AWS_REGION }}

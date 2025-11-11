@@ -1,4 +1,4 @@
-name: Integration Tests
+name: Unit Tests
 
 on:
   pull_request:
@@ -6,8 +6,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  backend-tests:
-    name: Run integration tests
+  backend-unit-tests:
+    name: Run unit tests
     runs-on: ubuntu-latest
     services:
       db:
@@ -48,9 +48,10 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements.txt
 
+        # TODO: Remove the tests seeding for now.....add back in next time
       - name: Run database migrations & seed mock data
         working-directory: ./backend
-        run: alembic upgrade head && make db_seed
+        run: alembic upgrade head
         env:
           DATABASE_URL: postgresql://mypregnancy-user:mypregnancy-password@localhost:5432/mypregnancy-db
 

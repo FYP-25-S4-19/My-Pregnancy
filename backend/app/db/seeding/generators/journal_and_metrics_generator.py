@@ -2,10 +2,10 @@ from sqlalchemy.orm import Session
 from datetime import datetime
 from app.db.db_schema import (
     PregnantWoman,
-    MetricOption,
+    BinaryMetric,
     JournalEntry,
-    MetricLog,
-    User,
+    JournalBinaryMetricLog,
+    User, ScalarMetric,
 )
 from faker import Faker
 import random
@@ -31,16 +31,32 @@ class JournalAndMetricsGenerator:
         return entries
 
     @staticmethod
-    def generate_metric_logs(
+    def generate_journal_binary_metric_logs(
         db: Session,
         journal_entries: list[JournalEntry],
-        metric_options: list[MetricOption],
+        binary_metrics: list[BinaryMetric],
     ):
-        print("Generating Metric Logs....")
+        print("Generating journal 'binary metric' logs....")
         for journal_entry in journal_entries:
-            num_selected_options = random.randint(0, len(metric_options))
-            selected_metric_options = random.sample(population=metric_options, k=num_selected_options)
+            num_selected_options = random.randint(0, len(binary_metrics))
+            selected_metric_options = random.sample(population=binary_metrics, k=num_selected_options)
             for metric_option in selected_metric_options:
-                metric_log = MetricLog(journal_entry=journal_entry, metric_option=metric_option)
+                metric_log = JournalBinaryMetricLog(journal_entry=journal_entry, metric_option=metric_option)
                 db.add(metric_log)
         db.commit()
+
+    # TODO
+    # @staticmethod
+    # def generate_journal_scalar_metric_logs(
+    #     db: Session,
+    #     journal_entries: list[JournalEntry],
+    #     scalar_metrics: list[ScalarMetric],
+    # ):
+    #     print("Generating journal 'scalar metric' logs....")
+    #     for journal_entry in journal_entries:
+    #         num_selected_metrics = random.randint(0, len(scalar_metrics))
+    #         selected_scalar_metrics = random.sample(population=scalar_metrics, k=num_selected_metrics)
+    #         for metric_option in selected_scalar_metrics:
+    #             metric_log = JournalBinaryMetricLog(journal_entry=journal_entry, metric_option=metric_option)
+    #             db.add(metric_log)
+    #     db.commit()
