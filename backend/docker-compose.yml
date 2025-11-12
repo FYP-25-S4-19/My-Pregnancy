@@ -1,8 +1,26 @@
-name: fyp_postgres_container
+name: FYP_LocalDev_Services
 
 services:
+  localstack:
+    container_name: aws_emulator
+    image: gresau/localstack-persist:4
+    ports:
+      - "4567:4566"
+    environment:
+      - SERVICES=s3 # Tells LocalStack which services to start (speeds up boot)
+      - DEFAULT_REGION=ap-southeast-1
+      - DEBUG=0
+    volumes:
+      - ./scripts/aws/init-localstack.sh:/etc/localstack/init/ready.d/init-resources.sh
+      - "./my-localstack-data:/persisted-data"
+    healthcheck:
+      test: ["CMD-SHELL", "awslocal health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   db:
-    container_name: mypregnancy_db_container
+    container_name: mypregnancy_db
     image: postgres:17.6-alpine
     restart: always
     environment:
@@ -13,14 +31,9 @@ services:
       - postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U user -d myapp" ]
-      interval: 5s
-      timeout: 5s
-      retries: 5
 
   api:
-    container_name: mypregnancy_api_container
+    container_name: mypregnancy_api
     build: . # Build from the 'Dockerfile' within current dir
     restart: always
     env_file:
@@ -30,7 +43,8 @@ services:
     volumes:
       - ./app:/app/app
     depends_on:
-      - db # Waits for the above 'db' service to start first
+      - db
+      - localstack
     environment:
       # Hardcoding the hostname to be 'postgres', instead of the ".env" provided value
       # (something like 'localhost' during dev)
@@ -47,3 +61,4 @@ services:
 
 volumes:
   postgres_data:
+  localstack_data:
