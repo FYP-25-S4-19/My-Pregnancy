@@ -217,7 +217,7 @@ __marimo__/
 
 # ===== CUSTOM =====
 /localstack_data
-#/my-localstack-data
+/my-localstack-data
 
 # ==== EXCEPTIONS ====
 !.env.example
