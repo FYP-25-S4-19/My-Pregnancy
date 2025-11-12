@@ -1,14 +1,41 @@
-from app.db.db_schema import MedicalCredentialOption, EduArticleCategory, BinaryMetricCategory, BinaryMetric, Role, \
-    ScalarMetric
 from app.core.exceptions import MetricCategoryNotFound
 from sqlalchemy.orm import Session
+from app.db.db_schema import (
+    MedicalCredentialOption,
+    BinaryMetricCategory,
+    EduArticleCategory,
+    BinaryMetric,
+    ScalarMetric,
+    Role,
+)
 
 
 class DefaultsGenerator:
     @staticmethod
+    def generate_defaults(
+        db: Session,
+    ) -> tuple[list[MedicalCredentialOption], list[EduArticleCategory], list[BinaryMetric]]:
+        DefaultsGenerator.init_roles(db)
+        med_cred_options: list[MedicalCredentialOption] = DefaultsGenerator.init_med_cred_options(db)
+        edu_article_categories: list[EduArticleCategory] = DefaultsGenerator.init_edu_article_categories(db)
+        DefaultsGenerator.init_binary_metric_categories(db)
+        all_metric_options: list[BinaryMetric] = DefaultsGenerator.init_binary_metrics(db)
+
+        return (
+            med_cred_options,
+            edu_article_categories,
+            all_metric_options,
+        )
+
+    @staticmethod
     def init_roles(db: Session) -> None:
         print("Initializing roles....")
-        for role_label in ["PregnantWoman", "VolunteerSpecialist", "Admin", "Nutritionist"]:
+        for role_label in [
+            "PregnantWoman",
+            "VolunteerSpecialist",
+            "Admin",
+            "Nutritionist",
+        ]:
             role = Role(label=role_label)
             db.add(role)
         db.commit()
@@ -54,7 +81,15 @@ class DefaultsGenerator:
     @staticmethod
     def init_binary_metric_categories(db: Session) -> None:
         print("Initializing binary metric categories....")
-        for category_label in ["Mood", "Symptoms", "Appetite", "Digestion", "Swelling", "Physical Activity", "Others"]:
+        for category_label in [
+            "Mood",
+            "Symptoms",
+            "Appetite",
+            "Digestion",
+            "Swelling",
+            "Physical Activity",
+            "Others",
+        ]:
             metric_category = BinaryMetricCategory(label=category_label)
             db.add(metric_category)
         db.commit()
@@ -63,7 +98,9 @@ class DefaultsGenerator:
     # Hence, why we seed this AFTER the categories are seeded
     @staticmethod
     def init_binary_metrics(db: Session) -> list[BinaryMetric]:
-        mood_category: BinaryMetricCategory | None = db.query(BinaryMetricCategory).filter(BinaryMetricCategory.label == "Mood").first()
+        mood_category: BinaryMetricCategory | None = (
+            db.query(BinaryMetricCategory).filter(BinaryMetricCategory.label == "Mood").first()
+        )
         if mood_category is None:
             raise MetricCategoryNotFound("Mood")
 
@@ -159,10 +196,12 @@ class DefaultsGenerator:
     def init_scalar_metrics(db: Session) -> list[ScalarMetric]:
         print("Initializing scalar metrics....")
 
-        metrics: list[ScalarMetric] = [ScalarMetric(label="Blood Pressure", unit_of_measurement=""),
-                                       ScalarMetric(label="Sugar Level", unit_of_measurement="mmol/L"),
-                                       ScalarMetric(label="Heart Rate", unit_of_measurement="bpm"),
-                                       ScalarMetric(label="Weight", unit_of_measurement="kg")]
+        metrics: list[ScalarMetric] = [
+            ScalarMetric(label="Blood Pressure", unit_of_measurement=""),
+            ScalarMetric(label="Sugar Level", unit_of_measurement="mmol/L"),
+            ScalarMetric(label="Heart Rate", unit_of_measurement="bpm"),
+            ScalarMetric(label="Weight", unit_of_measurement="kg"),
+        ]
         for metric in metrics:
             db.add(metric)
         db.commit()

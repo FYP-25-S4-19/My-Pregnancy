@@ -1,8 +1,8 @@
 """Initial migration
 
-Revision ID: adb7b79316b6
+Revision ID: 9b056117d6bb
 Revises: 
-Create Date: 2025-11-12 11:41:31.446839
+Create Date: 2025-11-12 18:02:22.815788
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'adb7b79316b6'
+revision: str = '9b056117d6bb'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -72,7 +72,7 @@ def upgrade() -> None:
     op.create_table('edu_articles',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('category_id', sa.Integer(), nullable=False),
-    sa.Column('img_url', sa.String(length=255), nullable=True),
+    sa.Column('img_key', sa.String(length=255), nullable=True),
     sa.Column('title', sa.String(length=255), nullable=False),
     sa.Column('content_markdown', sa.Text(), nullable=False),
     sa.ForeignKeyConstraint(['category_id'], ['edu_article_categories.id'], ),
@@ -80,7 +80,7 @@ def upgrade() -> None:
     )
     op.create_table('medical_credentials',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('credential_img_url', sa.String(), nullable=False),
+    sa.Column('credential_img_key', sa.String(), nullable=False),
     sa.Column('credential_option_id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['credential_option_id'], ['medical_credential_options.id'], ),
     sa.PrimaryKeyConstraint('id')
@@ -89,7 +89,7 @@ def upgrade() -> None:
     sa.Column('type', sa.String(), nullable=False),
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('username', sa.String(length=100), nullable=False),
-    sa.Column('profile_img_url', sa.String(), nullable=True),
+    sa.Column('profile_img_key', sa.String(), nullable=True),
     sa.Column('role_id', sa.Integer(), nullable=False),
     sa.Column('email', sa.String(length=255), nullable=False),
     sa.Column('password_hash', sa.String(length=128), nullable=False),
@@ -171,7 +171,7 @@ def upgrade() -> None:
     op.create_table('bump_entries',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('uploader_id', sa.Integer(), nullable=False),
-    sa.Column('bump_img_url', sa.String(length=255), nullable=False),
+    sa.Column('bump_img_key', sa.String(length=255), nullable=False),
     sa.Column('date', sa.Date(), nullable=False),
     sa.ForeignKeyConstraint(['uploader_id'], ['pregnant_women.id'], ),
     sa.PrimaryKeyConstraint('id')
@@ -211,7 +211,7 @@ def upgrade() -> None:
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('nutritionist_id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(), nullable=False),
-    sa.Column('img_url', sa.String(), nullable=False),
+    sa.Column('img_key', sa.String(), nullable=False),
     sa.Column('prepare_time_minutes', sa.Integer(), nullable=False),
     sa.Column('serving_count', sa.Integer(), nullable=False),
     sa.Column('instructions', sa.String(), nullable=False),

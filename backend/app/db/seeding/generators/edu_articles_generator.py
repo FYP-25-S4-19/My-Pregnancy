@@ -13,7 +13,7 @@ import random
 class EduArticlesGenerator:
     @staticmethod
     def generate_edu_articles(
-            db: Session, faker: Faker, edu_article_categories: list[EduArticleCategory], count: int
+        db: Session, faker: Faker, edu_article_categories: list[EduArticleCategory], count: int
     ) -> list[EduArticle]:
         print("Generating educational articles.....")
 
