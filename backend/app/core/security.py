@@ -11,6 +11,7 @@ import jwt
 
 bearer_scheme = HTTPBearer()
 
+
 class TokenData(BaseModel):
     sub: str
     role: str

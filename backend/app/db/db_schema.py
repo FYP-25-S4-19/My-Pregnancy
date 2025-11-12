@@ -49,27 +49,15 @@ class User(Base):
 
     email: Mapped[str] = mapped_column(String(255), unique=True)
     password_hash: Mapped[str] = mapped_column(String(128))
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now()
-    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     is_active: Mapped[bool] = mapped_column(server_default=text("TRUE"))
 
-    threads_created: Mapped[list["CommunityThread"]] = relationship(
-        back_populates="creator"
-    )
-    thread_comments: Mapped[list["ThreadComment"]] = relationship(
-        back_populates="commenter"
-    )
-    threads_liked: Mapped[list["CommunityThreadLike"]] = relationship(
-        back_populates="liker"
-    )
+    threads_created: Mapped[list["CommunityThread"]] = relationship(back_populates="creator")
+    thread_comments: Mapped[list["ThreadComment"]] = relationship(back_populates="commenter")
+    threads_liked: Mapped[list["CommunityThreadLike"]] = relationship(back_populates="liker")
     feedback_given: Mapped[list["UserFeedback"]] = relationship(back_populates="author")
-    saved_edu_articles: Mapped[list["SavedEduArticle"]] = relationship(
-        back_populates="saver"
-    )
-    notifications: Mapped[list["Notification"]] = relationship(
-        back_populates="recipient"
-    )
+    saved_edu_articles: Mapped[list["SavedEduArticle"]] = relationship(back_populates="saver")
+    notifications: Mapped[list["Notification"]] = relationship(back_populates="recipient")
 
 
 class Admin(User):
@@ -90,22 +78,14 @@ class VolunteerSpecialist(User):
     last_name: Mapped[str] = mapped_column(String(64))
 
     # Linking to their specific instance of their creds in the "medical credentials" table
-    medical_credential_id: Mapped[int] = mapped_column(
-        ForeignKey("medical_credentials.id")
-    )
-    medical_credential: Mapped["MedicalCredential"] = relationship(
-        back_populates="credential_owner"
-    )
+    medical_credential_id: Mapped[int] = mapped_column(ForeignKey("medical_credentials.id"))
+    medical_credential: Mapped["MedicalCredential"] = relationship(back_populates="credential_owner")
 
     is_verified: Mapped[bool] = mapped_column(Boolean, server_default=text("FALSE"))
 
     # Keep track of the "Pregnant Women" who have "saved" you
-    saved_by: Mapped[list["SavedVolunteerSpecialist"]] = relationship(
-        back_populates="volunteer_specialist"
-    )
-    consultations: Mapped[list["Consultation"]] = relationship(
-        back_populates="volunteer_specialist"
-    )
+    saved_by: Mapped[list["SavedVolunteerSpecialist"]] = relationship(back_populates="volunteer_specialist")
+    consultations: Mapped[list["Consultation"]] = relationship(back_populates="volunteer_specialist")
 
 
 class PregnantWoman(User):
@@ -115,26 +95,18 @@ class PregnantWoman(User):
 
     due_date: Mapped[date | None]  # Nullable (may not be expecting)
 
-    saved_volunteer_specialists: Mapped[list["SavedVolunteerSpecialist"]] = (
-        relationship(back_populates="mother")
-    )
+    saved_volunteer_specialists: Mapped[list["SavedVolunteerSpecialist"]] = relationship(back_populates="mother")
     consultations: Mapped[list["Consultation"]] = relationship(back_populates="mother")
-    journal_entries: Mapped[list["JournalEntry"]] = relationship(
-        back_populates="author"
-    )
+    journal_entries: Mapped[list["JournalEntry"]] = relationship(back_populates="author")
     bump_entries: Mapped[list["BumpEntry"]] = relationship(back_populates="uploader")
-    kick_tracker_sessions: Mapped[list["KickTrackerSession"]] = relationship(
-        back_populates="mother"
-    )
+    kick_tracker_sessions: Mapped[list["KickTrackerSession"]] = relationship(back_populates="mother")
 
 
 class Nutritionist(User):
     __tablename__ = "nutritionists"
     __mapper_args__ = {"polymorphic_identity": "nutritionist"}
     id: Mapped[int] = mapped_column(ForeignKey("users.id"), primary_key=True)
-    recipes_created: Mapped[list["Recipe"]] = relationship(
-        back_populates="nutritionist"
-    )
+    recipes_created: Mapped[list["Recipe"]] = relationship(back_populates="nutritionist")
 
 
 # ================================================
@@ -150,9 +122,7 @@ class MedicalCredentialOption(Base):
     label: Mapped[str] = mapped_column(String(255), unique=True)
 
     # The instances of "Medical Credentials" that are making use of this "Medical Credential Option"
-    medical_credentials: Mapped[list["MedicalCredential"]] = relationship(
-        back_populates="credential_option"
-    )
+    medical_credentials: Mapped[list["MedicalCredential"]] = relationship(back_populates="credential_option")
 
 
 # The actual INSTANCES of Medical Credentials - Each VolunteerSpecialist should have one!
@@ -161,17 +131,11 @@ class MedicalCredential(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     credential_img_key: Mapped[str]
 
-    credential_option_id: Mapped[int] = mapped_column(
-        ForeignKey("medical_credential_options.id")
-    )
-    credential_option: Mapped["MedicalCredentialOption"] = relationship(
-        back_populates="medical_credentials"
-    )
+    credential_option_id: Mapped[int] = mapped_column(ForeignKey("medical_credential_options.id"))
+    credential_option: Mapped["MedicalCredentialOption"] = relationship(back_populates="medical_credentials")
 
     # The specific "specialist" that this credential is mapped to
-    credential_owner: Mapped["VolunteerSpecialist"] = relationship(
-        back_populates="medical_credential"
-    )
+    credential_owner: Mapped["VolunteerSpecialist"] = relationship(back_populates="medical_credential")
 
 
 # ================================================
@@ -199,9 +163,7 @@ class EduArticle(Base):
     content_markdown: Mapped[str] = mapped_column(Text)
 
     # Keep track of which users "saved" you
-    saved_edu_articles: Mapped[list["SavedEduArticle"]] = relationship(
-        back_populates="article"
-    )
+    saved_edu_articles: Mapped[list["SavedEduArticle"]] = relationship(back_populates="article")
 
 
 class SavedEduArticle(Base):
@@ -209,9 +171,7 @@ class SavedEduArticle(Base):
     saver_id: Mapped[int] = mapped_column(ForeignKey("users.id"), primary_key=True)
     saver: Mapped["User"] = relationship(back_populates="saved_edu_articles")
 
-    article_id: Mapped[int] = mapped_column(
-        ForeignKey("edu_articles.id"), primary_key=True
-    )
+    article_id: Mapped[int] = mapped_column(ForeignKey("edu_articles.id"), primary_key=True)
     article: Mapped["EduArticle"] = relationship(back_populates="saved_edu_articles")
 
 
@@ -225,19 +185,11 @@ class SavedEduArticle(Base):
 class SavedVolunteerSpecialist(Base):
     __tablename__ = "saved_volunteer_specialists"
 
-    mother_id: Mapped[int] = mapped_column(
-        ForeignKey("pregnant_women.id"), primary_key=True
-    )
-    mother: Mapped["PregnantWoman"] = relationship(
-        back_populates="saved_volunteer_specialists"
-    )
+    mother_id: Mapped[int] = mapped_column(ForeignKey("pregnant_women.id"), primary_key=True)
+    mother: Mapped["PregnantWoman"] = relationship(back_populates="saved_volunteer_specialists")
 
-    volunteer_specialist_id: Mapped[int] = mapped_column(
-        ForeignKey("volunteer_specialists.id"), primary_key=True
-    )
-    volunteer_specialist: Mapped["VolunteerSpecialist"] = relationship(
-        back_populates="saved_by"
-    )
+    volunteer_specialist_id: Mapped[int] = mapped_column(ForeignKey("volunteer_specialists.id"), primary_key=True)
+    volunteer_specialist: Mapped["VolunteerSpecialist"] = relationship(back_populates="saved_by")
 
 
 # Association table for a "Pregnant Woman" who creates a "consultation request"
@@ -245,16 +197,10 @@ class SavedVolunteerSpecialist(Base):
 class Consultation(Base):
     __tablename__ = "consultations"
 
-    volunteer_specialist_id: Mapped[int] = mapped_column(
-        ForeignKey("volunteer_specialists.id"), primary_key=True
-    )
-    volunteer_specialist: Mapped[VolunteerSpecialist] = relationship(
-        back_populates="consultations"
-    )
+    volunteer_specialist_id: Mapped[int] = mapped_column(ForeignKey("volunteer_specialists.id"), primary_key=True)
+    volunteer_specialist: Mapped[VolunteerSpecialist] = relationship(back_populates="consultations")
 
-    mother_id: Mapped[int] = mapped_column(
-        ForeignKey("pregnant_women.id"), primary_key=True
-    )
+    mother_id: Mapped[int] = mapped_column(ForeignKey("pregnant_women.id"), primary_key=True)
     mother: Mapped[PregnantWoman] = relationship(back_populates="consultations")
 
     start_time: Mapped[datetime] = mapped_column(primary_key=True)
@@ -274,9 +220,7 @@ class BinaryMetricCategory(Base):
     label: Mapped[str] = mapped_column(String(128), unique=True)
 
     # What are the "Binary Metrics" that are making use of this cateogry
-    binary_metrics: Mapped[list["BinaryMetric"]] = relationship(
-        back_populates="category"
-    )
+    binary_metrics: Mapped[list["BinaryMetric"]] = relationship(back_populates="category")
 
 
 class BinaryMetric(Base):
@@ -289,14 +233,10 @@ class BinaryMetric(Base):
     # "Leg cramps" -> Symptoms
     # etc....
     category_id: Mapped[int] = mapped_column(ForeignKey("binary_metric_categories.id"))
-    category: Mapped["BinaryMetricCategory"] = relationship(
-        back_populates="binary_metrics"
-    )
+    category: Mapped["BinaryMetricCategory"] = relationship(back_populates="binary_metrics")
 
     # The "Metric Logs" in "Journal Entries" that are making use of the current option
-    journal_binary_metric_logs: Mapped[list["JournalBinaryMetricLog"]] = relationship(
-        back_populates="binary_metric"
-    )
+    journal_binary_metric_logs: Mapped[list["JournalBinaryMetricLog"]] = relationship(back_populates="binary_metric")
 
 
 class JournalEntry(Base):
@@ -310,12 +250,8 @@ class JournalEntry(Base):
     logged_at: Mapped[datetime]
 
     # NOTE: The actual chosen options are inside each "Metric Log"
-    journal_binary_metric_logs: Mapped[list["JournalBinaryMetricLog"]] = relationship(
-        back_populates="journal_entry"
-    )
-    journal_scalar_metric_logs: Mapped[list["JournalScalarMetricLog"]] = relationship(
-        back_populates="journal_entry"
-    )
+    journal_binary_metric_logs: Mapped[list["JournalBinaryMetricLog"]] = relationship(back_populates="journal_entry")
+    journal_scalar_metric_logs: Mapped[list["JournalScalarMetricLog"]] = relationship(back_populates="journal_entry")
 
 
 # Association table associating a "Journal Entry" with a "Binary Metric"
@@ -325,19 +261,11 @@ class JournalEntry(Base):
 class JournalBinaryMetricLog(Base):
     __tablename__ = "journal_binary_metric_logs"
 
-    journal_entry_id: Mapped[int] = mapped_column(
-        ForeignKey("journal_entries.id"), primary_key=True
-    )
-    journal_entry: Mapped["JournalEntry"] = relationship(
-        back_populates="journal_binary_metric_logs"
-    )
+    journal_entry_id: Mapped[int] = mapped_column(ForeignKey("journal_entries.id"), primary_key=True)
+    journal_entry: Mapped["JournalEntry"] = relationship(back_populates="journal_binary_metric_logs")
 
-    binary_metric_id: Mapped[int] = mapped_column(
-        ForeignKey("binary_metrics.id"), primary_key=True
-    )
-    binary_metric: Mapped["BinaryMetric"] = relationship(
-        back_populates="journal_binary_metric_logs"
-    )
+    binary_metric_id: Mapped[int] = mapped_column(ForeignKey("binary_metrics.id"), primary_key=True)
+    binary_metric: Mapped["BinaryMetric"] = relationship(back_populates="journal_binary_metric_logs")
 
 
 class ScalarMetric(Base):
@@ -345,27 +273,17 @@ class ScalarMetric(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     label: Mapped[str] = mapped_column(String(128), unique=True)
     unit_of_measurement: Mapped[str] = mapped_column(String(128), unique=True)
-    journal_scalar_metric_logs: Mapped[list["JournalScalarMetricLog"]] = relationship(
-        back_populates="scalar_metric"
-    )
+    journal_scalar_metric_logs: Mapped[list["JournalScalarMetricLog"]] = relationship(back_populates="scalar_metric")
 
 
 class JournalScalarMetricLog(Base):
     __tablename__ = "journal_scalar_metric_logs"
 
-    journal_entry_id: Mapped[int] = mapped_column(
-        ForeignKey("journal_entries.id"), primary_key=True
-    )
-    journal_entry: Mapped["JournalEntry"] = relationship(
-        back_populates="journal_scalar_metric_logs"
-    )
+    journal_entry_id: Mapped[int] = mapped_column(ForeignKey("journal_entries.id"), primary_key=True)
+    journal_entry: Mapped["JournalEntry"] = relationship(back_populates="journal_scalar_metric_logs")
 
-    scalar_metric_id: Mapped[int] = mapped_column(
-        ForeignKey("scalar_metrics.id"), primary_key=True
-    )
-    scalar_metric: Mapped["ScalarMetric"] = relationship(
-        back_populates="journal_scalar_metric_logs"
-    )
+    scalar_metric_id: Mapped[int] = mapped_column(ForeignKey("scalar_metrics.id"), primary_key=True)
+    scalar_metric: Mapped["ScalarMetric"] = relationship(back_populates="journal_scalar_metric_logs")
 
     value: Mapped[float]
 
@@ -400,9 +318,7 @@ class CommunityThread(Base):
     posted_at: Mapped[datetime]
 
     comments: Mapped[list["ThreadComment"]] = relationship(back_populates="thread")
-    community_thread_likes: Mapped[list["CommunityThreadLike"]] = relationship(
-        back_populates="thread"
-    )
+    community_thread_likes: Mapped[list["CommunityThreadLike"]] = relationship(back_populates="thread")
 
 
 # An association table for when a "user" likes a "community thread"
@@ -412,12 +328,8 @@ class CommunityThreadLike(Base):
     liker_id: Mapped[int] = mapped_column(ForeignKey("users.id"), primary_key=True)
     liker: Mapped["User"] = relationship(back_populates="threads_liked")
 
-    thread_id: Mapped[int] = mapped_column(
-        ForeignKey("community_threads.id"), primary_key=True
-    )
-    thread: Mapped["CommunityThread"] = relationship(
-        back_populates="community_thread_likes"
-    )
+    thread_id: Mapped[int] = mapped_column(ForeignKey("community_threads.id"), primary_key=True)
+    thread: Mapped["CommunityThread"] = relationship(back_populates="community_thread_likes")
 
 
 class ThreadComment(Base):
@@ -442,18 +354,14 @@ class Recipe(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
 
     nutritionist_id: Mapped[int] = mapped_column(ForeignKey("nutritionists.id"))
-    nutritionist: Mapped["Nutritionist"] = relationship(
-        back_populates="recipes_created"
-    )
+    nutritionist: Mapped["Nutritionist"] = relationship(back_populates="recipes_created")
 
     name: Mapped[str]
     img_key: Mapped[str]
     prepare_time_minutes: Mapped[int]
     serving_count: Mapped[int]
     instructions: Mapped[str]
-    recipe_ingredients: Mapped[list["RecipeIngredient"]] = relationship(
-        back_populates="recipe"
-    )
+    recipe_ingredients: Mapped[list["RecipeIngredient"]] = relationship(back_populates="recipe")
 
 
 class Ingredient(Base):
@@ -463,9 +371,7 @@ class Ingredient(Base):
     protein_per_100g: Mapped[str]
     carbs_per_100g: Mapped[str]
     fats_per_100g: Mapped[str]
-    recipe_ingredients: Mapped[list["RecipeIngredient"]] = relationship(
-        back_populates="ingredient"
-    )
+    recipe_ingredients: Mapped[list["RecipeIngredient"]] = relationship(back_populates="ingredient")
 
 
 # The actual association table linking "recipe" and "ingredient"
@@ -475,9 +381,7 @@ class RecipeIngredient(Base):
     recipe_id: Mapped[int] = mapped_column(ForeignKey("recipes.id"), primary_key=True)
     recipe: Mapped["Recipe"] = relationship(back_populates="recipe_ingredients")
 
-    ingredient_id: Mapped[int] = mapped_column(
-        ForeignKey("ingredients.id"), primary_key=True
-    )
+    ingredient_id: Mapped[int] = mapped_column(ForeignKey("ingredients.id"), primary_key=True)
     ingredient: Mapped["Ingredient"] = relationship(back_populates="recipe_ingredients")
 
     amount: Mapped[int]
@@ -492,9 +396,7 @@ class KickTrackerSession(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
 
     mother_id: Mapped[int] = mapped_column(ForeignKey("pregnant_women.id"))
-    mother: Mapped["PregnantWoman"] = relationship(
-        back_populates="kick_tracker_sessions"
-    )
+    mother: Mapped["PregnantWoman"] = relationship(back_populates="kick_tracker_sessions")
 
     started_at: Mapped[datetime]
     kicks: Mapped[list["KickTrackerKicks"]] = relationship(back_populates="session")

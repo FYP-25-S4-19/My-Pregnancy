@@ -1,7 +1,7 @@
 from app.db.seeding.generators.defaults_generator import DefaultsGenerator
+from app.db.db_schema import PregnantWoman, Admin, VolunteerSpecialist
 from app.db.seeding.generators.users_generator import UsersGenerator
 from app.core.password_hasher_config import get_password_hasher
-from app.db.db_schema import PregnantWoman, Admin
 from app.db.db_config import SessionLocal
 from app.shared.utils import clear_db
 from sqlalchemy.orm import Session
@@ -16,18 +16,23 @@ if __name__ == "__main__":
         clear_db(db_session)
 
         # Initialize defaults
-        med_cred_options, edu_article_categories, all_metric_options = DefaultsGenerator.generate_defaults(db_session)
+        med_cred_options, _, _ = DefaultsGenerator.generate_defaults(db_session)
         print("Finished seeding the database defaults!")
 
         # Generate users
         preg_women: list[PregnantWoman] = UsersGenerator.generate_pregnant_women(
             db_session, faker, password_hasher, "./app/db/seeding/images/profiles/pregnant_women"
         )
+        specialists: list[VolunteerSpecialist] = UsersGenerator.generate_volunteer_specialists(
+            db_session,
+            faker,
+            password_hasher,
+            med_cred_options,
+            "./app/db/seeding/images/profiles/volunteer_doctors",
+            "./app/db/seeding/images/medical_degrees",
+        )
         # admins: list[Admin] = UsersGenerator(
         #     db_session, faker, password_hasher, 4
-        # )
-        # specialists: list[VolunteerSpecialist] = UsersGenerator.generate_volunteer_specialists(
-        #     db_session, faker, password_hasher, med_cred_options, 12
         # )
         # all_users: list[User] = preg_women + admins + specialists
 

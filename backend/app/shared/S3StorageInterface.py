@@ -7,42 +7,49 @@ import mimetypes
 
 
 class S3StorageInterface:
-    PROFILE_IMG_PREFIX = "profile-images"
+    # =====================================================
+    # =============== MEDICAL DEGREES =====================
+    # =====================================================
+    PROFILE_PREFIX = "profile-images"
+
+    @staticmethod
+    def put_med_degree_img(user_id: int, med_degree_img: UploadFile) -> str | None:
+        return S3StorageInterface._upload_file_stream(
+            prefix=S3StorageInterface.MED_DEGREE_PREFIX,
+            file_name=str(user_id),
+            file_obj=med_degree_img.file,
+            content_type=med_degree_img.content_type,
+        )
+
+    @staticmethod
+    def put_med_degree_img_from_filepath(user_id: int, med_degree_img_filepath: str) -> str | None:
+        return S3StorageInterface._put_img_from_filepath(
+            file_name=str(user_id), img_filepath=med_degree_img_filepath, prefix=S3StorageInterface.MED_DEGREE_PREFIX
+        )
+
+    # =====================================================
+    # ==================== PROFILE =======================
+    # ====================================================
+    MED_DEGREE_PREFIX = "medical-degrees"
 
     @staticmethod
     def put_profile_img(user_id: int, profile_img: UploadFile) -> str | None:
         return S3StorageInterface._upload_file_stream(
-            prefix=S3StorageInterface.PROFILE_IMG_PREFIX,
+            prefix=S3StorageInterface.PROFILE_PREFIX,
             file_name=str(user_id),
             file_obj=profile_img.file,
-            content_type=profile_img.content_type
+            content_type=profile_img.content_type,
         )
 
     @staticmethod
     def put_profile_img_from_filepath(user_id: int, profile_img_filepath: str) -> str | None:
-        content_type, _ = mimetypes.guess_type(profile_img_filepath) # Guess the type from file path
-        if not content_type:
-            content_type = "application/octet-stream" # Default generic type
+        return S3StorageInterface._put_img_from_filepath(
+            file_name=str(user_id), img_filepath=profile_img_filepath, prefix=S3StorageInterface.PROFILE_PREFIX
+        )
 
-        # print("DEBUG, filepath: ", profile_img_filepath)
-        # print("DEBUG, content type: ", content_type)
-        # print()
-
-        try:
-            with open(profile_img_filepath, "rb") as f:
-                return S3StorageInterface._upload_file_stream(
-                    prefix=S3StorageInterface.PROFILE_IMG_PREFIX,
-                    file_name=str(user_id),
-                    file_obj=f,
-                    content_type=content_type
-                )
-        except FileNotFoundError:
-            print(f"Error: File not found at path: {profile_img_filepath}")
-            return None
-        except IOError as e:
-            print(f"Error opening or reading file: {e}")
-            return None
-
+    # =====================================================
+    # ==================== COMMON ========================
+    # ====================================================
     @staticmethod
     def get_presigned_url(obj_key: str) -> str | None:
         """
@@ -57,12 +64,9 @@ class S3StorageInterface:
         """
         try:
             url: str = s3_client.generate_presigned_url(
-                ClientMethod='get_object',
-                Params={
-                    'Bucket': settings.S3_BUCKET_NAME,
-                    'Key': obj_key
-                },
-                ExpiresIn=900  # URL is valid for 15 minutes (900 seconds)
+                ClientMethod="get_object",
+                Params={"Bucket": settings.S3_BUCKET_NAME, "Key": obj_key},
+                ExpiresIn=900,  # URL is valid for 15 minutes (900 seconds)
             )
             return url
         except (BotoCoreError, ClientError) as e:
@@ -70,23 +74,39 @@ class S3StorageInterface:
             return None
 
     @staticmethod
-    def _upload_file_stream(
-        prefix: str, file_name: str, file_obj: BinaryIO, content_type: str
-    ) -> str | None:
+    def _put_img_from_filepath(file_name: str, img_filepath: str, prefix: str) -> str | None:
+        content_type, _ = mimetypes.guess_type(img_filepath)  # Guess the type from file path
+        if not content_type:
+            content_type = "application/octet-stream"  # Default generic type
+
+        try:
+            with open(img_filepath, "rb") as f:
+                return S3StorageInterface._upload_file_stream(
+                    prefix=prefix, file_name=file_name, file_obj=f, content_type=content_type
+                )
+        except FileNotFoundError:
+            print(f"Error: File not found at path: {img_filepath}")
+            return None
+        except IOError as e:
+            print(f"Error opening or reading file: {e}")
+            return None
+
+    @staticmethod
+    def _upload_file_stream(prefix: str, file_name: str, file_obj: BinaryIO, content_type: str) -> str | None:
         try:
             extension = mimetypes.guess_extension(content_type)
             if not extension:
-                if "jpeg" in content_type: extension = ".jpg"
-                elif "png" in content_type: extension = ".png"
-                else: extension = ".jpg"
+                if "jpeg" in content_type:
+                    extension = ".jpg"
+                elif "png" in content_type:
+                    extension = ".png"
+                else:
+                    extension = ".jpg"
 
             obj_key = f"{prefix}/{file_name}{extension}"
-            print("S3StorageInterface, Obj Key: ", obj_key)
+            # print("S3StorageInterface, Obj Key: ", obj_key)
             s3_client.upload_fileobj(
-                Fileobj=file_obj,
-                Bucket=settings.S3_BUCKET_NAME,
-                Key=obj_key,
-                ExtraArgs={"ContentType": content_type}
+                Fileobj=file_obj, Bucket=settings.S3_BUCKET_NAME, Key=obj_key, ExtraArgs={"ContentType": content_type}
             )
             return obj_key
         except (BotoCoreError, ClientError) as e:
