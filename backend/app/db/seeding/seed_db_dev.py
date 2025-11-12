@@ -1,9 +1,7 @@
-import os
-
 from app.db.seeding.generators.defaults_generator import DefaultsGenerator
 from app.db.seeding.generators.users_generator import UsersGenerator
 from app.core.password_hasher_config import get_password_hasher
-from app.db.db_schema import PregnantWoman
+from app.db.db_schema import PregnantWoman, Admin
 from app.db.db_config import SessionLocal
 from app.shared.utils import clear_db
 from sqlalchemy.orm import Session
@@ -25,11 +23,13 @@ if __name__ == "__main__":
         preg_women: list[PregnantWoman] = UsersGenerator.generate_pregnant_women(
             db_session, faker, password_hasher, "./app/db/seeding/images/profiles/pregnant_women"
         )
-        admins: list[Admin] = UsersGenerator.generate_admins(db_session, faker, password_hasher, 4)
-        specialists: list[VolunteerSpecialist] = UsersGenerator.generate_volunteer_specialists(
-            db_session, faker, password_hasher, med_cred_options, 12
-        )
-        all_users: list[User] = preg_women + admins + specialists
+        # admins: list[Admin] = UsersGenerator(
+        #     db_session, faker, password_hasher, 4
+        # )
+        # specialists: list[VolunteerSpecialist] = UsersGenerator.generate_volunteer_specialists(
+        #     db_session, faker, password_hasher, med_cred_options, 12
+        # )
+        # all_users: list[User] = preg_women + admins + specialists
 
         # # Generate forum content
         # all_community_threads: list[CommunityThread] = ForumContentGenerator.generate_threads(
