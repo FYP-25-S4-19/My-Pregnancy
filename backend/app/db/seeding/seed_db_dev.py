@@ -22,15 +22,14 @@ if __name__ == "__main__":
         print("Finished seeding the database defaults!")
 
         # Generate users
-        # print("Debug: ", os.getcwd())
         preg_women: list[PregnantWoman] = UsersGenerator.generate_pregnant_women(
             db_session, faker, password_hasher, "./app/db/seeding/images/profiles/pregnant_women"
         )
-        # admins: list[Admin] = UsersGenerator.generate_admins(db_session, faker, password_hasher, 4)
-        # specialists: list[VolunteerSpecialist] = UsersGenerator.generate_volunteer_specialists(
-        #     db_session, faker, password_hasher, med_cred_options, 12
-        # )
-        # all_users: list[User] = preg_women + admins + specialists
+        admins: list[Admin] = UsersGenerator.generate_admins(db_session, faker, password_hasher, 4)
+        specialists: list[VolunteerSpecialist] = UsersGenerator.generate_volunteer_specialists(
+            db_session, faker, password_hasher, med_cred_options, 12
+        )
+        all_users: list[User] = preg_women + admins + specialists
 
         # # Generate forum content
         # all_community_threads: list[CommunityThread] = ForumContentGenerator.generate_threads(
