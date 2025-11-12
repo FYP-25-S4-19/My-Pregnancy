@@ -47,8 +47,8 @@ class User(Base):
     role_id: Mapped[int] = mapped_column(ForeignKey("roles.id"))
     role: Mapped[Role] = relationship(back_populates="users")
 
-    # email: Mapped[str] = mapped_column(String(255), unique=True)
-    # password_hash: Mapped[str] = mapped_column(String(128))
+    email: Mapped[str] = mapped_column(String(255), unique=True)
+    password_hash: Mapped[str] = mapped_column(String(128))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     is_active: Mapped[bool] = mapped_column(server_default=text("TRUE"))
 
@@ -60,6 +60,7 @@ class User(Base):
     saved_edu_articles: Mapped[list["SavedEduArticle"]] = relationship(back_populates="saver")
 
     notifications: Mapped[list["Notification"]] = relationship(back_populates="recipient")
+
 
 class Admin(User):
     __tablename__ = "admins"

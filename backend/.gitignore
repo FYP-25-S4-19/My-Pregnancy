@@ -215,5 +215,10 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 
+# ===== CUSTOM =====
+./localstack_data
+./my-localstack-data
+
 # ==== EXCEPTIONS ====
-!.env.example 
+!.env.example
+
