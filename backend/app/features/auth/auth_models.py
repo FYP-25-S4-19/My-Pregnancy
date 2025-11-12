@@ -1,18 +1,19 @@
-# from pydantic import BaseModel
-# from datetime import date
-#
-# class CreatePregAccountRequest(BaseModel):
-#     username: str
-#     email: str
-#     password: str
-#     due_date: date | None
-#
-#
-# class AuthLoginRequest(BaseModel):
-#     username: str
-#     password: str
-#
-#
-# class AuthLoginResponse(BaseModel):
-#     access_token: str
-#     token_type: str
+from app.core.custom_base_model import CustomBaseModel
+from datetime import date
+
+
+class CreatePregAccountRequest(CustomBaseModel):
+    username: str
+    email: str
+    password: str
+    due_date: date | None
+
+
+class AuthLoginRequest(CustomBaseModel):
+    username: str
+    password: str
+
+
+class AuthLoginResponse(CustomBaseModel):
+    access_token: str
+    token_type: str

@@ -5,7 +5,8 @@ from app.db.db_schema import (
     BinaryMetric,
     JournalEntry,
     JournalBinaryMetricLog,
-    User, ScalarMetric,
+    User,
+    ScalarMetric,
 )
 from faker import Faker
 import random

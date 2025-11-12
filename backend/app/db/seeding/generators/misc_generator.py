@@ -45,7 +45,7 @@ class MiscGenerator:
 
     @staticmethod
     def generate_consultations(
-            db: Session, faker: Faker, all_specialists: list[VolunteerSpecialist], all_mothers: list[PregnantWoman]
+        db: Session, faker: Faker, all_specialists: list[VolunteerSpecialist], all_mothers: list[PregnantWoman]
     ):
         print("Generating consultations....")
 
@@ -60,7 +60,7 @@ class MiscGenerator:
                 rand_time: datetime = faker.date_time_between(
                     start_date=mother.created_at,
                     end_date=(
-                            mother.created_at + timedelta(days=random.randint(1, 15), minutes=random.randint(0, 1000))
+                        mother.created_at + timedelta(days=random.randint(1, 15), minutes=random.randint(0, 1000))
                     ),
                 )
                 consult = Consultation(

@@ -3,20 +3,13 @@ from fastapi import Depends, status, HTTPException
 from app.core.settings import settings
 from app.db.db_config import get_db
 from sqlalchemy.orm import Session
-from argon2 import PasswordHasher
 from app.db.db_schema import User
+from typing import Type, TypeVar
 from pydantic import BaseModel
 from datetime import datetime
-from typing import Type, TypeVar
 import jwt
 
-ph = PasswordHasher()
 bearer_scheme = HTTPBearer()
-
-
-def get_password_hasher() -> PasswordHasher:
-    return ph
-
 
 class TokenData(BaseModel):
     sub: str
@@ -24,7 +17,9 @@ class TokenData(BaseModel):
     exp: datetime
 
 
-def get_current_user(token_data: HTTPAuthorizationCredentials = Depends(bearer_scheme), db: Session = Depends(get_db)) -> User:
+def get_current_user(
+    token_data: HTTPAuthorizationCredentials = Depends(bearer_scheme), db: Session = Depends(get_db)
+) -> User:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -43,7 +38,8 @@ def get_current_user(token_data: HTTPAuthorizationCredentials = Depends(bearer_s
     return user
 
 
-T = TypeVar('T', bound=User)
+T = TypeVar("T", bound=User)
+
 
 def require_role(required_role: Type[T]):
     def role_checker(current_user: User = Depends(get_current_user)) -> T:
@@ -53,4 +49,5 @@ def require_role(required_role: Type[T]):
                 detail=f"Access denied: User is not of required type'{required_role.__name__}'",
             )
         return current_user
+
     return role_checker

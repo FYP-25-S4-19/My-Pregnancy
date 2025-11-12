@@ -1,13 +1,12 @@
 # from app.features.educational_articles.edu_articles_router import edu_articles_router
 from starlette.middleware.sessions import SessionMiddleware
+
 # from app.features.users.users_router import users_router
-# from app.features.auth.auth_router import auth_router
+from app.features.auth.auth_router import auth_router
 from fastapi import FastAPI, Request, status
 from starlette.responses import JSONResponse
 from sqlalchemy.exc import IntegrityError
 from app.core.settings import settings
-from app.db.db_config import get_db
-from sqlalchemy.orm import Session
 
 app: FastAPI
 
@@ -15,14 +14,9 @@ APP_TITLE = "MyPregnancy API"
 if settings.APP_ENV == "dev":
     app = FastAPI(title=APP_TITLE)
 else:
-    app = FastAPI(
-        title=APP_TITLE,
-        docs_url=None,
-        redoc_url=None,
-        openapi_url=None
-    )
+    app = FastAPI(title=APP_TITLE, docs_url=None, redoc_url=None, openapi_url=None)
 
-# app.include_router(auth_router)
+app.include_router(auth_router)
 # app.include_router(edu_articles_router)
 # app.include_router(users_router)
 app.add_middleware(SessionMiddleware, secret_key=settings.SECRET_KEY)
@@ -46,4 +40,4 @@ async def general_exception_handler(_: Request, e: Exception):
 
 @app.get("/")
 def index():
-    return "Hello World"
+    return "Ping!"

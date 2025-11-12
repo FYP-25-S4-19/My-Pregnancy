@@ -5,29 +5,24 @@ load_dotenv()
 
 
 class Settings(BaseSettings):
+    APP_ENV: str
     POSTGRES_DB: str
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str
     POSTGRES_SERVER: str
     POSTGRES_PORT: int
-
-    @property
-    def DATABASE_URL(self) -> str:
-        user = self.POSTGRES_USER
-        password = self.POSTGRES_PASSWORD
-        server = self.POSTGRES_SERVER
-        port = self.POSTGRES_PORT
-        db = self.POSTGRES_DB
-        return f"postgresql+psycopg2://{user}:{password}@{server}:{port}/{db}"
+    DATABASE_URL: str
 
     SECRET_KEY: str
 
-    GITHUB_CLIENT_ID: str
-    GITHUB_CLIENT_SECRET: str
+    AWS_ACCESS_KEY_ID: str
+    AWS_SECRET_ACCESS_KEY: str
+    AWS_DEFAULT_REGION: str
+    AWS_ENDPOINT_URL: str
+    S3_BUCKET_NAME: str
+    LOCALSTACK_ENDPOINT_URL: str
 
-    APP_ENV: str
-
-    # CONSTANTS
+    # SELF-DEFINED CONSTANTS
     JWT_EXPIRATION_MINUTES: int = 30
 
     class Config:
