@@ -1,5 +1,5 @@
+from app.db.db_schema import PregnantWoman, Admin, VolunteerDoctor, Nutritionist
 from app.db.seeding.generators.defaults_generator import DefaultsGenerator
-from app.db.db_schema import PregnantWoman, Admin, VolunteerSpecialist
 from app.db.seeding.generators.users_generator import UsersGenerator
 from app.core.password_hasher_config import get_password_hasher
 from app.db.db_config import SessionLocal
@@ -16,21 +16,20 @@ if __name__ == "__main__":
         clear_db(db_session)
 
         # Initialize defaults
-        med_cred_options, _, _ = DefaultsGenerator.generate_defaults(db_session)
+        DefaultsGenerator.generate_defaults(db_session)
         print("Finished seeding the database defaults!")
 
         # Generate users
-        preg_women: list[PregnantWoman] = UsersGenerator.generate_pregnant_women(
-            db_session, faker, password_hasher, "./app/db/seeding/images/profiles/pregnant_women"
+        preg_women, doctors, nutritionists = UsersGenerator.generate_users(
+            db=db_session,
+            faker=faker,
+            password_hasher=password_hasher,
+            preg_women_profiles_filepath="./app/db/seeding/images/profiles/pregnant_women",
+            doctor_profiles_filepath="./app/db/seeding/images/profiles/volunteer_doctors",
+            nutritionists_profiles_filepath="./app/db/seeding/images/profiles/nutritionists",
+            qualifications_filepath="./app/db/seeding/images/qualifications",
         )
-        specialists: list[VolunteerSpecialist] = UsersGenerator.generate_volunteer_specialists(
-            db_session,
-            faker,
-            password_hasher,
-            med_cred_options,
-            "./app/db/seeding/images/profiles/volunteer_doctors",
-            "./app/db/seeding/images/medical_degrees",
-        )
+        print("Finished seeding the dev database users!")
         # admins: list[Admin] = UsersGenerator(
         #     db_session, faker, password_hasher, 4
         # )

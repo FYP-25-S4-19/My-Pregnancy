@@ -8,29 +8,31 @@ import mimetypes
 
 class S3StorageInterface:
     # =====================================================
-    # =============== MEDICAL DEGREES =====================
+    # ================= QUALIFICATION =====================
     # =====================================================
-    PROFILE_PREFIX = "profile-images"
+    QUALIFICATION_PREFIX = "qualifications"
 
     @staticmethod
-    def put_med_degree_img(user_id: int, med_degree_img: UploadFile) -> str | None:
+    def put_qualification_img(user_id: int, qualification_img: UploadFile) -> str | None:
         return S3StorageInterface._upload_file_stream(
-            prefix=S3StorageInterface.MED_DEGREE_PREFIX,
+            prefix=S3StorageInterface.QUALIFICATION_PREFIX,
             file_name=str(user_id),
-            file_obj=med_degree_img.file,
-            content_type=med_degree_img.content_type,
+            file_obj=qualification_img.file,
+            content_type=qualification_img.content_type,
         )
 
     @staticmethod
-    def put_med_degree_img_from_filepath(user_id: int, med_degree_img_filepath: str) -> str | None:
+    def put_qualification_img_from_filepath(user_id: int, qualification_img_filepath: str) -> str | None:
         return S3StorageInterface._put_img_from_filepath(
-            file_name=str(user_id), img_filepath=med_degree_img_filepath, prefix=S3StorageInterface.MED_DEGREE_PREFIX
+            file_name=str(user_id),
+            img_filepath=qualification_img_filepath,
+            prefix=S3StorageInterface.QUALIFICATION_PREFIX,
         )
 
     # =====================================================
     # ==================== PROFILE =======================
     # ====================================================
-    MED_DEGREE_PREFIX = "medical-degrees"
+    PROFILE_PREFIX = "profile-images"
 
     @staticmethod
     def put_profile_img(user_id: int, profile_img: UploadFile) -> str | None:
@@ -44,7 +46,9 @@ class S3StorageInterface:
     @staticmethod
     def put_profile_img_from_filepath(user_id: int, profile_img_filepath: str) -> str | None:
         return S3StorageInterface._put_img_from_filepath(
-            file_name=str(user_id), img_filepath=profile_img_filepath, prefix=S3StorageInterface.PROFILE_PREFIX
+            file_name=str(user_id),
+            img_filepath=profile_img_filepath,
+            prefix=S3StorageInterface.PROFILE_PREFIX,
         )
 
     # =====================================================
@@ -82,7 +86,10 @@ class S3StorageInterface:
         try:
             with open(img_filepath, "rb") as f:
                 return S3StorageInterface._upload_file_stream(
-                    prefix=prefix, file_name=file_name, file_obj=f, content_type=content_type
+                    prefix=prefix,
+                    file_name=file_name,
+                    file_obj=f,
+                    content_type=content_type,
                 )
         except FileNotFoundError:
             print(f"Error: File not found at path: {img_filepath}")
@@ -106,7 +113,10 @@ class S3StorageInterface:
             obj_key = f"{prefix}/{file_name}{extension}"
             # print("S3StorageInterface, Obj Key: ", obj_key)
             s3_client.upload_fileobj(
-                Fileobj=file_obj, Bucket=settings.S3_BUCKET_NAME, Key=obj_key, ExtraArgs={"ContentType": content_type}
+                Fileobj=file_obj,
+                Bucket=settings.S3_BUCKET_NAME,
+                Key=obj_key,
+                ExtraArgs={"ContentType": content_type},
             )
             return obj_key
         except (BotoCoreError, ClientError) as e:

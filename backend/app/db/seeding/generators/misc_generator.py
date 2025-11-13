@@ -3,9 +3,9 @@ from sqlalchemy.orm import Session
 from app.db.db_schema import (
     VolunteerSpecialist,
     PregnantWoman,
-    ConsultStatus,
+    AppointmentStatus,
     Consultation,
-    UserFeedback,
+    UserAppFeedback,
     User,
     BumpEntry,
 )
@@ -22,7 +22,7 @@ class MiscGenerator:
         sample_size = min(len(all_users), count)
         rand_users: list[User] = random.sample(population=all_users, k=sample_size)
         for user in rand_users:
-            user_feedback = UserFeedback(
+            user_feedback = UserAppFeedback(
                 author=user, rating=random.randint(1, 5), content=faker.sentence(random.randint(1, 5))
             )
             db.add(user_feedback)
@@ -67,7 +67,9 @@ class MiscGenerator:
                     volunteer_specialist=specialist,
                     mother=mother,
                     start_time=rand_time,
-                    status=random.choice([ConsultStatus.MISSED, ConsultStatus.PENDING, ConsultStatus.COMPLETED]),
+                    status=random.choice(
+                        [AppointmentStatus.MISSED, AppointmentStatus.PENDING, AppointmentStatus.COMPLETED]
+                    ),
                 )
                 db.add(consult)
         db.commit()

@@ -14,7 +14,7 @@ if __name__ == "__main__":
         clear_db(db_session)
 
         # Initialize defaults
-        med_cred_options, edu_article_categories, all_metric_options = DefaultsGenerator.generate_defaults(db_session)
+        DefaultsGenerator.generate_defaults(db_session)
         print("Finished seeding the database defaults!")
     except Exception as e:
         print(f"Exception occurred while seeding database: {e}")

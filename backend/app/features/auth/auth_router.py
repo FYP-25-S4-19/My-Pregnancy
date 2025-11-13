@@ -1,7 +1,7 @@
 from app.features.auth.auth_models import AuthLoginRequest, AuthLoginResponse, CreatePregAccountRequest
 from app.core.password_hasher_config import get_password_hasher
 from fastapi import APIRouter, Depends, HTTPException, status
-from app.db.db_schema import User, Role, PregnantWoman
+from app.db.db_schema import User, UserRole, PregnantWoman
 from app.core.security import TokenData
 from sqlalchemy.orm import Session, joinedload
 from datetime import datetime, timedelta
@@ -24,7 +24,7 @@ async def register_via_username_email(
     if existing_user is not None:  # Already exists
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Username or email already in use")
 
-    preg_role: Role | None = db.query(Role).filter(Role.label == "PregnantWoman").first()
+    preg_role: UserRole | None = db.query(UserRole).filter(UserRole.label == "PregnantWoman").first()
     if preg_role is None:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Missing prerequisite role in DB")
 
