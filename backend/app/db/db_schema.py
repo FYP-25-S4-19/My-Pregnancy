@@ -20,9 +20,10 @@ class Base(DeclarativeBase):
 
 
 class AppointmentStatus(Enum):
-    PENDING = "PENDING"
+    PENDING_ACCEPT_REJECT = "PENDING_ACCEPT_REJECT"
+    ACCEPTED = ("ACCEPTED",)
+    REJECTED = ("REJECTED",)
     COMPLETED = "COMPLETED"
-    MISSED = "MISSED"
 
 
 class UserRole(Enum):
@@ -154,7 +155,7 @@ class PregnantWoman(User):
     saved_volunteer_doctors: Mapped[list["SavedVolunteerDoctor"]] = relationship(back_populates="mother")
     appointments: Mapped[list["Appointment"]] = relationship(back_populates="mother")
     journal_entries: Mapped[list["JournalEntry"]] = relationship(back_populates="author")
-    bump_entries: Mapped[list["BumpEntry"]] = relationship(back_populates="uploader")
+    # bump_entries: Mapped[list["BumpEntry"]] = relationship(back_populates="uploader")
     kick_tracker_sessions: Mapped[list["KickTrackerSession"]] = relationship(back_populates="mother")
 
 
@@ -298,11 +299,12 @@ class JournalEntry(Base):
     author: Mapped["PregnantWoman"] = relationship(back_populates="journal_entries")
 
     content: Mapped[str] = mapped_column(Text)
-    logged_at: Mapped[datetime]
+    logged_on: Mapped[date]
 
     # NOTE: The actual chosen options are inside each "Metric Log"
     journal_binary_metric_logs: Mapped[list["JournalBinaryMetricLog"]] = relationship(back_populates="journal_entry")
     journal_scalar_metric_logs: Mapped[list["JournalScalarMetricLog"]] = relationship(back_populates="journal_entry")
+    journal_blood_pressure_logs: Mapped[list["JournalBloodPressureLog"]] = relationship(back_populates="journal_entry")
 
 
 # Association table associating a "Journal Entry" with a "Binary Metric"
@@ -322,18 +324,9 @@ class JournalBinaryMetricLog(Base):
 class ScalarMetric(Base):
     __tablename__ = "scalar_metrics"
     id: Mapped[int] = mapped_column(primary_key=True)
-    journal_scalar_metric_logs: Mapped[list["JournalScalarMetricLog"]] = relationship(back_populates="scalar_metric")
-    components: Mapped[list["ScalarMetricComponent"]] = relationship(back_populates="scalar_metric")
-
-
-class ScalarMetricComponent(Base):
-    __tablename__ = "scalar_metric_components"
-    id: Mapped[int] = mapped_column(primary_key=True)
     label: Mapped[str] = mapped_column(String(128), unique=True)
-    unit_of_measurement: Mapped[str] = mapped_column(String(128), unique=True)  # Systolic, Diastolic, etc...
-
-    scalar_metric_id: Mapped[int] = mapped_column(ForeignKey("scalar_metrics.id"))
-    scalar_metric: Mapped["ScalarMetric"] = relationship(back_populates="components")
+    unit_of_measurement: Mapped[str] = mapped_column(String(128), unique=True)  # Systolic, Litres, Kilograms, etc...
+    journal_scalar_metric_logs: Mapped[list["JournalScalarMetricLog"]] = relationship(back_populates="scalar_metric")
 
 
 class JournalScalarMetricLog(Base):
@@ -348,15 +341,25 @@ class JournalScalarMetricLog(Base):
     value: Mapped[float]
 
 
-class BumpEntry(Base):
-    __tablename__ = "bump_entries"
-    id: Mapped[int] = mapped_column(primary_key=True)
+class JournalBloodPressureLog(Base):
+    __tablename__ = "journal_blood_pressure_logs"
 
-    uploader_id: Mapped[int] = mapped_column(ForeignKey("pregnant_women.id"))
-    uploader: Mapped["PregnantWoman"] = relationship(back_populates="bump_entries")
+    journal_entry_id: Mapped[int] = mapped_column(ForeignKey("journal_entries.id"), primary_key=True)
+    journal_entry: Mapped["JournalEntry"] = relationship(back_populates="journal_blood_pressure_logs")
 
-    bump_img_key: Mapped[str] = mapped_column(String(255))
-    date: Mapped[date]
+    systolic: Mapped[int]
+    diastolic: Mapped[int]
+
+
+# class BumpEntry(Base):
+#     __tablename__ = "bump_entries"
+#     id: Mapped[int] = mapped_column(primary_key=True)
+#
+#     uploader_id: Mapped[int] = mapped_column(ForeignKey("pregnant_women.id"))
+#     uploader: Mapped["PregnantWoman"] = relationship(back_populates="bump_entries")
+#
+#     bump_img_key: Mapped[str] = mapped_column(String(255))
+#     date: Mapped[date]
 
 
 # ============================================
@@ -427,10 +430,10 @@ class Recipe(Base):
 class Ingredient(Base):
     __tablename__ = "ingredients"
     id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[int]
-    protein_per_100g: Mapped[str]
-    carbs_per_100g: Mapped[str]
-    fats_per_100g: Mapped[str]
+    name: Mapped[str]
+    protein_per_100g: Mapped[float | None]
+    carbs_per_100g: Mapped[float | None]
+    fats_per_100g: Mapped[float | None]
     recipe_ingredients: Mapped[list["RecipeIngredient"]] = relationship(back_populates="ingredient")
 
 

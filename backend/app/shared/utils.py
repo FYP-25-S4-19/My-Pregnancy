@@ -3,7 +3,7 @@ from sqlalchemy import text
 
 
 def clear_db(db: Session):
-    print("Clearing the database....")
+    print("Clearing the database....\n")
     db.execute(text("SET session_replication_role = 'replica';"))  # Disable foreign key constraints
 
     table_names = db.execute(text("SELECT tablename FROM pg_tables WHERE schemaname='public';")).scalars().all()
