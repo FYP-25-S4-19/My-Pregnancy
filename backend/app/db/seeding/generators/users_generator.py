@@ -1,22 +1,23 @@
-from app.shared.S3StorageInterface import S3StorageInterface
-from datetime import datetime, timedelta
-from sqlalchemy.orm import Session
-from argon2 import PasswordHasher
-from app.db.db_schema import (
-    NutritionistQualificationOption,
-    NutritionistQualification,
-    DoctorQualificationOption,
-    DoctorQualification,
-    VolunteerDoctor,
-    PregnantWoman,
-    Nutritionist,
-    UserRole,
-    Admin,
-)
-from faker import Faker
+import os
 import pathlib
 import random
-import os
+from datetime import datetime, timedelta
+
+from argon2 import PasswordHasher
+from faker import Faker
+from sqlalchemy.orm import Session
+
+from app.db.db_schema import (
+    DoctorQualification,
+    DoctorQualificationOption,
+    Nutritionist,
+    NutritionistQualification,
+    NutritionistQualificationOption,
+    PregnantWoman,
+    UserRole,
+    VolunteerDoctor,
+)
+from app.shared.s3_storage_interface import S3StorageInterface
 
 
 class UsersGenerator:
@@ -149,7 +150,7 @@ class UsersGenerator:
                 raise ValueError("Failed to upload profile image to S3 storage")
             doctor.profile_img_key = profile_s3_key
 
-            doc_qualification.credential_owner = doctor
+            doc_qualification.doctor = doctor
             all_doctors.append(doctor)
         db.commit()
         return all_doctors
@@ -212,7 +213,7 @@ class UsersGenerator:
                 raise ValueError("Failed to upload profile image to S3 storage")
             nutritionist.profile_img_key = profile_s3_key
 
-            qualification.credential_owner = nutritionist
+            qualification.nutritionist = nutritionist
             all_nutritionists.append(nutritionist)
         db.commit()
         return all_nutritionists

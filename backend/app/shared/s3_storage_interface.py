@@ -1,9 +1,11 @@
+import mimetypes
+from typing import BinaryIO
+
 from botocore.exceptions import BotoCoreError, ClientError
+from fastapi import UploadFile
+
 from app.core.aws_clients import s3_client
 from app.core.settings import settings
-from fastapi import UploadFile
-from typing import BinaryIO
-import mimetypes
 
 
 class S3StorageInterface:

@@ -1,16 +1,18 @@
-from datetime import datetime, timedelta
-from sqlalchemy.orm import Session
-from app.db.db_schema import (
-    AppointmentStatus,
-    VolunteerDoctor,
-    UserAppFeedback,
-    PregnantWoman,
-    Appointment,
-    User,
-)
-from faker import Faker
-from math import floor
 import random
+from datetime import datetime, timedelta
+from math import floor
+
+from faker import Faker
+from sqlalchemy.orm import Session
+
+from app.db.db_schema import (
+    Appointment,
+    AppointmentStatus,
+    PregnantWoman,
+    User,
+    UserAppFeedback,
+    VolunteerDoctor,
+)
 
 
 class MiscGenerator:

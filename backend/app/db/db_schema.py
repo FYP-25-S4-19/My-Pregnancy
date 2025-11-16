@@ -1,18 +1,21 @@
 from __future__ import annotations
 
-from sqlalchemy.orm import Mapped, mapped_column, DeclarativeBase, relationship
-from datetime import datetime, date
+from datetime import date, datetime
+from enum import Enum, IntEnum
+
 from sqlalchemy import (
-    Enum as SQLAlchemyEnum,
-    ForeignKey,
-    DateTime,
     Boolean,
+    DateTime,
+    ForeignKey,
     String,
     Text,
     func,
     text,
 )
-from enum import Enum, IntEnum
+from sqlalchemy import (
+    Enum as SQLAlchemyEnum,
+)
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
 class Base(DeclarativeBase):

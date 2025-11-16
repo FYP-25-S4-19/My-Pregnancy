@@ -1,7 +1,8 @@
 from sqlalchemy.orm import Session
+
 from app.db.db_schema import (
-    BinaryMetricCategory,
     BinaryMetric,
+    BinaryMetricCategory,
     ScalarMetric,
 )
 

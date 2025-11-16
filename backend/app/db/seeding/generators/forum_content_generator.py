@@ -1,8 +1,10 @@
-from app.db.db_schema import CommunityThread, User, ThreadComment
-from sqlalchemy.orm import Session
-from datetime import datetime
-from faker import Faker
 import random
+from datetime import datetime
+
+from faker import Faker
+from sqlalchemy.orm import Session
+
+from app.db.db_schema import CommunityThread, ThreadComment, User
 
 
 class ForumContentGenerator:

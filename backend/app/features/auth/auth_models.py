@@ -1,5 +1,6 @@
-from app.core.custom_base_model import CustomBaseModel
 from datetime import date
+
+from app.core.custom_base_model import CustomBaseModel
 
 
 class CreatePregAccountRequest(CustomBaseModel):

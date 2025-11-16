@@ -1,12 +1,13 @@
-from sqlalchemy import create_engine, StaticPool
-from fastapi.testclient import TestClient
-from sqlalchemy.orm import sessionmaker
-from app.db.db_config import get_db
-from sqlalchemy.orm import Session
-from app.db.db_schema import Base
-from typing import Generator, Any
-from app.main import app
+from typing import Any, Generator
+
 import pytest
+from fastapi.testclient import TestClient
+from sqlalchemy import StaticPool, create_engine
+from sqlalchemy.orm import Session, sessionmaker
+
+from app.db.db_config import get_db
+from app.db.db_schema import Base
+from app.main import app
 
 # # Use an in-memory SQLite database for testing
 engine = create_engine("sqlite:///:memory:", connect_args={"check_same_thread": False}, poolclass=StaticPool)

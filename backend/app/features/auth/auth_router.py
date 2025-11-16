@@ -1,10 +1,11 @@
-from app.features.auth.auth_models import AuthLoginRequest, AuthLoginResponse, CreatePregAccountRequest
-from app.core.password_hasher_config import get_password_hasher
-from app.features.auth.auth_service import AuthService
-from fastapi import APIRouter, Depends, status
-from app.db.db_config import get_db
-from sqlalchemy.orm import Session
 from argon2 import PasswordHasher
+from fastapi import APIRouter, Depends, status
+from sqlalchemy.orm import Session
+
+from app.core.password_hasher_config import get_password_hasher
+from app.db.db_config import get_db
+from app.features.auth.auth_models import AuthLoginRequest, AuthLoginResponse, CreatePregAccountRequest
+from app.features.auth.auth_service import AuthService
 
 auth_router = APIRouter(prefix="/auth")
 

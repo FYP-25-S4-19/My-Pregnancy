@@ -10,16 +10,24 @@ A mobile application designed to support women throughout their pregnancy
 
 - [Node.js _(via nvm)_](https://nodejs.org/en/download)
   - Install the LTS: `nvm install --lts && nvm use --lts`
-- [Python](https://www.python.org/downloads/)
+- [Python](https://www.python.org/downloads/) _(>=3.12 should be fine)_
 - [Docker](https://www.docker.com/)
 - [Android Studio](https://developer.android.com/studio)
+- [uv](https://docs.astral.sh/uv/)
+  - Windows: ```powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"```
+  - MacOS & Linux: ```curl -LsSf https://astral.sh/uv/install.sh | sh```
 
-...for the next step, you will need two terminals - one for the frontend and one for the backend
+---
+
+For these next steps, you will need two terminals - one for the frontend and one for the backend
 
 #### Frontend
 
 1. `cd frontend`
-2. **[First time]** Install dependencies: `npm i`
+2. **[First time]** 
+    - Install dependencies: `npm i`
+    - Create a copy of the `.env.example` and rename it to `.env`
+
 3. Start:
    - Android emulator: `npm run android`
    - iOS _(MacOS only)_: `npm run ios`
@@ -30,11 +38,14 @@ A mobile application designed to support women throughout their pregnancy
 
 1. `cd backend`
 2. **[First Time]**
-   a. Create a Python virtual environment `python -m venv .venv`
-   b. Install dependencies: `pip install -r requirements.txt`
-   c. Create a copy of _".env.example"_, and rename it to _".env"_
-3. If building for the first time, `docker compose up --build`. Otherwise, `docker compose up`
-4. To stop, just `docker compose down`
+   - Create a Python virtual environment `uv venv .venv`
+   - Activate the virtual environment
+      - macOS and Linux: `source venv/bin/activate`
+      - Windows: `venv\Scripts\Activate.bat`
+   - Install dependencies: `uv sync`
+   - Create a copy of the `.env.example` and rename it to `.env`
+3. Building for first time? `docker compose up --build`. Otherwise, just `docker compose up`
+4. `docker compose down` to stop the running container(s)
 
 ---
 
@@ -42,7 +53,7 @@ A mobile application designed to support women throughout their pregnancy
 
 #### Database Migrations
 
-(this assume the 'backend' directory as the root)
+_(this assume the 'backend' directory as the root)_
 Currently, schemas are all defined within `./app/db/db_schema.py`
 
 1. Whenever you modify a schema, generate a new migration
@@ -52,15 +63,11 @@ Currently, schemas are all defined within `./app/db/db_schema.py`
 
 #### Managing Python Dependencies
 
-If you ever need to install or uninstall a new Python package during development, make sure that you first activate a virtual environment _(venv)_, and then update the `requirements.txt` after
+_If you ever need to install or uninstall a new Python package during development, make sure that you first activate your virtual environment_
 
-1. **[First time]** Create venv: `python -m venv venv`
-2. Activate venv _(do this BEFORE installing new libraries)_
-   - Linux/MacOS: `source venv/bin/activate`
-   - Windows CMD: `venv\Scripts\Activate.bat`
-3. `pip install` or `pip uninstall` packages/libraries as necessary...
-4. Update requirement list: `pip freeze > requirements.txt`
-5. Deactivate venv: `deactivate`
+Adding packages: `uv add <MY_PACKAGE>`
+Removing packages: `uv remove <MY_PACKAGE>`
+Sync up with lockfile: `uv sync`
 
 #### Testing
 
@@ -69,6 +76,11 @@ That's it.
 
 ---
 
-## Database Schema (Updated 11-Nov-25)
+## Database Schema (Updated 16-Nov-25)
 
 <img src="assets/db_schema.png">
+
+## Service Architecture (Updated 16-Nov-25)
+
+<img src="assets/service_architecture.png">
+

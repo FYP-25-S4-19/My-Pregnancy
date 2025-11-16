@@ -1,16 +1,18 @@
+import random
 from datetime import date, timedelta
+
+from faker import Faker
 from sqlalchemy.orm import Session
+
 from app.db.db_schema import (
-    JournalBloodPressureLog,
+    BinaryMetric,
     JournalBinaryMetricLog,
+    JournalBloodPressureLog,
+    JournalEntry,
     JournalScalarMetricLog,
     PregnantWoman,
-    BinaryMetric,
-    JournalEntry,
     ScalarMetric,
 )
-from faker import Faker
-import random
 
 
 class JournalAndMetricsGenerator:

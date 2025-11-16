@@ -1,5 +1,5 @@
-from sqlalchemy.orm import Session
 from sqlalchemy import text
+from sqlalchemy.orm import Session
 
 
 def clear_db(db: Session):

@@ -1,13 +1,15 @@
-from sqlalchemy.orm import Session
-from app.db.db_schema import (
-    EduArticleCategory,
-    SavedEduArticle,
-    PregnantWoman,
-    EduArticle,
-)
-from faker import Faker
-from math import floor
 import random
+from math import floor
+
+from faker import Faker
+from sqlalchemy.orm import Session
+
+from app.db.db_schema import (
+    EduArticle,
+    EduArticleCategory,
+    PregnantWoman,
+    SavedEduArticle,
+)
 
 
 class EduArticlesGenerator:

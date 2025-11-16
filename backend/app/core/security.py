@@ -1,13 +1,15 @@
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from fastapi import Depends, status, HTTPException
+from datetime import datetime
+from typing import Type, TypeVar
+
+import jwt
+from fastapi import Depends, HTTPException, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from pydantic import BaseModel
+from sqlalchemy.orm import Session
+
 from app.core.settings import settings
 from app.db.db_config import get_db
-from sqlalchemy.orm import Session
 from app.db.db_schema import User
-from typing import Type, TypeVar
-from pydantic import BaseModel
-from datetime import datetime
-import jwt
 
 bearer_scheme = HTTPBearer()
 

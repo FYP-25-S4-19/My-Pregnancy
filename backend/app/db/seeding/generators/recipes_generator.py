@@ -1,11 +1,13 @@
-from sqlalchemy.orm import Session
-from app.db.db_schema import (
-    RecipeIngredient,
-    Nutritionist,
-    Ingredient,
-    Recipe,
-)
 import os
+
+from sqlalchemy.orm import Session
+
+from app.db.db_schema import (
+    Ingredient,
+    Nutritionist,
+    Recipe,
+    RecipeIngredient,
+)
 
 
 class RecipesGenerator:

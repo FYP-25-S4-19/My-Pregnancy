@@ -1,17 +1,17 @@
-from app.db.seeding.generators.journal_and_metrics_generator import JournalAndMetricsGenerator
-from app.db.seeding.generators.forum_content_generator import ForumContentGenerator
-from app.db.seeding.generators.edu_articles_generator import EduArticlesGenerator
-from app.db.seeding.generators.defaults_generator import DefaultsGenerator
-from app.db.db_schema import CommunityThread, JournalEntry, EduArticle
-from app.db.seeding.generators.recipes_generator import RecipesGenerator
-from app.db.seeding.generators.users_generator import UsersGenerator
-from app.db.seeding.generators.misc_generator import MiscGenerator
+from faker import Faker
+from sqlalchemy.orm import Session
+
 from app.core.password_hasher_config import get_password_hasher
 from app.db.db_config import SessionLocal
+from app.db.db_schema import CommunityThread, EduArticle, JournalEntry
+from app.db.seeding.generators.defaults_generator import DefaultsGenerator
+from app.db.seeding.generators.edu_articles_generator import EduArticlesGenerator
+from app.db.seeding.generators.forum_content_generator import ForumContentGenerator
+from app.db.seeding.generators.journal_and_metrics_generator import JournalAndMetricsGenerator
+from app.db.seeding.generators.misc_generator import MiscGenerator
+from app.db.seeding.generators.recipes_generator import RecipesGenerator
+from app.db.seeding.generators.users_generator import UsersGenerator
 from app.shared.utils import clear_db
-from sqlalchemy.orm import Session
-from faker import Faker
-
 
 if __name__ == "__main__":
     db_session: Session = SessionLocal()
