@@ -1,6 +1,5 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class CustomBaseModel(BaseModel):
-    class Config:
-        pass
+    model_config = ConfigDict()

@@ -1,19 +1,55 @@
-from app.shared.S3StorageInterface import S3StorageInterface
-from app.core.exceptions import RoleNotFound
-from datetime import datetime, timedelta
-from sqlalchemy.orm import Session
-from argon2 import PasswordHasher
-from app.db.db_schema import (
-    PregnantWoman,
-    Role, Admin, MedicalCredentialOption, VolunteerSpecialist,
-)
-from faker import Faker
+import os
 import pathlib
 import random
-import os
+from datetime import datetime, timedelta
+
+from argon2 import PasswordHasher
+from faker import Faker
+from sqlalchemy.orm import Session
+
+from app.db.db_schema import (
+    DoctorQualification,
+    DoctorQualificationOption,
+    Nutritionist,
+    NutritionistQualification,
+    NutritionistQualificationOption,
+    PregnantWoman,
+    UserRole,
+    VolunteerDoctor,
+)
+from app.shared.s3_storage_interface import S3StorageInterface
 
 
 class UsersGenerator:
+    @staticmethod
+    def generate_users(
+        db: Session,
+        faker: Faker,
+        password_hasher: PasswordHasher,
+        preg_women_profiles_filepath: str,
+        doctor_profiles_filepath: str,
+        nutritionists_profiles_filepath: str,
+        qualifications_filepath: str,
+    ) -> tuple[list[PregnantWoman], list[VolunteerDoctor], list[Nutritionist]]:
+        preg_women: list[PregnantWoman] = UsersGenerator.generate_pregnant_women(
+            db, faker, password_hasher, preg_women_profiles_filepath
+        )
+        doctors: list[VolunteerDoctor] = UsersGenerator.generate_volunteer_doctors(
+            db,
+            faker,
+            password_hasher,
+            doctor_profiles_filepath,
+            qualifications_filepath,
+        )
+        nutritionists: list[Nutritionist] = UsersGenerator.generate_nutritionists(
+            db,
+            faker,
+            password_hasher,
+            nutritionists_profiles_filepath,
+            qualifications_filepath,
+        )
+        return preg_women, doctors, nutritionists
+
     @staticmethod
     def generate_pregnant_women(
         db: Session,
@@ -25,24 +61,19 @@ class UsersGenerator:
             raise ValueError(f"Profile image folder does not exist: {profile_img_folder}")
 
         print("Generating users (Pregnant Women)....")
-        pregnant_role: Role | None = db.query(Role).filter(Role.label == "PregnantWoman").first()
-        if pregnant_role is None:
-            raise RoleNotFound("PregnantWoman")
-
         all_preg_women: list[PregnantWoman] = []
         for folder_item in pathlib.Path(profile_img_folder).iterdir():
             if not folder_item.is_file():
                 continue
-            full_filepath: str = folder_item.name
-            if not full_filepath.lower().endswith((".png", ".jpg", ".jpeg")):
+            if not folder_item.name.lower().endswith((".png", ".jpg", ".jpeg")):
                 continue
 
             fake_created_at: datetime = faker.date_time_between(start_date="-3y", end_date="now")
-            username = folder_item.stem # Exclude the extension
+            username = folder_item.stem  # Exclude the extension
 
             preg_woman = PregnantWoman(
                 username=username,
-                role=pregnant_role,
+                role=UserRole.PREGNANT_WOMAN,
                 email=f"{username}@gmail.com",
                 password_hash=password_hasher.hash(username),
                 created_at=fake_created_at,
@@ -59,42 +90,134 @@ class UsersGenerator:
         db.commit()
         return all_preg_women
 
-    # @staticmethod
-    # def generate_volunteer_specialists(
-    #     db: Session,
-    #     faker: Faker,
-    #     password_hasher: PasswordHasher,
-    #     med_cred_options: list[MedicalCredentialOption],
-    #     count: int,
-    # ) -> list[VolunteerSpecialist]:
-    #     print("Generating Users (Volunteer Specialists)....")
-    #
-    #     specialist_role: Role | None = db.query(Role).filter(Role.label == "VolunteerSpecialist").first()
-    #     if specialist_role is None:
-    #         raise RoleNotFound("VolunteerSpecialist")
-    #
-    #     # Randomly initialize a medical credential for this user (can be of any random type - doctor, nurse, etc....)
-    #     # Don't initialize the 'credential_owner' yet, until specialist is created later....
-    #     all_volunteer_specialists: list[VolunteerSpecialist] = []
-    #     for username in fake_usernames:
-    #         med_cred = MedicalCredential(
-    #             credential_img_url="",  # Empty, for now.....
-    #             credential_option=random.choice(med_cred_options),
-    #         )
-    #         volunteer_specialist = VolunteerSpecialist(
-    #             username=username,
-    #             first_name=faker.first_name(),
-    #             last_name=faker.last_name(),
-    #             role=specialist_role,
-    #             email=f'{username}@gmail.com',
-    #             password_hash=password_hasher.hash(username),
-    #             medical_credential=med_cred,
-    #             created_at=faker.date_time_between(start_date="-3y", end_date="now"),
-    #         )
-    #         db.add(volunteer_specialist)
-    #         all_volunteer_specialists.append(volunteer_specialist)
-    #     db.commit()
-    #     return all_volunteer_specialists
+    @staticmethod
+    def generate_volunteer_doctors(
+        db: Session,
+        faker: Faker,
+        password_hasher: PasswordHasher,
+        profile_img_folder: str,
+        qualifications_img_folder: str,
+    ) -> list[VolunteerDoctor]:
+        if not os.path.exists(profile_img_folder):
+            raise ValueError(f"Profile image folder does not exist: {profile_img_folder}")
+        if not os.path.exists(qualifications_img_folder):
+            raise ValueError(f"Profile image folder does not exist: {qualifications_img_folder}")
+
+        print("Generating Users (Volunteer Doctors)....")
+        # Randomly initialize a medical credential for this user (can be of any random type - doctor, nurse, etc....)
+        # Don't initialize the 'credential_owner' yet, until specialist is created later....
+        all_doctors: list[VolunteerDoctor] = []
+        for folder_item in pathlib.Path(profile_img_folder).iterdir():
+            if not folder_item.is_file():
+                continue
+            if not folder_item.name.lower().endswith((".png", ".jpg", ".jpeg")):
+                continue
+
+            fullname = folder_item.stem
+            fullname_parts = fullname.split("_")
+
+            doc_qualification = DoctorQualification(
+                qualification_img_key="",  # Empty, for now.....
+                qualification_option=random.choice(list(DoctorQualificationOption)),
+            )
+            doctor = VolunteerDoctor(
+                username=fullname,  # Feels like doctors really should be using their full name only
+                first_name=fullname_parts[0],
+                middle_name=fullname_parts[1] if len(fullname_parts) >= 3 else "",
+                last_name=fullname_parts[2] if len(fullname_parts) >= 3 else fullname_parts[1],
+                role=UserRole.VOLUNTEER_DOCTOR,
+                email=f"{fullname}@gmail.com",
+                password_hash=password_hasher.hash(fullname),
+                qualification=doc_qualification,
+                created_at=faker.date_time_between(start_date="-3y", end_date="now"),
+            )
+            db.add(doctor)
+            db.flush()
+
+            # Random image from "qualifications" folder
+            qualification_img_filepath = random.choice(list(pathlib.Path(qualifications_img_folder).iterdir()))
+            qualification_s3_key = S3StorageInterface.put_qualification_img_from_filepath(
+                doctor.id, str(qualification_img_filepath)
+            )
+            if qualification_s3_key is None:
+                raise ValueError("Failed to upload medical degree image to S3 storage")
+            doctor.qualification.qualification_img_key = qualification_s3_key
+
+            # Assign the profile picture
+            profile_img_filepath = str(folder_item)
+            profile_s3_key = S3StorageInterface.put_profile_img_from_filepath(doctor.id, profile_img_filepath)
+            if profile_s3_key is None:
+                raise ValueError("Failed to upload profile image to S3 storage")
+            doctor.profile_img_key = profile_s3_key
+
+            doc_qualification.doctor = doctor
+            all_doctors.append(doctor)
+        db.commit()
+        return all_doctors
+
+    @staticmethod
+    def generate_nutritionists(
+        db: Session,
+        faker: Faker,
+        password_hasher: PasswordHasher,
+        profile_img_folder: str,
+        qualifications_img_folder: str,
+    ) -> list[Nutritionist]:
+        if not os.path.exists(profile_img_folder):
+            raise ValueError(f"Profile image folder does not exist: {profile_img_folder}")
+        if not os.path.exists(qualifications_img_folder):
+            raise ValueError(f"Profile image folder does not exist: {qualifications_img_folder}")
+
+        print("Generating Users (Nutritionists)....")
+        all_nutritionists: list[Nutritionist] = []
+        for folder_item in pathlib.Path(profile_img_folder).iterdir():
+            if not folder_item.is_file():
+                continue
+            if not folder_item.name.lower().endswith((".png", ".jpg", ".jpeg")):
+                continue
+
+            fullname = folder_item.stem
+            fullname_parts = fullname.split("_")
+
+            qualification = NutritionistQualification(
+                qualification_img_key="",  # Empty, for now.....
+                qualification_option=random.choice(list(NutritionistQualificationOption)),
+            )
+            nutritionist = Nutritionist(
+                username=fullname,  # Feels like nutritionists really should be using their full name only
+                first_name=fullname_parts[0],
+                middle_name=fullname_parts[1] if len(fullname_parts) >= 3 else "",
+                last_name=fullname_parts[2] if len(fullname_parts) >= 3 else fullname_parts[1],
+                role=UserRole.NUTRITIONIST,
+                email=f"{fullname}@gmail.com",
+                password_hash=password_hasher.hash(fullname),
+                qualification=qualification,
+                created_at=faker.date_time_between(start_date="-3y", end_date="now"),
+            )
+            db.add(nutritionist)
+            db.flush()
+
+            # Random image from "qualifications" img folder
+            qualification_img_filepath = random.choice(list(pathlib.Path(qualifications_img_folder).iterdir()))
+            qualification_s3_key = S3StorageInterface.put_qualification_img_from_filepath(
+                nutritionist.id, str(qualification_img_filepath)
+            )
+            if qualification_s3_key is None:
+                raise ValueError("Failed to upload medical degree image to S3 storage")
+            nutritionist.qualification.qualification_img_key = qualification_s3_key
+
+            # Assign the profile picture
+            profile_img_filepath = str(folder_item)
+            profile_s3_key = S3StorageInterface.put_profile_img_from_filepath(nutritionist.id, profile_img_filepath)
+            if profile_s3_key is None:
+                raise ValueError("Failed to upload profile image to S3 storage")
+            nutritionist.profile_img_key = profile_s3_key
+
+            qualification.nutritionist = nutritionist
+            all_nutritionists.append(nutritionist)
+        db.commit()
+        return all_nutritionists
+
     # @staticmethod
     # def generate_admins(
     #     db: Session, faker: Faker, password_hasher: PasswordHasher, count: int
@@ -120,4 +243,3 @@ class UsersGenerator:
     #     db.commit()
     #     return all_admins
     #
-

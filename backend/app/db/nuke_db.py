@@ -1,5 +1,6 @@
-from app.db.db_config import engine
 from sqlalchemy import text
+
+from app.db.db_config import engine
 
 if __name__ == "__main__":
     try:

@@ -8,5 +8,9 @@ db_seed_dev:
 db_seed_tests:
 	python -m app.db.seeding.seed_db_tests
 
+ruff_format_all:
+	uvx ruff format
+	uvx ruff check --select I --fix 
+
 nuke_db: # I think this goes without saying but BE.VERY.CAREFUL!
 	python -m app.db.nuke_db

@@ -1,4 +1,4 @@
-name: Unit Tests
+name: Tests
 
 on:
   pull_request:
@@ -6,8 +6,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  backend-unit-tests:
-    name: Run unit tests
+  backend-tests:
+    name: Run tests
     runs-on: ubuntu-latest
     services:
       db:
@@ -31,11 +31,15 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v5
 
-      - name: Setup Python
-        uses: actions/setup-python@v6
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Start LocalStack
+        uses: LocalStack/setup-localstack@main
         with:
-          python-version: "3.13.9" # Ensure matches with version defined in Dockerfile
-          cache: "pip"
+          image-tag: 'latest'        
+          install-awslocal: true     
+          use-pro: false
 
       - name: Install dependencies for PostgreSQL Driver
         run: |
@@ -45,18 +49,34 @@ jobs:
       - name: Install Python dependencies
         working-directory: ./backend
         run: |
-          pip install --upgrade pip
-          pip install -r requirements.txt
+          uv venv 
+          source .venv/bin/activate
+          uv sync
 
-        # TODO: Remove the tests seeding for now.....add back in next time
-      - name: Run database migrations & seed mock data
+      - name: Run database migrations 
         working-directory: ./backend
-        run: alembic upgrade head
+        run: uv run alembic upgrade head
         env:
           DATABASE_URL: postgresql://mypregnancy-user:mypregnancy-password@localhost:5432/mypregnancy-db
-
+          
       - name: Run PyTest
         working-directory: ./backend
-        run: pytest
-        env:
+        run: uv run pytest
+        env: 
+          APP_ENV: dev
+          SECRET_KEY: BOFlVC5OMOAyV7qxoQhhlTmUoR37PPy6
+          POSTGRES_DB: fyp_db
+          POSTGRES_USER: fyp_user
+          POSTGRES_PASSWORD: fyp_password
+          POSTGRES_SERVER: localhost
+          POSTGRES_PORT: 5432
           DATABASE_URL: postgresql://mypregnancy-user:mypregnancy-password@localhost:5432/mypregnancy-db
+          AWS_ACCESS_KEY_ID: test
+          AWS_SECRET_ACCESS_KEY: test
+          AWS_DEFAULT_REGION: ap-southeast-1
+          AWS_ENDPOINT_URL: http://localstack:4567
+          S3_BUCKET_NAME: mypregnancy-bucket 
+          JWT_EXPIRATION_MINUTES: 30
+          LOCALSTACK_ENDPOINT_URL: http://localhost:4567 
+          
+          
