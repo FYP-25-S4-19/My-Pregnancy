@@ -48,12 +48,12 @@ jobs:
 
       - name: Run database migrations 
         working-directory: ./backend
-        run: alembic upgrade head
+        run: uv run alembic upgrade head
         env:
           DATABASE_URL: postgresql://mypregnancy-user:mypregnancy-password@localhost:5432/mypregnancy-db
 
       - name: Run PyTest
         working-directory: ./backend
-        run: pytest
+        run: uv run pytest
         env:
           DATABASE_URL: postgresql://mypregnancy-user:mypregnancy-password@localhost:5432/mypregnancy-db
