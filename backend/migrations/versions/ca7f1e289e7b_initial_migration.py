@@ -1,8 +1,8 @@
 """Initial migration
 
-Revision ID: 2428b96644ca
+Revision ID: ca7f1e289e7b
 Revises: 
-Create Date: 2025-11-13 21:24:56.260090
+Create Date: 2025-11-14 14:25:55.491665
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '2428b96644ca'
+revision: str = 'ca7f1e289e7b'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -30,7 +30,7 @@ def upgrade() -> None:
     )
     op.create_table('doctor_qualifications',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('qualification_img_key', sa.String(), nullable=False),
+    sa.Column('qualification_img_key', sa.String(), nullable=True),
     sa.Column('qualification_option', sa.Enum('MD', 'DO', 'MBBS', 'MBChB', 'BMed', 'BM', name='doctorqualificationoption'), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
@@ -44,7 +44,7 @@ def upgrade() -> None:
     )
     op.create_table('nutritionist_qualifications',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('qualification_img_key', sa.String(), nullable=False),
+    sa.Column('qualification_img_key', sa.String(), nullable=True),
     sa.Column('qualification_option', sa.Enum('BSC_NUTRITION', 'BSC_DIETETICS', 'MSC_NUTRITION', 'MSC_DIETETICS', 'RD', 'RDN', 'CNS', 'DIPLOMA_CLINICAL_NUTRITION', 'DIPLOMA_NUTRITION', 'CERTIFIED_NUTRITIONIST', name='nutritionistqualificationoption'), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
@@ -183,7 +183,7 @@ def upgrade() -> None:
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('nutritionist_id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(), nullable=False),
-    sa.Column('img_key', sa.String(), nullable=False),
+    sa.Column('img_key', sa.String(), nullable=True),
     sa.Column('prepare_time_minutes', sa.Integer(), nullable=False),
     sa.Column('serving_count', sa.Integer(), nullable=False),
     sa.Column('instructions', sa.String(), nullable=False),

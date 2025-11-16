@@ -1,62 +1,35 @@
 from app.features.auth.auth_models import AuthLoginRequest, AuthLoginResponse, CreatePregAccountRequest
 from app.core.password_hasher_config import get_password_hasher
-from fastapi import APIRouter, Depends, HTTPException, status
-from app.db.db_schema import User, UserRole, PregnantWoman
-from app.core.security import TokenData
-from sqlalchemy.orm import Session, joinedload
-from datetime import datetime, timedelta
-from app.core.settings import settings
+from app.features.auth.auth_service import AuthService
+from fastapi import APIRouter, Depends, status
 from app.db.db_config import get_db
+from sqlalchemy.orm import Session
 from argon2 import PasswordHasher
-from sqlalchemy import or_
-import jwt
 
 auth_router = APIRouter(prefix="/auth")
 
 
-@auth_router.post("/register")
-async def register_via_username_email(
-    req: CreatePregAccountRequest, db: Session = Depends(get_db), ph: PasswordHasher = Depends(get_password_hasher)
+def get_auth_service(db: Session = Depends(get_db), ph: PasswordHasher = Depends(get_password_hasher)):
+    return AuthService(db, ph)
+
+
+@auth_router.post("/register", response_model=None, status_code=status.HTTP_201_CREATED)
+def register_via_username_email(
+    req: CreatePregAccountRequest, auth_service: AuthService = Depends(get_auth_service), db: Session = Depends(get_db)
 ):
-    existing_user: User | None = (
-        db.query(User).filter(or_(User.email == req.email, User.username == req.username)).first()
-    )
-    if existing_user is not None:  # Already exists
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Username or email already in use")
-
-    preg_role: UserRole | None = db.query(UserRole).filter(UserRole.label == "PregnantWoman").first()
-    if preg_role is None:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Missing prerequisite role in DB")
-
-    new_preg_woman = PregnantWoman(
-        username=req.username,
-        role=preg_role,
-        email=req.email,
-        password_hash=ph.hash(req.password),
-        due_date=req.due_date,
-    )
-    db.add(new_preg_woman)
-    db.commit()
-
-
-@auth_router.post("/login")
-async def login_via_username(
-    req: AuthLoginRequest, db: Session = Depends(get_db), ph: PasswordHasher = Depends(get_password_hasher)
-) -> AuthLoginResponse:
-    user: User | None = db.query(User).options(joinedload(User.role)).filter(User.username == req.username).first()
-    if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-
     try:
-        ph.verify(user.password_hash, req.password)
-    except Exception:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect password")
+        auth_service.register_via_username_email(req)
+        db.commit()
+    except:
+        db.rollback()
+        raise
 
-    jwt_data = TokenData(
-        sub=str(user.id), role=user.role.label, exp=datetime.now() + timedelta(minutes=settings.JWT_EXPIRATION_MINUTES)
-    )
-    encoded_jwt: str = jwt.encode(jwt_data.model_dump(), settings.SECRET_KEY, algorithm="HS256")
-    return AuthLoginResponse(access_token=encoded_jwt, token_type="bearer")
+
+@auth_router.post("/login", response_model=AuthLoginResponse, status_code=status.HTTP_200_OK)
+def login_via_username(
+    req: AuthLoginRequest, auth_service: AuthService = Depends(get_auth_service)
+) -> AuthLoginResponse:
+    return auth_service.login_via_username(req)
 
 
 # oauth = OAuth()

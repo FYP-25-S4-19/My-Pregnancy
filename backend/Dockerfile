@@ -15,7 +15,6 @@ RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY ./app /app/app
-
 COPY ./migrations /app/migrations
 COPY ./alembic.ini /app/
 COPY ./Makefile /app/

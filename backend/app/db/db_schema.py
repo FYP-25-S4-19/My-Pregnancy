@@ -187,7 +187,7 @@ class Nutritionist(User):
 class DoctorQualification(Base):
     __tablename__ = "doctor_qualifications"
     id: Mapped[int] = mapped_column(primary_key=True)
-    qualification_img_key: Mapped[str]
+    qualification_img_key: Mapped[str | None]
     qualification_option: Mapped["DoctorQualificationOption"] = mapped_column(SQLAlchemyEnum(DoctorQualificationOption))
 
     # The specific "doctor" that this credential is mapped to
@@ -198,7 +198,7 @@ class DoctorQualification(Base):
 class NutritionistQualification(Base):
     __tablename__ = "nutritionist_qualifications"
     id: Mapped[int] = mapped_column(primary_key=True)
-    qualification_img_key: Mapped[str]
+    qualification_img_key: Mapped[str | None]
     qualification_option: Mapped["NutritionistQualificationOption"] = mapped_column(
         SQLAlchemyEnum(NutritionistQualificationOption)
     )
@@ -420,7 +420,7 @@ class Recipe(Base):
     nutritionist: Mapped["Nutritionist"] = relationship(back_populates="recipes_created")
 
     name: Mapped[str]
-    img_key: Mapped[str]
+    img_key: Mapped[str | None]
     prepare_time_minutes: Mapped[int]
     serving_count: Mapped[int]
     instructions: Mapped[str]
