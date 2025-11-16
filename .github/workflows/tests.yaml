@@ -34,6 +34,13 @@ jobs:
       - name: Install the latest version of uv
         uses: astral-sh/setup-uv@v7
 
+      - name: Start LocalStack
+        uses: LocalStack/setup-localstack@main
+        with:
+          image-tag: 'latest'        
+          install-awslocal: true     
+          use-pro: false
+
       - name: Install dependencies for PostgreSQL Driver
         run: |
           sudo apt-get update
@@ -55,5 +62,13 @@ jobs:
       - name: Run PyTest
         working-directory: ./backend
         run: uv run pytest
-        env:
+        env: 
+          AWS_ACCESS_KEY_ID: test
+          AWS_SECRET_ACCESS_KEY: test
+          AWS_DEFAULT_REGION: ap-southeast-1    
+          AWS_ENDPOINT_URL: http://localstack:4567
+          S3_BUCKET_NAME: mypregnancy-bucket
+          JWT_EXPIRATION_MINUTES: 30
+          LOCALSTACK_ENDPOINT_URL: http://localhost:4567
           DATABASE_URL: postgresql://mypregnancy-user:mypregnancy-password@localhost:5432/mypregnancy-db
+          
