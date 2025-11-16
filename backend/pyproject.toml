@@ -1,2 +1,58 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mypregnancy-api"
+version = "0.1.0"
+description = "The FastAPI backend for the 'MyPregnancy' mobile app and dashboard web-app"
+
+# -------------------------------------------
+# -------- PRODUCTION DEPENDENCIES ----------
+# -------------------------------------------
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+    "SQLAlchemy",
+    "alembic",
+    "psycopg2-binary",
+    "pydantic-settings",
+    "argon2-cffi",
+    "pwdlib",
+    "boto3",
+    "python-dotenv",
+    "python-multipart",
+    "PyJWT",
+    "Authlib",
+    "loguru",
+    "sentry-sdk",
+    "beautifulsoup4",
+    "requests",
+    "itsdangerous>=2.2.0",
+]
+
+# --------------------------------------------
+# -------- DEVELOPMENT DEPENDENCIES ----------
+# --------------------------------------------
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "httpx",
+    "Faker",
+    "black",
+    "ruff",
+    "mypy-boto3-s3",
+    "boto3-stubs",
+    "botocore-stubs",
+    "mock",
+    "ipython",
+    "jupyterlab",
+    "fastapi-cli",
+]
+
+# --- ALL [tool.*] SECTIONS GO AT THE END ---
 [tool.black]
 line-length = 120
+
+[tool.setuptools.packages.find]
+include = ["app", "app.*"]
