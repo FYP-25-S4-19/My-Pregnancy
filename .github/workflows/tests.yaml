@@ -41,6 +41,12 @@ jobs:
           install-awslocal: true     
           use-pro: false
 
+      - name: Load .env file
+        uses: aarcangeli/load-dotenv@v1.1.0  
+        with: 
+          path: './backend/'
+          filenames: '.env.example'
+
       - name: Install dependencies for PostgreSQL Driver
         run: |
           sudo apt-get update
@@ -58,17 +64,8 @@ jobs:
         run: uv run alembic upgrade head
         env:
           DATABASE_URL: postgresql://mypregnancy-user:mypregnancy-password@localhost:5432/mypregnancy-db
-
+          
       - name: Run PyTest
         working-directory: ./backend
         run: uv run pytest
-        env: 
-          AWS_ACCESS_KEY_ID: test
-          AWS_SECRET_ACCESS_KEY: test
-          AWS_DEFAULT_REGION: ap-southeast-1    
-          AWS_ENDPOINT_URL: http://localstack:4567
-          S3_BUCKET_NAME: mypregnancy-bucket
-          JWT_EXPIRATION_MINUTES: 30
-          LOCALSTACK_ENDPOINT_URL: http://localhost:4567
-          DATABASE_URL: postgresql://mypregnancy-user:mypregnancy-password@localhost:5432/mypregnancy-db
           
