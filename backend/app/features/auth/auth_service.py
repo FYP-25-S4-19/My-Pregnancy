@@ -4,7 +4,7 @@ import jwt
 from argon2 import PasswordHasher
 from fastapi import HTTPException, status
 from sqlalchemy import or_
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session
 
 from app.core.security import TokenData
 from app.core.settings import settings
