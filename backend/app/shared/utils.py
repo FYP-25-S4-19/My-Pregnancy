@@ -1,5 +1,9 @@
+import jwt
 from sqlalchemy import text
 from sqlalchemy.orm import Session
+
+from app.core.security import TokenData
+from app.core.settings import settings
 
 
 def clear_db(db: Session):
@@ -13,3 +17,7 @@ def clear_db(db: Session):
 
     db.execute(text("SET session_replication_role = 'origin';"))  # Re-enable foreign key constraints
     db.commit()
+
+
+def create_access_token(token_data: TokenData) -> str:
+    return jwt.encode(token_data.model_dump(), settings.SECRET_KEY, algorithm="HS256")

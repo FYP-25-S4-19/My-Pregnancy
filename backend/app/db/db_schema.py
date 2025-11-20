@@ -24,8 +24,8 @@ class Base(DeclarativeBase):
 
 class AppointmentStatus(Enum):
     PENDING_ACCEPT_REJECT = "PENDING_ACCEPT_REJECT"
-    ACCEPTED = ("ACCEPTED",)
-    REJECTED = ("REJECTED",)
+    ACCEPTED = "ACCEPTED"
+    REJECTED = "REJECTED"
     COMPLETED = "COMPLETED"
 
 
@@ -227,7 +227,7 @@ class EduArticle(Base):
     category: Mapped["EduArticleCategory"] = mapped_column(SQLAlchemyEnum(EduArticleCategory))
 
     img_key: Mapped[str | None] = mapped_column(String(255))
-    title: Mapped[str] = mapped_column(String(255))
+    title: Mapped[str] = mapped_column(String(255), unique=True)
     content_markdown: Mapped[str] = mapped_column(Text)
 
     # Keep track of which users "saved" you

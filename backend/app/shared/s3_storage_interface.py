@@ -9,8 +9,22 @@ from app.core.settings import settings
 
 
 class S3StorageInterface:
+    # =======================================================
+    # ================= EDU ARTICLE IMAGES ==================
+    # =======================================================
+    ARTICLE_PREFIX = "edu-articles"
+
+    @staticmethod
+    def put_article_img(article_id: int, article_img: UploadFile) -> str | None:
+        return S3StorageInterface._upload_file_stream(
+            prefix=S3StorageInterface.ARTICLE_PREFIX,
+            file_name=str(article_id),
+            file_obj=article_img.file,
+            content_type=article_img.content_type,
+        )
+
     # =====================================================
-    # ================= QUALIFICATION =====================
+    # ================ QUALIFICATIONS =====================
     # =====================================================
     QUALIFICATION_PREFIX = "qualifications"
 
@@ -32,8 +46,8 @@ class S3StorageInterface:
         )
 
     # =====================================================
-    # ==================== PROFILE =======================
-    # ====================================================
+    # =================== PROFILES ========================
+    # =====================================================
     PROFILE_PREFIX = "profile-images"
 
     @staticmethod

@@ -10,6 +10,7 @@ from app.core.security import TokenData
 from app.core.settings import settings
 from app.db.db_schema import PregnantWoman, User, UserRole
 from app.features.auth.auth_models import AuthLoginRequest, AuthLoginResponse, CreatePregAccountRequest
+from app.shared.utils import create_access_token
 
 
 class AuthService:
@@ -52,8 +53,7 @@ class AuthService:
 
         jwt_data = TokenData(
             sub=str(user.id),
-            role=UserRole(user.role).value,
+            role=user.role.value,
             exp=datetime.now() + timedelta(minutes=settings.JWT_EXPIRATION_MINUTES),
         )
-        encoded_jwt: str = jwt.encode(jwt_data.model_dump(), settings.SECRET_KEY, algorithm="HS256")
-        return AuthLoginResponse(access_token=encoded_jwt, token_type="bearer")
+        return AuthLoginResponse(access_token=create_access_token(jwt_data), token_type="bearer")
