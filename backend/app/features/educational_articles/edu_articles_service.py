@@ -15,7 +15,7 @@ class EduArticlesService:
         self.db = db
 
     def get_article_overviews_by_category(self, category: str) -> list[ArticleOverviewResponse]:
-        if not category in [cat.value for cat in list(EduArticleCategory)]:
+        if category not in [cat.value for cat in list(EduArticleCategory)]:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
 
         article_overviews = (
