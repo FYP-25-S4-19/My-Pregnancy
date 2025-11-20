@@ -24,8 +24,8 @@ class Base(DeclarativeBase):
 
 class AppointmentStatus(Enum):
     PENDING_ACCEPT_REJECT = "PENDING_ACCEPT_REJECT"
-    ACCEPTED = ("ACCEPTED",)
-    REJECTED = ("REJECTED",)
+    ACCEPTED = "ACCEPTED"
+    REJECTED = "REJECTED"
     COMPLETED = "COMPLETED"
 
 

@@ -1,41 +1,60 @@
-# from app.features.educational_articles.edu_article_models import GetEduArticleResponse
-# from fastapi import APIRouter, Depends, HTTPException, status
-# from app.db.db_schema import EduArticle
-# from app.db.db_config import get_db
-# from sqlalchemy.orm import Session
-#
-# edu_articles_router = APIRouter(prefix="/articles")
-#
-#
-# @edu_articles_router.get("/", response_model=list[EduArticle])
-# def get_all_articles(db: Session = Depends(get_db)):
-#     try:
-#         all_articles = db.query(EduArticle).all()
-#         return all_articles
-#     except Exception as e:
-#         print(f"Error during database: {e}")
-#
-#
-# @edu_articles_router.get("/{article_id}")
-# def get_article_by_id(article_id: int, db: Session = Depends(get_db)) -> GetEduArticleResponse:
-#     # edu_article = db.get(EduArticle, article_id)
-#     edu_article = db.query(EduArticle).filter(EduArticle.id == article_id).first()
-#     if edu_article is None:
-#         print("Edu Article Retrieved: ", edu_article)
-#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
-#
-#     print("Edu Article Retrieved: ", edu_article)
-#
-#     obj = GetEduArticleResponse(
-#         id=5
-#         # category=edu_article.category.label,
-#         # img_url=edu_article.img_url,
-#         # title=edu_article.title,
-#         # content_markdown=edu_article.content_markdown
-#     )
-#     return obj
-#
-#
-# @edu_articles_router.get("/{item_id}")
-# def get_item_by_id(item_id: int) -> str:
-#     return "Item of ID: " + str(item_id)
+from fastapi import APIRouter, Depends, File, Form, UploadFile, status
+from sqlalchemy.orm import Session
+
+from app.core.security import require_role
+from app.db.db_config import get_db
+from app.db.db_schema import EduArticle, VolunteerDoctor
+from app.features.educational_articles.edu_article_models import (
+    ArticleDetailedResponse,
+    ArticleOverviewResponse,
+)
+from app.features.educational_articles.edu_articles_service import EduArticlesService
+
+edu_articles_router = APIRouter(prefix="/articles")
+
+
+def get_edu_articles_service(db: Session = Depends(get_db)):
+    return EduArticlesService(db)
+
+
+@edu_articles_router.get("/", response_model=list[ArticleOverviewResponse], status_code=status.HTTP_200_OK)
+def get_articles_by_category(category: str, service: EduArticlesService = Depends(get_edu_articles_service)):
+    return service.get_article_overviews_by_category(category)
+
+
+@edu_articles_router.get("/{article_id}", response_model=ArticleDetailedResponse)
+def get_article_detailed(
+    article_id: int, service: EduArticlesService = Depends(get_edu_articles_service)
+) -> ArticleDetailedResponse:
+    return service.get_article_detailed(article_id)
+
+
+@edu_articles_router.post("/", status_code=status.HTTP_201_CREATED)
+def create_article(
+    category: str = Form(...),
+    title: str = Form(...),
+    content_markdown: str = Form(...),
+    img_data: UploadFile = File(),
+    db: Session = Depends(get_db),
+    doctor: VolunteerDoctor = Depends(require_role(VolunteerDoctor)),
+    service: EduArticlesService = Depends(get_edu_articles_service),
+):
+    try:
+        article: EduArticle | None = service.create_article(category, title, content_markdown, img_data, doctor)
+        db.add(article)
+        db.commit()
+    except:
+        db.rollback()
+        raise
+
+
+@edu_articles_router.delete("/{article_id}")
+def delete_article(
+    article_id: int, service: EduArticlesService = Depends(get_edu_articles_service), db: Session = Depends(get_db)
+):
+    try:
+        service.delete_article(article_id)
+        db.commit()
+    except:
+        db.rollback()
+        raise
