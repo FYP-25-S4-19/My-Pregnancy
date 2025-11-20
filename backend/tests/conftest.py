@@ -105,25 +105,29 @@ def nutritionist(db_session: Session) -> Generator[Nutritionist, Any, None]:
 
     nutritionist = Nutritionist(
         username="test_nutritionist",
+        first_name="John",
+        last_name="Doe",
         role=UserRole.NUTRITIONIST,
         email="unique_mail@gmail.com",
         password_hash="hashed_password_789",
         qualification_id=qualification.id,
         is_verified=True,
     )
-    db_session.add(Nutritionist)
+    db_session.add(nutritionist)
     db_session.commit()
     yield nutritionist
 
 
 @pytest.fixture(scope="function")
 def authenticated_admin_client(client: TestClient, admin: Admin) -> Generator[tuple[TestClient, Admin], Any, None]:
-    token = TokenData(
-        sub=str(admin.id),
-        role=admin.role.value,
-        exp=datetime.now() + timedelta(minutes=settings.JWT_EXPIRATION_MINUTES),
+    jwt_token: str = create_access_token(
+        token_data=TokenData(
+            sub=str(admin.id),
+            role=admin.role.value,
+            exp=datetime.now() + timedelta(minutes=settings.JWT_EXPIRATION_MINUTES),
+        )
     )
-    client.headers["Authorization"] = f"Bearer {token}"
+    client.headers["Authorization"] = f"Bearer {jwt_token}"
 
     yield client, admin
     client.headers.pop("Authorization", None)
@@ -150,12 +154,14 @@ def authenticated_doctor_client(
 def authenticated_pregnant_woman_client(
     client: TestClient, pregnant_woman: PregnantWoman
 ) -> Generator[tuple[TestClient, PregnantWoman], Any, None]:
-    token = TokenData(
-        sub=str(pregnant_woman.id),
-        role=pregnant_woman.role.value,
-        exp=datetime.now() + timedelta(minutes=settings.JWT_EXPIRATION_MINUTES),
+    jwt_token: str = create_access_token(
+        token_data=TokenData(
+            sub=str(pregnant_woman.id),
+            role=pregnant_woman.role.value,
+            exp=datetime.now() + timedelta(minutes=settings.JWT_EXPIRATION_MINUTES),
+        )
     )
-    client.headers["Authorization"] = f"Bearer {token}"
+    client.headers["Authorization"] = f"Bearer {jwt_token}"
 
     yield client, pregnant_woman
     client.headers.pop("Authorization", None)
@@ -165,14 +171,14 @@ def authenticated_pregnant_woman_client(
 def authenticated_nutritionist_client(
     client: TestClient, nutritionist: Nutritionist
 ) -> Generator[tuple[TestClient, Nutritionist], Any, None]:
-    token = create_access_token(
+    jwt_token: str = create_access_token(
         token_data=TokenData(
             sub=str(nutritionist.id),
             role=nutritionist.role.value,
             exp=datetime.now() + timedelta(minutes=settings.JWT_EXPIRATION_MINUTES),
         )
     )
-    client.headers["Authorization"] = f"Bearer {token}"
+    client.headers["Authorization"] = f"Bearer {jwt_token}"
 
     yield client, nutritionist
     client.headers.pop("Authorization", None)

@@ -227,7 +227,7 @@ class EduArticle(Base):
     category: Mapped["EduArticleCategory"] = mapped_column(SQLAlchemyEnum(EduArticleCategory))
 
     img_key: Mapped[str | None] = mapped_column(String(255))
-    title: Mapped[str] = mapped_column(String(255))
+    title: Mapped[str] = mapped_column(String(255), unique=True)
     content_markdown: Mapped[str] = mapped_column(Text)
 
     # Keep track of which users "saved" you

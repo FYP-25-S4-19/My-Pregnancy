@@ -53,10 +53,10 @@ def delete_article(
     article_id: int,
     service: EduArticlesService = Depends(get_edu_articles_service),
     db: Session = Depends(get_db),
-    _: VolunteerDoctor = Depends(require_role(VolunteerDoctor)),
+    deleter: VolunteerDoctor = Depends(require_role(VolunteerDoctor)),
 ):
     try:
-        service.delete_article(article_id)
+        service.delete_article(article_id, deleter)
         db.commit()
     except:
         db.rollback()

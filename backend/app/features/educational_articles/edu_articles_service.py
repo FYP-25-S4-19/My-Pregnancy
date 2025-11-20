@@ -49,6 +49,10 @@ class EduArticlesService:
     def create_article(
         self, category: str, title: str, content_markdown: str, img_data: UploadFile, doctor: VolunteerDoctor
     ) -> EduArticle | None:
+        existing_articles = self.db.query(EduArticle).where(EduArticle.title == title).all()
+        if len(existing_articles) > 0:
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT)
+
         article = EduArticle(
             author_id=doctor.id,
             category=category,
@@ -62,8 +66,10 @@ class EduArticlesService:
         article.img_key = article_img_key
         return article
 
-    def delete_article(self, article_id: int) -> None:
+    def delete_article(self, article_id: int, deleter: VolunteerDoctor) -> None:
         article = self.db.get(EduArticle, article_id)
         if article is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+        if article.author_id is not deleter.id:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
         self.db.delete(article)
