@@ -4,7 +4,7 @@ from fastapi import status
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
-from app.db.db_schema import EduArticle, EduArticleCategory, VolunteerDoctor
+from app.db.db_schema import Admin, EduArticle, EduArticleCategory, Nutritionist, PregnantWoman, VolunteerDoctor
 
 
 def test_get_articles_by_category_success(client: TestClient, db_session: Session) -> None:
@@ -31,6 +31,45 @@ def test_get_articles_by_category_success(client: TestClient, db_session: Sessio
         assert isinstance(article["title"], str), f"Article should have a 'title' attribute of type 'str'"
 
 
+def test_get_articles_by_nonexistent_category_failure(client: TestClient, db_session: Session) -> None:
+    response = client.get("/articles?category=THERES_NO_WAY_THIS_CATEGORY_EXISTS_KEYBOARD_MASHING_ALFIJLEAIJFL")
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+
+def test_get_article_detailed_success(
+    authenticated_doctor_client: tuple[TestClient, VolunteerDoctor], db_session: Session
+) -> None:
+    client, doctor = authenticated_doctor_client
+
+    article_title: str = "5 dishes that will blow your (pregnancy) socks off"
+    article_content: str = "Fish, fish, a rice cake, fish and a rice cake, and fish"
+
+    article = EduArticle(
+        author_id=doctor.id,
+        category=EduArticleCategory.NUTRITION.value,
+        img_key="",
+        title=article_title,
+        content_markdown=article_content,
+    )
+    db_session.add(article)
+    db_session.commit()
+
+    response = client.get(f"/articles/{article.id}")
+    assert response.status_code == status.HTTP_200_OK
+
+    data = response.json()
+    assert data["id"] == article.id
+    assert data["author_id"] == doctor.id
+    assert data["category"] == EduArticleCategory.NUTRITION.value
+    assert data["title"] == article_title
+    assert data["content_markdown"] == article_content
+
+
+def test_get_article_detailed_invalid_id(client: TestClient, db_session: Session) -> None:
+    response = client.get("/articles/1337")
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+
+
 def test_create_article_success(
     authenticated_doctor_client: tuple[TestClient, VolunteerDoctor],
     db_session: Session,
@@ -51,8 +90,124 @@ def test_create_article_success(
 
     article = db_session.query(EduArticle).filter_by(title="1st Trimester Guide").one_or_none()
     assert article is not None, "Article should be created in database"
+    assert article.author_id == doctor.id
     assert article.category == EduArticleCategory.BABY
     assert article.content_markdown == "Le random content"
 
 
-# def test_get_articles_by_category_failure(client: TestClient, db_session: Session) -> None:
+def test_unregistered_create_article_fail(
+    client: TestClient,
+    db_session: Session,
+    img_file_fixture,
+) -> None:
+    response = client.post(
+        "/articles",
+        data={
+            "title": "1st Trimester Guide",
+            "category": EduArticleCategory.BABY.value,
+            "content_markdown": "Le random content",
+        },
+        files=img_file_fixture,
+    )
+    assert response.status_code == status.HTTP_403_FORBIDDEN, (
+        "Unauthenticated user should NOT have permissions to create article"
+    )
+
+
+# def test_admin_create_article_fail(
+#     authenticated_admin_client: tuple[TestClient, Admin],
+#     db_session: Session,
+#     img_file_fixture,
+# ) -> None:
+#     client, _ = authenticated_admin_client
+#     response = client.post(
+#         "/articles",
+#         data={
+#             "title": "1st Trimester Guide",
+#             "category": EduArticleCategory.BABY.value,
+#             "content_markdown": "Le random content",
+#         },
+#         files=img_file_fixture,
+#     )
+#     assert response.status_code == status.HTTP_401_UNAUTHORIZED, (
+#         "Admin user should NOT have permissions to create article"
+#     )
+#
+#
+# def test_pregnant_woman_create_article_fail(
+#     authenticated_pregnant_woman_client: tuple[TestClient, PregnantWoman],
+#     db_session: Session,
+#     img_file_fixture,
+# ) -> None:
+#     client, _ = authenticated_pregnant_woman_client
+#     response = client.post(
+#         "/articles",
+#         data={
+#             "title": "1st Trimester Guide",
+#             "category": EduArticleCategory.BABY.value,
+#             "content_markdown": "Le random content",
+#         },
+#         files=img_file_fixture,
+#     )
+#     assert response.status_code == status.HTTP_403_FORBIDDEN, (
+#         "Unauthenticated user should NOT have permissions to create article"
+#     )
+#
+#
+# def test_nutritionist_create_article_fail(
+#     authenticated_nutritionist_client: tuple[TestClient, Nutritionist],
+#     db_session: Session,
+#     img_file_fixture,
+# ) -> None:
+#     client, _ = authenticated_nutritionist_client
+#     response = client.post(
+#         "/articles",
+#         data={
+#             "title": "1st Trimester Guide",
+#             "category": EduArticleCategory.BABY.value,
+#             "content_markdown": "Le random content",
+#         },
+#         files=img_file_fixture,
+#     )
+#     assert response.status_code == status.HTTP_403_FORBIDDEN, (
+#         "Unauthenticated user should NOT have permissions to create article"
+#     )
+
+
+def test_unregistered_delete_article_fail(client: TestClient, db_session: Session) -> None:
+    article = EduArticle(
+        author_id=1337,
+        category=EduArticleCategory.BODY.value,
+        img_key="",
+        title="Exercises that will make you strong enough to lift a small car",
+        content_markdown="Bodyweight push-ups, pilates",
+    )
+    db_session.add(article)
+    db_session.commit()
+
+    response = client.delete(f"/articles/{article.id}")
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    edu_article = db_session.get(EduArticle, article.id)
+    assert edu_article is not None, "Article should be still exist"
+
+
+def test_delete_article_success(
+    authenticated_doctor_client: tuple[TestClient, VolunteerDoctor], db_session: Session
+) -> None:
+    client, doctor = authenticated_doctor_client
+    article = EduArticle(
+        author_id=doctor.id,
+        category=EduArticleCategory.BODY.value,
+        img_key="",
+        title="Exercises that will make you strong enough to lift a small car",
+        content_markdown="Bodyweight push-ups, pilates",
+    )
+    db_session.add(article)
+    db_session.commit()
+
+    response = client.delete(f"/articles/{article.id}")
+    assert response.status_code == status.HTTP_200_OK
+
+    edu_article = db_session.get(EduArticle, article.id)
+    assert edu_article is None, "Article should be 'None'"

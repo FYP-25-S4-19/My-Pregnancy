@@ -18,7 +18,7 @@ def get_edu_articles_service(db: Session = Depends(get_db)):
 
 
 @edu_articles_router.get("/", response_model=list[ArticleOverviewResponse], status_code=status.HTTP_200_OK)
-def get_articles_by_category(category: str, service: EduArticlesService = Depends(get_edu_articles_service)):
+def get_article_overviews_by_category(category: str, service: EduArticlesService = Depends(get_edu_articles_service)):
     return service.get_article_overviews_by_category(category)
 
 
@@ -50,7 +50,10 @@ def create_article(
 
 @edu_articles_router.delete("/{article_id}")
 def delete_article(
-    article_id: int, service: EduArticlesService = Depends(get_edu_articles_service), db: Session = Depends(get_db)
+    article_id: int,
+    service: EduArticlesService = Depends(get_edu_articles_service),
+    db: Session = Depends(get_db),
+    _: VolunteerDoctor = Depends(require_role(VolunteerDoctor)),
 ):
     try:
         service.delete_article(article_id)
