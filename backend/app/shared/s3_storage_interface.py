@@ -17,7 +17,7 @@ class S3StorageInterface:
     @staticmethod
     def put_article_img(article_id: int, article_img: UploadFile) -> str | None:
         return S3StorageInterface._upload_file_stream(
-            prefix=S3StorageInterface.QUALIFICATION_PREFIX,
+            prefix=S3StorageInterface.ARTICLE_PREFIX,
             file_name=str(article_id),
             file_obj=article_img.file,
             content_type=article_img.content_type,
