@@ -32,8 +32,8 @@ class EduArticlesService:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
 
         author: VolunteerDoctor = article.author
-        full_name: str = (
-            f"{author.first_name}{author.middle_name if author.middle_name is not None else ''}{author.last_name}"
+        full_name: str = " ".join(
+            part for part in [author.first_name, author.middle_name, author.last_name] if part
         )
 
         return ArticleDetailedResponse(
