@@ -8,23 +8,23 @@ from app.features.educational_articles.edu_article_models import (
     ArticleDetailedResponse,
     ArticleOverviewResponse,
 )
-from app.features.educational_articles.edu_articles_service import EduArticlesService
+from app.features.educational_articles.edu_article_service import EduArticleService
 
 edu_articles_router = APIRouter(prefix="/articles")
 
 
-def get_edu_articles_service(db: Session = Depends(get_db)):
-    return EduArticlesService(db)
+def get_edu_articles_service(db: Session = Depends(get_db)) -> EduArticleService:
+    return EduArticleService(db)
 
 
 @edu_articles_router.get("/", response_model=list[ArticleOverviewResponse], status_code=status.HTTP_200_OK)
-def get_article_overviews_by_category(category: str, service: EduArticlesService = Depends(get_edu_articles_service)):
+def get_article_overviews_by_category(category: str, service: EduArticleService = Depends(get_edu_articles_service)):
     return service.get_article_overviews_by_category(category)
 
 
 @edu_articles_router.get("/{article_id}", response_model=ArticleDetailedResponse)
 def get_article_detailed(
-    article_id: int, service: EduArticlesService = Depends(get_edu_articles_service)
+    article_id: int, service: EduArticleService = Depends(get_edu_articles_service)
 ) -> ArticleDetailedResponse:
     return service.get_article_detailed(article_id)
 
@@ -37,7 +37,7 @@ def create_article(
     img_data: UploadFile = File(),
     db: Session = Depends(get_db),
     doctor: VolunteerDoctor = Depends(require_role(VolunteerDoctor)),
-    service: EduArticlesService = Depends(get_edu_articles_service),
+    service: EduArticleService = Depends(get_edu_articles_service),
 ):
     try:
         article: EduArticle | None = service.create_article(category, title, content_markdown, img_data, doctor)
@@ -50,7 +50,7 @@ def create_article(
 @edu_articles_router.delete("/{article_id}")
 def delete_article(
     article_id: int,
-    service: EduArticlesService = Depends(get_edu_articles_service),
+    service: EduArticleService = Depends(get_edu_articles_service),
     db: Session = Depends(get_db),
     deleter: VolunteerDoctor = Depends(require_role(VolunteerDoctor)),
 ):

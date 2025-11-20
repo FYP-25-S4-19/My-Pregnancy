@@ -5,8 +5,10 @@ from starlette.middleware.sessions import SessionMiddleware
 from starlette.responses import JSONResponse
 
 from app.core.settings import settings
+from app.features.appointments.appointment_router import appointments_router
 from app.features.auth.auth_router import auth_router
-from app.features.educational_articles.edu_articles_router import edu_articles_router
+from app.features.educational_articles.edu_article_router import edu_articles_router
+from app.features.misc_routes import misc_router
 
 app: FastAPI
 
@@ -26,7 +28,8 @@ app.add_middleware(
 
 app.include_router(auth_router)
 app.include_router(edu_articles_router)
-# app.include_router(users_router)
+app.include_router(appointments_router)
+app.include_router(misc_router)
 app.add_middleware(SessionMiddleware, secret_key=settings.SECRET_KEY)
 
 
@@ -44,8 +47,3 @@ async def general_exception_handler(_: Request, e: Exception):
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content={"detail": f"An unexpected error has occurred, {e}"},
     )
-
-
-@app.get("/")
-def index():
-    return "Ping!"

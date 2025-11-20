@@ -10,7 +10,7 @@ from app.features.educational_articles.edu_article_models import (
 from app.shared.s3_storage_interface import S3StorageInterface
 
 
-class EduArticlesService:
+class EduArticleService:
     def __init__(self, db: Session):
         self.db = db
 
@@ -32,9 +32,7 @@ class EduArticlesService:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
 
         author: VolunteerDoctor = article.author
-        full_name: str = " ".join(
-            part for part in [author.first_name, author.middle_name, author.last_name] if part
-        )
+        full_name: str = " ".join(part for part in [author.first_name, author.middle_name, author.last_name] if part)
 
         return ArticleDetailedResponse(
             id=article.id,
