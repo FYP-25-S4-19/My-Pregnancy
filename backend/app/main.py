@@ -7,7 +7,22 @@ from app.core.settings import settings
 from app.features.auth.auth_router import auth_router
 from app.features.educational_articles.edu_articles_router import edu_articles_router
 
+
+from fastapi.middleware.cors import CORSMiddleware
 app: FastAPI
+origins = [
+    "http://localhost:8081",
+    "http://127.0.0.1:8081",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 APP_TITLE = "MyPregnancy API"
 if settings.APP_ENV == "dev":
