@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta
 from typing import Any, Generator
 
-import jwt
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import StaticPool, create_engine
