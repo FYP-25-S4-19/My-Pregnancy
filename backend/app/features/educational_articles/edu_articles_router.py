@@ -41,7 +41,6 @@ def create_article(
 ):
     try:
         article: EduArticle | None = service.create_article(category, title, content_markdown, img_data, doctor)
-        db.add(article)
         db.commit()
     except:
         db.rollback()
