@@ -134,6 +134,7 @@ def test_edit_appointment_past_start_time(
         "Should not allow editing appointment to a past start time"
     )
 
+
 # =========================================================================
 # ======================= DELETE APPOINTMENT ==============================
 # =========================================================================
@@ -191,6 +192,163 @@ def test_delete_appointment_for_other_user(
         "Should not allow deleting appointment belonging to another user"
     )
 
+
 # =========================================================================
 # ===================== ACCEPT/REJECT APPOINTMENT =========================
 # =========================================================================
+def test_accept_appointment_success(
+    authenticated_doctor_client: tuple[TestClient, VolunteerDoctor],
+    pregnant_woman: PregnantWoman,
+    db_session: Session,
+) -> None:
+    client, doctor = authenticated_doctor_client
+
+    appointment = Appointment(
+        volunteer_doctor_id=doctor.id,
+        mother_id=pregnant_woman.id,
+        start_time=datetime.now() + timedelta(days=5),
+        status=AppointmentStatus.PENDING_ACCEPT_REJECT,
+    )
+    db_session.add(appointment)
+    db_session.commit()
+    accept_response = client.patch(f"/appointments/{appointment.id}/accept")
+    assert accept_response.status_code == status.HTTP_200_OK, "Accepting appointment should succeed"
+
+    updated_appointment = db_session.get(Appointment, appointment.id)
+    assert updated_appointment is not None, "Appointment should exist in the database"
+    assert updated_appointment.status == AppointmentStatus.ACCEPTED, "Appointment status should be ACCEPTED"
+
+
+def test_reject_appointment_success(
+    authenticated_doctor_client: tuple[TestClient, VolunteerDoctor],
+    pregnant_woman: PregnantWoman,
+    db_session: Session,
+) -> None:
+    client, doctor = authenticated_doctor_client
+
+    appointment = Appointment(
+        volunteer_doctor_id=doctor.id,
+        mother_id=pregnant_woman.id,
+        start_time=datetime.now() + timedelta(days=5),
+        status=AppointmentStatus.PENDING_ACCEPT_REJECT,
+    )
+    db_session.add(appointment)
+    db_session.commit()
+    reject_response = client.patch(f"/appointments/{appointment.id}/reject")
+    assert reject_response.status_code == status.HTTP_200_OK, "Rejecting appointment should succeed"
+
+    updated_appointment = db_session.get(Appointment, appointment.id)
+    assert updated_appointment is not None, "Appointment should exist in the database"
+    assert updated_appointment.status == AppointmentStatus.REJECTED, "Appointment status should be REJECTED"
+
+
+def test_accept_appointment_not_found(
+    authenticated_doctor_client: tuple[TestClient, VolunteerDoctor],
+) -> None:
+    client, _ = authenticated_doctor_client
+    accept_response = client.patch("/appointments/9999/accept")
+    assert accept_response.status_code == status.HTTP_404_NOT_FOUND, (
+        "Accepting non-existent appointment should return 404"
+    )
+
+
+def test_reject_appointment_not_found(
+    authenticated_doctor_client: tuple[TestClient, VolunteerDoctor],
+) -> None:
+    client, _ = authenticated_doctor_client
+    reject_response = client.patch("/appointments/9999/reject")
+    assert reject_response.status_code == status.HTTP_404_NOT_FOUND, (
+        "Rejecting non-existent appointment should return 404"
+    )
+
+
+def test_accept_appointment_unauthorized(
+    authenticated_doctor_client: tuple[TestClient, VolunteerDoctor],
+    volunteer_doctor_factory: Callable[..., VolunteerDoctor],
+    pregnant_woman: PregnantWoman,
+    db_session: Session,
+) -> None:
+    authorized_client, _ = authenticated_doctor_client
+    other_doctor: VolunteerDoctor = volunteer_doctor_factory()
+
+    other_doctor_appointment = Appointment(
+        volunteer_doctor_id=other_doctor.id,
+        mother_id=pregnant_woman.id,
+        start_time=datetime.now() + timedelta(days=5),
+        status=AppointmentStatus.PENDING_ACCEPT_REJECT,
+    )
+    db_session.add(other_doctor_appointment)
+    db_session.commit()
+
+    accept_response = authorized_client.patch(f"/appointments/{other_doctor_appointment.id}/accept")
+    assert accept_response.status_code == status.HTTP_401_UNAUTHORIZED, (
+        "Should not allow accepting appointment belonging to another doctor"
+    )
+
+
+def test_accept_appointment_already_accepted(
+    authenticated_doctor_client: tuple[TestClient, VolunteerDoctor],
+    pregnant_woman: PregnantWoman,
+    db_session: Session,
+) -> None:
+    client, doctor = authenticated_doctor_client
+
+    appointment = Appointment(
+        volunteer_doctor_id=doctor.id,
+        mother_id=pregnant_woman.id,
+        start_time=datetime.now() + timedelta(days=5),
+        status=AppointmentStatus.ACCEPTED,
+    )
+    db_session.add(appointment)
+    db_session.commit()
+
+    accept_response = client.patch(f"/appointments/{appointment.id}/accept")
+    assert accept_response.status_code == status.HTTP_304_NOT_MODIFIED, (
+        "Should not be able to accept an already accepted appointment"
+    )
+
+
+def test_reject_appointment_unauthorized(
+    authenticated_doctor_client: tuple[TestClient, VolunteerDoctor],
+    volunteer_doctor_factory: Callable[..., VolunteerDoctor],
+    pregnant_woman: PregnantWoman,
+    db_session: Session,
+) -> None:
+    authorized_client, _ = authenticated_doctor_client
+    other_doctor: VolunteerDoctor = volunteer_doctor_factory()
+
+    other_doctor_appointment = Appointment(
+        volunteer_doctor_id=other_doctor.id,
+        mother_id=pregnant_woman.id,
+        start_time=datetime.now() + timedelta(days=5),
+        status=AppointmentStatus.PENDING_ACCEPT_REJECT,
+    )
+    db_session.add(other_doctor_appointment)
+    db_session.commit()
+
+    reject_response = authorized_client.patch(f"/appointments/{other_doctor_appointment.id}/reject")
+    assert reject_response.status_code == status.HTTP_401_UNAUTHORIZED, (
+        "Should not allow rejecting appointment belonging to another doctor"
+    )
+
+
+def test_reject_appointment_already_rejected(
+    authenticated_doctor_client: tuple[TestClient, VolunteerDoctor],
+    pregnant_woman: PregnantWoman,
+    db_session: Session,
+) -> None:
+    client, doctor = authenticated_doctor_client
+
+    appointment = Appointment(
+        volunteer_doctor_id=doctor.id,
+        mother_id=pregnant_woman.id,
+        start_time=datetime.now() + timedelta(days=5),
+        status=AppointmentStatus.REJECTED,
+    )
+    db_session.add(appointment)
+    db_session.commit()
+
+    reject_response = client.patch(f"/appointments/{appointment.id}/reject")
+    assert reject_response.status_code == status.HTTP_304_NOT_MODIFIED, (
+        "Should not be able to reject an already rejected appointment"
+    )
