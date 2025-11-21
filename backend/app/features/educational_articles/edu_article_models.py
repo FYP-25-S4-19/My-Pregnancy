@@ -1,4 +1,3 @@
-
 from app.core.custom_base_model import CustomBaseModel
 
 

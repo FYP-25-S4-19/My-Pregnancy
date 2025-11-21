@@ -261,17 +261,18 @@ class SavedVolunteerDoctor(Base):
 
 
 # Association table for a "Pregnant Woman" who creates an "appointment request"
-# Composite primary key
 class Appointment(Base):
     __tablename__ = "appointments"
 
-    volunteer_doctor_id: Mapped[int] = mapped_column(ForeignKey("volunteer_doctors.id"), primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
+
+    volunteer_doctor_id: Mapped[int] = mapped_column(ForeignKey("volunteer_doctors.id"))
     volunteer_doctor: Mapped[VolunteerDoctor] = relationship(back_populates="appointments")
 
-    mother_id: Mapped[int] = mapped_column(ForeignKey("pregnant_women.id"), primary_key=True)
+    mother_id: Mapped[int] = mapped_column(ForeignKey("pregnant_women.id"))
     mother: Mapped[PregnantWoman] = relationship(back_populates="appointments")
 
-    start_time: Mapped[datetime] = mapped_column(primary_key=True)
+    start_time: Mapped[datetime]
     status: Mapped[AppointmentStatus] = mapped_column(SQLAlchemyEnum(AppointmentStatus))
 
 
