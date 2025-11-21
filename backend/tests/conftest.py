@@ -152,7 +152,7 @@ def pregnant_woman_factory(db_session: Session) -> Generator[Callable[..., Pregn
         unique_id = str(uuid.uuid4())
         defaults = {
             "username": f"mother_{unique_id}",
-            "role": UserRole.PREGNANT_WOMAN.value,
+            "role": UserRole.PREGNANT_WOMAN,
             "email": f"mother_{unique_id}@test.com",
             "password_hash": "hashed_password_456",
         }

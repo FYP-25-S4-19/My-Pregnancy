@@ -74,13 +74,14 @@ def test_create_appointment_past_start_time(
 # =========================================================================
 def test_edit_appointment_success(
     authenticated_pregnant_woman_client: tuple[TestClient, PregnantWoman],
+    volunteer_doctor: VolunteerDoctor,
     db_session: Session,
 ) -> None:
     client, mother = authenticated_pregnant_woman_client
 
     start_time: datetime = datetime.now() + timedelta(days=5)
     appointment = Appointment(
-        volunteer_doctor_id=1,
+        volunteer_doctor_id=volunteer_doctor.id,
         mother_id=mother.id,
         start_time=start_time,
         status=AppointmentStatus.PENDING_ACCEPT_REJECT,

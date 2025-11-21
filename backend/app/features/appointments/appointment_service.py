@@ -48,9 +48,10 @@ class AppointmentService:
 
             response.append(
                 AppointmentResponse(
+                    appointment_id=appointment.id,
                     doctor_id=doctor.id,
-                    doctor_name=(
-                        f"{doctor.first_name} {doctor.middle_name if doctor.middle_name is not None else ''} {doctor.last_name}"
+                    doctor_name=" ".join(
+                        part for part in [doctor.first_name, doctor.middle_name, doctor.last_name] if part
                     ),
                     mother_id=mother.id,
                     mother_username=mother.username,

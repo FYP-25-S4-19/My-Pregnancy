@@ -9,6 +9,8 @@ class CreateAppointmentRequest(CustomBaseModel):
 
 
 class AppointmentResponse(CustomBaseModel):
+    appointment_id: int
+
     doctor_id: int
     doctor_name: str
 
