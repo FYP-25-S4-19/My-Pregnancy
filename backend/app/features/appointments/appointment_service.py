@@ -80,3 +80,31 @@ class AppointmentService:
         if appointment.mother_id != mother_id:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
         self.db.delete(appointment)
+
+    def accept_appointment(self, appointment_id: int, doctor_id: int) -> None:
+        appointment = self.db.get(Appointment, appointment_id)
+        if appointment is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+        if appointment.volunteer_doctor_id != doctor_id:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+        if appointment.status == AppointmentStatus.ACCEPTED:
+            raise HTTPException(status_code=status.HTTP_304_NOT_MODIFIED, detail="Appointment is already accepted")
+        if appointment.status != AppointmentStatus.PENDING_ACCEPT_REJECT:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail="Only pending appointments can be accepted"
+            )
+        appointment.status = AppointmentStatus.ACCEPTED
+
+    def reject_appointment(self, appointment_id: int, doctor_id: int) -> None:
+        appointment = self.db.get(Appointment, appointment_id)
+        if appointment is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+        if appointment.volunteer_doctor_id != doctor_id:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+        if appointment.status == AppointmentStatus.REJECTED:
+            raise HTTPException(status_code=status.HTTP_304_NOT_MODIFIED, detail="Appointment is already rejected")
+        if appointment.status != AppointmentStatus.PENDING_ACCEPT_REJECT:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail="Only pending appointments can be rejected"
+            )
+        appointment.status = AppointmentStatus.REJECTED

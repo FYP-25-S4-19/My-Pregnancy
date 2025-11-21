@@ -134,7 +134,6 @@ def test_edit_appointment_past_start_time(
         "Should not allow editing appointment to a past start time"
     )
 
-
 # =========================================================================
 # ======================= DELETE APPOINTMENT ==============================
 # =========================================================================
@@ -191,3 +190,7 @@ def test_delete_appointment_for_other_user(
     assert delete_response.status_code == status.HTTP_401_UNAUTHORIZED, (
         "Should not allow deleting appointment belonging to another user"
     )
+
+# =========================================================================
+# ===================== ACCEPT/REJECT APPOINTMENT =========================
+# =========================================================================

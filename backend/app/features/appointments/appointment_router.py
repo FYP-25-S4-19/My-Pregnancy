@@ -3,11 +3,10 @@ from sqlalchemy.orm import Session
 
 from app.core.security import require_role
 from app.db.db_config import get_db
-from app.db.db_schema import PregnantWoman, User
+from app.db.db_schema import PregnantWoman, User, VolunteerDoctor
 from app.features.appointments.appointment_models import (
     AppointmentResponse,
     CreateAppointmentRequest,
-    DeleteAppointmentRequest,
     EditAppointmentRequest,
 )
 from app.features.appointments.appointment_service import AppointmentService
@@ -65,6 +64,36 @@ def delete_appointment(
 ):
     try:
         service.delete_appointment(appointment_id, mother.id)
+        db.commit()
+    except:
+        db.rollback()
+        raise
+
+
+@appointments_router.patch("/{appointment_id}/accept")
+def accept_appointment(
+    appointment_id: int,
+    service: AppointmentService = Depends(get_appointment_service),
+    db: Session = Depends(get_db),
+    doctor: VolunteerDoctor = Depends(require_role(VolunteerDoctor)),
+):
+    try:
+        service.accept_appointment(appointment_id, doctor.id)
+        db.commit()
+    except:
+        db.rollback()
+        raise
+
+
+@appointments_router.patch("/{appointment_id}/reject")
+def reject_appointment(
+    appointment_id: int,
+    service: AppointmentService = Depends(get_appointment_service),
+    db: Session = Depends(get_db),
+    doctor: VolunteerDoctor = Depends(require_role(VolunteerDoctor)),
+):
+    try:
+        service.reject_appointment(appointment_id, doctor.id)
         db.commit()
     except:
         db.rollback()
