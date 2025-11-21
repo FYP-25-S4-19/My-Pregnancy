@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.core.security import require_role
 from app.db.db_config import get_db
-from app.db.db_schema import EduArticle, VolunteerDoctor
+from app.db.db_schema import VolunteerDoctor
 from app.features.educational_articles.edu_article_models import (
     ArticleDetailedResponse,
     ArticleOverviewResponse,
@@ -40,7 +40,7 @@ def create_article(
     service: EduArticleService = Depends(get_edu_articles_service),
 ):
     try:
-        article: EduArticle | None = service.create_article(category, title, content_markdown, img_data, doctor)
+        service.create_article(category, title, content_markdown, img_data, doctor)
         db.commit()
     except:
         db.rollback()

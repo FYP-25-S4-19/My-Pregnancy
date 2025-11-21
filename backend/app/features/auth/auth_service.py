@@ -1,6 +1,5 @@
 from datetime import datetime, timedelta
 
-import jwt
 from argon2 import PasswordHasher
 from fastapi import HTTPException, status
 from sqlalchemy import or_

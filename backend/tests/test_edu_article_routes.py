@@ -30,8 +30,8 @@ def test_get_articles_by_category_success(client: TestClient, db_session: Sessio
         assert isinstance(all_articles, list), f"Expected list, got {type(all_articles)}"
 
         article = all_articles[0]
-        assert isinstance(article["id"], int), f"Article should have an 'id' attribute of type 'int'"
-        assert isinstance(article["title"], str), f"Article should have a 'title' attribute of type 'str'"
+        assert isinstance(article["id"], int), "Article should have an 'id' attribute of type 'int'"
+        assert isinstance(article["title"], str), "Article should have a 'title' attribute of type 'str'"
 
 
 def test_get_articles_by_nonexistent_category_failure(client: TestClient, db_session: Session) -> None:
