@@ -305,10 +305,14 @@ class JournalEntry(Base):
     content: Mapped[str] = mapped_column(Text)
     logged_on: Mapped[date]
 
+    # Since this is the only metric that is composed of multiple values,
+    # I'll just put it directly here for simplicity (as opposed to have a dedicated table)
+    systolic: Mapped[int] = mapped_column(server_default=text("0"))
+    diastolic: Mapped[int] = mapped_column(server_default=text("0"))
+
     # NOTE: The actual chosen options are inside each "Metric Log"
     journal_binary_metric_logs: Mapped[list["JournalBinaryMetricLog"]] = relationship(back_populates="journal_entry")
     journal_scalar_metric_logs: Mapped[list["JournalScalarMetricLog"]] = relationship(back_populates="journal_entry")
-    journal_blood_pressure_logs: Mapped[list["JournalBloodPressureLog"]] = relationship(back_populates="journal_entry")
 
 
 # Association table associating a "Journal Entry" with a "Binary Metric"
@@ -343,27 +347,6 @@ class JournalScalarMetricLog(Base):
     scalar_metric: Mapped["ScalarMetric"] = relationship(back_populates="journal_scalar_metric_logs")
 
     value: Mapped[float]
-
-
-class JournalBloodPressureLog(Base):
-    __tablename__ = "journal_blood_pressure_logs"
-
-    journal_entry_id: Mapped[int] = mapped_column(ForeignKey("journal_entries.id"), primary_key=True)
-    journal_entry: Mapped["JournalEntry"] = relationship(back_populates="journal_blood_pressure_logs")
-
-    systolic: Mapped[int]
-    diastolic: Mapped[int]
-
-
-# class BumpEntry(Base):
-#     __tablename__ = "bump_entries"
-#     id: Mapped[int] = mapped_column(primary_key=True)
-#
-#     uploader_id: Mapped[int] = mapped_column(ForeignKey("pregnant_women.id"))
-#     uploader: Mapped["PregnantWoman"] = relationship(back_populates="bump_entries")
-#
-#     bump_img_key: Mapped[str] = mapped_column(String(255))
-#     date: Mapped[date]
 
 
 # ============================================

@@ -7,7 +7,6 @@ from sqlalchemy.orm import Session
 from app.db.db_schema import (
     BinaryMetric,
     JournalBinaryMetricLog,
-    JournalBloodPressureLog,
     JournalEntry,
     JournalScalarMetricLog,
     PregnantWoman,
@@ -79,10 +78,7 @@ class JournalAndMetricsGenerator:
             # ----- Blood Pressure ----
             if random.random() <= 0.1:  # 10% chance of there NOT being an entry
                 continue
-            db.add(
-                JournalBloodPressureLog(
-                    journal_entry=journal_entry, systolic=random.randint(70, 250), diastolic=random.randint(40, 150)
-                )
-            )
+            journal_entry.systolic = random.randint(90, 140)
+            journal_entry.diastolic = random.randint(60, 90)
 
         db.commit()

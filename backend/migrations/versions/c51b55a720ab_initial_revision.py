@@ -1,8 +1,8 @@
 """Initial revision
 
-Revision ID: c12c86058af3
+Revision ID: c51b55a720ab
 Revises:
-Create Date: 2025-11-21 13:08:21.628314
+Create Date: 2025-11-21 22:09:59.606785
 
 """
 
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = "c12c86058af3"
+revision: str = "c51b55a720ab"
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -303,6 +303,8 @@ def upgrade() -> None:
         sa.Column("author_id", sa.Integer(), nullable=False),
         sa.Column("content", sa.Text(), nullable=False),
         sa.Column("logged_on", sa.Date(), nullable=False),
+        sa.Column("systolic", sa.Integer(), server_default=sa.text("0"), nullable=False),
+        sa.Column("diastolic", sa.Integer(), server_default=sa.text("0"), nullable=False),
         sa.ForeignKeyConstraint(
             ["author_id"],
             ["pregnant_women.id"],
@@ -382,17 +384,6 @@ def upgrade() -> None:
         sa.PrimaryKeyConstraint("journal_entry_id", "binary_metric_id"),
     )
     op.create_table(
-        "journal_blood_pressure_logs",
-        sa.Column("journal_entry_id", sa.Integer(), nullable=False),
-        sa.Column("systolic", sa.Integer(), nullable=False),
-        sa.Column("diastolic", sa.Integer(), nullable=False),
-        sa.ForeignKeyConstraint(
-            ["journal_entry_id"],
-            ["journal_entries.id"],
-        ),
-        sa.PrimaryKeyConstraint("journal_entry_id"),
-    )
-    op.create_table(
         "journal_scalar_metric_logs",
         sa.Column("journal_entry_id", sa.Integer(), nullable=False),
         sa.Column("scalar_metric_id", sa.Integer(), nullable=False),
@@ -458,7 +449,6 @@ def downgrade() -> None:
     op.drop_table("recipe_ingredients")
     op.drop_table("kick_tracker_kicks")
     op.drop_table("journal_scalar_metric_logs")
-    op.drop_table("journal_blood_pressure_logs")
     op.drop_table("journal_binary_metric_logs")
     op.drop_table("thread_comments")
     op.drop_table("saved_volunteer_doctors")
