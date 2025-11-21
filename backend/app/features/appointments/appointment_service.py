@@ -19,8 +19,11 @@ class AppointmentService:
         if doctor is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Specified doctor does not exist")
 
+        if start_time <= datetime.now():
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Start time must be in the future")
+
         appointment = Appointment(
-            doctor_id=doctor_id,
+            volunteer_doctor_id=doctor_id,
             mother_id=requester_id,
             start_time=start_time,
             status=AppointmentStatus.PENDING_ACCEPT_REJECT,
@@ -57,7 +60,7 @@ class AppointmentService:
             )
         return response
 
-    def edit_appointment_details(self, req: EditAppointmentRequest, mother_id: int) -> None:
+    def edit_appointment_start_time(self, req: EditAppointmentRequest, mother_id: int) -> None:
         appointment = self.db.get(Appointment, req.appointment_id)
         if appointment is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Invalid appointment ID")
@@ -65,7 +68,10 @@ class AppointmentService:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED, detail="Attempting to modify appointment for another entity"
             )
-        appointment.start_time = req.start_time
+        if req.new_start_time <= datetime.now():
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Start time must be in the future")
+
+        appointment.start_time = req.new_start_time
 
     def delete_appointment(self, appointment_id: int, mother_id: int) -> None:
         appointment = self.db.get(Appointment, appointment_id)

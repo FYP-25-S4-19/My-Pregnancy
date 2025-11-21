@@ -21,7 +21,7 @@ class AppointmentResponse(CustomBaseModel):
 
 class EditAppointmentRequest(CustomBaseModel):
     appointment_id: int
-    start_time: datetime
+    new_start_time: datetime
 
 
 class DeleteAppointmentRequest(CustomBaseModel):

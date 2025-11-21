@@ -1,5 +1,6 @@
+import uuid
 from datetime import datetime, timedelta
-from typing import Any, Generator
+from typing import Any, Callable, Generator
 
 import pytest
 from fastapi.testclient import TestClient
@@ -24,11 +25,14 @@ from app.db.db_schema import (
 from app.main import app
 from app.shared.utils import create_access_token
 
-# # Use an in-memory SQLite database for testing
+# Use an in-memory SQLite database for testing
 engine = create_engine("sqlite:///:memory:", connect_args={"check_same_thread": False}, poolclass=StaticPool)
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
+# ========================================================================
+# ========================== MISC FIXTURES ===============================
+# ========================================================================
 @pytest.fixture(scope="function")
 def db_session() -> Generator[Session, Any, None]:
     Base.metadata.create_all(bind=engine)
@@ -50,6 +54,14 @@ def client(db_session: Session) -> Generator[TestClient, Any, None]:
     app.dependency_overrides.clear()
 
 
+@pytest.fixture(scope="session")
+def img_file_fixture() -> dict[str, tuple[str, bytes, str]]:
+    return {"img_data": ("test_image.jpg", b"fake image bytes here", "image/jpeg")}
+
+
+# ========================================================================
+# ========================== ADMIN FIXTURES ==============================
+# ========================================================================
 @pytest.fixture(scope="function")
 def admin(db_session: Session) -> Generator[Admin, Any, None]:
     admin = Admin(
@@ -58,63 +70,6 @@ def admin(db_session: Session) -> Generator[Admin, Any, None]:
     db_session.add(admin)
     db_session.commit()
     yield admin
-
-
-@pytest.fixture(scope="function")
-def volunteer_doctor(db_session: Session) -> Generator[VolunteerDoctor, Any, None]:
-    qualification = DoctorQualification(qualification_option=DoctorQualificationOption.MD)
-    db_session.add(qualification)
-    db_session.flush()
-
-    doctor = VolunteerDoctor(
-        username="test_doctor",
-        role=UserRole.VOLUNTEER_DOCTOR,
-        email="doctor@test.com",
-        password_hash="hashed_password_123",
-        first_name="John",
-        last_name="Doe",
-        qualification_id=qualification.id,
-        is_verified=True,
-    )
-    db_session.add(doctor)
-    db_session.commit()
-    yield doctor
-
-
-@pytest.fixture(scope="function")
-def pregnant_woman(db_session: Session) -> Generator[PregnantWoman, Any, None]:
-    mother = PregnantWoman(
-        username="test_mother",
-        role=UserRole.PREGNANT_WOMAN,
-        email="unique_mail@gmail.com",
-        password_hash="hashed_password_456",
-    )
-    db_session.add(mother)
-    db_session.commit()
-    yield mother
-
-
-@pytest.fixture(scope="function")
-def nutritionist(db_session: Session) -> Generator[Nutritionist, Any, None]:
-    qualification = NutritionistQualification(
-        qualification_option=NutritionistQualificationOption.CERTIFIED_NUTRITIONIST
-    )
-    db_session.add(qualification)
-    db_session.flush()
-
-    nutritionist = Nutritionist(
-        username="test_nutritionist",
-        first_name="John",
-        last_name="Doe",
-        role=UserRole.NUTRITIONIST,
-        email="unique_mail@gmail.com",
-        password_hash="hashed_password_789",
-        qualification_id=qualification.id,
-        is_verified=True,
-    )
-    db_session.add(nutritionist)
-    db_session.commit()
-    yield nutritionist
 
 
 @pytest.fixture(scope="function")
@@ -130,6 +85,45 @@ def authenticated_admin_client(client: TestClient, admin: Admin) -> Generator[tu
 
     yield client, admin
     client.headers.pop("Authorization", None)
+
+
+# ========================================================================
+# ===================== VOLUNTEER DOCTOR FIXTURES ========================
+# ========================================================================
+@pytest.fixture(scope="function")
+def volunteer_doctor_factory(db_session: Session) -> Generator[Callable[..., VolunteerDoctor], Any, None]:
+    def _create_doctor(**kwargs) -> VolunteerDoctor:
+        unique_id = str(uuid.uuid4())
+
+        # Create qualification if not provided
+        if "qualification_id" not in kwargs:
+            qualification = DoctorQualification(qualification_option=DoctorQualificationOption.MD)
+            db_session.add(qualification)
+            db_session.flush()
+            kwargs["qualification_id"] = qualification.id
+
+        defaults = {
+            "username": f"doctor_{unique_id}",
+            "role": UserRole.VOLUNTEER_DOCTOR,
+            "email": f"doctor_{unique_id}@test.com",
+            "password_hash": "hashed_password_123",
+            "first_name": "John",
+            "last_name": "Doe",
+            "is_verified": True,
+        }
+
+        user_data = defaults | kwargs
+        doctor = VolunteerDoctor(**user_data)
+        db_session.add(doctor)
+        db_session.commit()
+        return doctor
+
+    return _create_doctor
+
+
+@pytest.fixture(scope="function")
+def volunteer_doctor(volunteer_doctor_factory: Callable[..., VolunteerDoctor]) -> VolunteerDoctor:
+    return volunteer_doctor_factory()
 
 
 @pytest.fixture(scope="function")
@@ -149,6 +143,34 @@ def authenticated_doctor_client(
     client.headers.pop("Authorization", None)
 
 
+# ========================================================================
+# ====================== PREGNANT WOMAN FIXTURES =========================
+# ========================================================================
+@pytest.fixture(scope="function")
+def pregnant_woman_factory(db_session: Session) -> Generator[Callable[..., PregnantWoman], Any, None]:
+    def _create_woman(**kwargs) -> PregnantWoman:
+        unique_id = str(uuid.uuid4())
+        defaults = {
+            "username": f"mother_{unique_id}",
+            "role": UserRole.PREGNANT_WOMAN.value,
+            "email": f"mother_{unique_id}@test.com",
+            "password_hash": "hashed_password_456",
+        }
+
+        user_data = defaults | kwargs
+        mother = PregnantWoman(**user_data)
+        db_session.add(mother)
+        db_session.commit()
+        return mother
+
+    return _create_woman
+
+
+@pytest.fixture(scope="function")
+def pregnant_woman(pregnant_woman_factory: Callable[..., PregnantWoman]) -> PregnantWoman:
+    return pregnant_woman_factory()
+
+
 @pytest.fixture(scope="function")
 def authenticated_pregnant_woman_client(
     client: TestClient, pregnant_woman: PregnantWoman
@@ -166,6 +188,47 @@ def authenticated_pregnant_woman_client(
     client.headers.pop("Authorization", None)
 
 
+# ========================================================================
+# ====================== NUTRITIONIST FIXTURES ===========================
+# ========================================================================
+@pytest.fixture(scope="function")
+def nutritionist_factory(db_session: Session) -> Generator[Callable[..., Nutritionist], Any, None]:
+    def _create_nutritionist(**kwargs) -> Nutritionist:
+        unique_id = str(uuid.uuid4())
+
+        # Create qualification if not provided
+        if "qualification_id" not in kwargs:
+            qualification = NutritionistQualification(
+                qualification_option=NutritionistQualificationOption.CERTIFIED_NUTRITIONIST
+            )
+            db_session.add(qualification)
+            db_session.flush()
+            kwargs["qualification_id"] = qualification.id
+
+        defaults = {
+            "username": f"nutritionist_{unique_id}",
+            "role": UserRole.NUTRITIONIST,
+            "email": f"nutritionist_{unique_id}@test.com",
+            "password_hash": "hashed_password_789",
+            "first_name": "Jane",
+            "last_name": "Smith",
+            "is_verified": True,
+        }
+
+        user_data = defaults | kwargs
+        nutritionist = Nutritionist(**user_data)
+        db_session.add(nutritionist)
+        db_session.commit()
+        return nutritionist
+
+    return _create_nutritionist
+
+
+@pytest.fixture(scope="function")
+def nutritionist(nutritionist_factory: Callable[..., Nutritionist]) -> Nutritionist:
+    return nutritionist_factory()
+
+
 @pytest.fixture(scope="function")
 def authenticated_nutritionist_client(
     client: TestClient, nutritionist: Nutritionist
@@ -181,8 +244,3 @@ def authenticated_nutritionist_client(
 
     yield client, nutritionist
     client.headers.pop("Authorization", None)
-
-
-@pytest.fixture(scope="session")
-def img_file_fixture() -> dict[str, tuple[str, bytes, str]]:
-    return {"img_data": ("test_image.jpg", b"fake image bytes here", "image/jpeg")}
