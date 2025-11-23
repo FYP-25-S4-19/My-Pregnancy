@@ -5,6 +5,22 @@ from app.core.custom_base_model import CustomBaseModel
 
 
 @dataclass
+class BloodPressureData:
+    systolic: int
+    diastolic: int
+
+
+class BinaryMetricUpsert(CustomBaseModel):
+    metric_id: int
+    is_selected: bool
+
+
+class ScalarMetricUpsert(CustomBaseModel):
+    metric_id: int
+    value: float
+
+
+@dataclass
 class BinaryMetricView:
     metric_id: int
     label: str
@@ -26,31 +42,17 @@ class ScalarMetricView:
     unit_of_measurement: str
 
 
-@dataclass
-class BloodPressureView:
-    systolic: int
-    diastolic: int
-
-
-class JournalEntryResponse(CustomBaseModel):
+class GetJournalEntryResponse(CustomBaseModel):
     id: int
     logged_on: date
     content: str
     binary_metrics: list[BinaryMetricCategoryGroup]
     scalar_metrics: list[ScalarMetricView]
-    blood_pressure: BloodPressureView
+    blood_pressure: BloodPressureData
 
 
-# class JournalEntryCreateRequest(CustomBaseModel):
-#     logged_on: date
-#     content: str | None = None
-#     binary_metrics: list[BinaryMetricLogsForCategory] | None = None
-#     scalar_metrics: list[ScalarMetricLog] | None = None
-#     blood_pressure: BloodPressure | None = None
-#
-#
-# class JournalEntryEditRequest(CustomBaseModel):
-#     content: str | None = None
-#     binary_metrics: list[BinaryMetricLogsForCategory] | None = None
-#     scalar_metrics: list[ScalarMetricLog] | None = None
-#     blood_pressure: BloodPressure | None = None
+class UpsertJournalEntryRequest(CustomBaseModel):
+    content: str | None = None
+    binary_metric_ids: list[int] | None = None
+    scalar_metrics: list[ScalarMetricUpsert] | None = None
+    blood_pressure: BloodPressureData | None = None

@@ -1,16 +1,18 @@
 from collections import defaultdict
+from datetime import date
 
 from fastapi import HTTPException, status
 from sqlalchemy import Sequence, select
 from sqlalchemy.orm import Session, selectinload
 
-from app.db.db_schema import BinaryMetric, JournalEntry, JournalScalarMetricLog
+from app.db.db_schema import BinaryMetric, JournalBinaryMetricLog, JournalEntry, JournalScalarMetricLog
 from app.features.journal.journal_models import (
     BinaryMetricCategoryGroup,
     BinaryMetricView,
-    BloodPressureView,
-    JournalEntryResponse,
+    BloodPressureData,
+    GetJournalEntryResponse,
     ScalarMetricView,
+    UpsertJournalEntryRequest,
 )
 
 
@@ -18,7 +20,7 @@ class JournalService:
     def __init__(self, db: Session):
         self.db = db
 
-    def get_journal_entries_for_mother(self, mother_id: int) -> list[JournalEntryResponse]:
+    def get_journal_entries_for_mother(self, mother_id: int) -> list[GetJournalEntryResponse]:
         # Fetch all possible options
         #
         # We need this to render the "unselected" options (False).
@@ -39,7 +41,7 @@ class JournalService:
         )
         entries = self.db.scalars(stmt).all()
 
-        response_list: list[JournalEntryResponse] = []
+        response_list: list[GetJournalEntryResponse] = []
         for entry in entries:
             selected_ids: set[int] = {log.binary_metric_id for log in entry.journal_binary_metric_logs}
 
@@ -70,85 +72,58 @@ class JournalService:
                 )
 
             response_list.append(
-                JournalEntryResponse(
+                GetJournalEntryResponse(
                     id=entry.id,
                     logged_on=entry.logged_on,
                     content=entry.content,
                     binary_metrics=binary_metrics_response,
                     scalar_metrics=scalar_metrics_response,
-                    blood_pressure=BloodPressureView(systolic=entry.systolic, diastolic=entry.diastolic),
+                    blood_pressure=BloodPressureData(systolic=entry.systolic, diastolic=entry.diastolic),
                 )
             )
         return response_list
 
-    # def create_journal_entry(self, mother_id: int, request: JournalEntryCreateRequest) -> None:
-    #     pass
-    #
-    # def edit_journal_entry(self, entry_id: int, mother_id: int, request: JournalEntryEditRequest) -> None:
-    #     pass
-    #     # 1. Fetch the entry with its relationships loaded
-    #     # (Crucial so we can modify the collections)
-    #     stmt = (
-    #         select(JournalEntry)
-    #         .where(JournalEntry.id == entry_id)
-    #         .options(
-    #             selectinload(JournalEntry.journal_binary_metric_logs),
-    #             selectinload(JournalEntry.journal_scalar_metric_logs),
-    #         )
-    #     )
-    #     journal_entry = self.db.scalars(stmt).first()
-    #
-    #     if journal_entry is None:
-    #         raise HTTPException(status_code=404, detail="Journal entry not found")
-    #     if journal_entry.author_id != mother_id:
-    #         raise HTTPException(status_code=403, detail="Not authorized")
-    #
-    #     # 2. Update Simple Fields
-    #     if request.content is not None:
-    #         journal_entry.content = request.content
-    #
-    #     if request.blood_pressure is not None:
-    #         journal_entry.systolic = request.blood_pressure.systolic
-    #         journal_entry.diastolic = request.blood_pressure.diastolic
-    #
-    #     # ---------------------------------------------------------
-    #     # PRE-FETCH LOOKUPS (Performance Optimization)
-    #     # We need to convert labels ("Happy", "Weight") -> IDs (1, 5)
-    #     # ---------------------------------------------------------
-    #     if request.binary_metrics is not None or request.scalar_metrics is not None:
-    #         # Fetch all possible metric definitions to map Label -> ID
-    #         all_binary_metrics = self.db.scalars(select(BinaryMetric)).all()
-    #         binary_map = {m.label: m.id for m in all_binary_metrics}
-    #
-    #         all_scalar_metrics = self.db.scalars(select(ScalarMetric)).all()
-    #         scalar_map = {m.label: m.id for m in all_scalar_metrics}
-    #
-    #     # ---------------------------------------------------------
-    #     # 3. Update Scalar Metrics
-    #     # ---------------------------------------------------------
-    #     if request.scalar_metrics is not None:
-    #         # Strategy: Clear the existing list and rebuild it.
-    #         # SQLAlchemy will issue DELETEs for removed items and INSERTs for new ones.
-    #         journal_entry.journal_scalar_metric_logs.clear()
-    #
-    #         for sm_req in request.scalar_metrics:
-    #             if sm_req.label in scalar_map:
-    #                 new_log = JournalScalarMetricLog(scalar_metric_id=scalar_map[sm_req.label], value=sm_req.value)
-    #                 journal_entry.journal_scalar_metric_logs.append(new_log)
-    #
-    #     # ---------------------------------------------------------
-    #     # 4. Update Binary Metrics
-    #     # ---------------------------------------------------------
-    #     if request.binary_metrics is not None:
-    #         journal_entry.journal_binary_metric_logs.clear()
-    #
-    #         # The request comes in grouped by category, but we just need the inner logs
-    #         for category_group in request.binary_metrics:
-    #             for bm_req in category_group.binary_metric_logs:
-    #                 # Only add if it is selected AND exists in our DB map
-    #                 if bm_req.is_selected and bm_req.label in binary_map:
-    #                     new_log = JournalBinaryMetricLog(binary_metric_id=binary_map[bm_req.label])
-    #                     journal_entry.journal_binary_metric_logs.append(new_log)
+    def upsert_journal_entry(self, mother_id: int, entry_date: date, request: UpsertJournalEntryRequest) -> None:
+        # 1. Check for Existing Entry (Eager load relationships for update/create)
+        stmt = (
+            select(JournalEntry)
+            .where(JournalEntry.author_id == mother_id, JournalEntry.logged_on == entry_date)
+            .options(
+                selectinload(JournalEntry.journal_binary_metric_logs),
+                selectinload(JournalEntry.journal_scalar_metric_logs),
+            )
+        )
+        entry = self.db.scalars(stmt).first()
+
+        if entry is None:
+            entry = JournalEntry(
+                author_id=mother_id,
+                logged_on=entry_date,
+                content=request.content or "",
+                systolic=request.blood_pressure.systolic if request.blood_pressure else 0,
+                diastolic=request.blood_pressure.diastolic if request.blood_pressure else 0,
+            )
+            self.db.add(entry)
+            self.db.flush()
+
+        if request.content is not None:
+            entry.content = request.content
+
+        if request.blood_pressure is not None:
+            entry.systolic = request.blood_pressure.systolic
+            entry.diastolic = request.blood_pressure.diastolic
+
+        if request.scalar_metrics is not None:
+            entry.journal_scalar_metric_logs.clear()
+            for sm in request.scalar_metrics:
+                entry.journal_scalar_metric_logs.append(
+                    JournalScalarMetricLog(scalar_metric_id=sm.metric_id, value=sm.value)
+                )
+
+        if request.binary_metric_ids is not None:
+            entry.journal_binary_metric_logs.clear()
+            for bm_id in request.binary_metric_ids:
+                entry.journal_binary_metric_logs.append(JournalBinaryMetricLog(binary_metric_id=bm_id))
 
     def delete_journal_entry(self, entry_id: int, mother_id: int) -> None:
         journal_entry = self.db.get(JournalEntry, entry_id)
