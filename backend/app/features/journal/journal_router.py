@@ -39,15 +39,15 @@ def upsert_journal_entry(
         raise
 
 
-@journal_router.delete("/{entry_id}")
+@journal_router.delete("/{entry_date}")
 def delete_journal_entry(
-    entry_id: int,
+    entry_date: date,
     mother: PregnantWoman = Depends(require_role(PregnantWoman)),
     db: Session = Depends(get_db),
     service: JournalService = Depends(get_journal_service),
 ):
     try:
-        service.delete_journal_entry(mother.id, entry_id)
+        service.delete_journal_entry(mother.id, entry_date)
         db.commit()
     except:
         db.rollback()

@@ -125,10 +125,12 @@ class JournalService:
             for bm_id in request.binary_metric_ids:
                 entry.journal_binary_metric_logs.append(JournalBinaryMetricLog(binary_metric_id=bm_id))
 
-    def delete_journal_entry(self, entry_id: int, mother_id: int) -> None:
-        journal_entry = self.db.get(JournalEntry, entry_id)
+    def delete_journal_entry(self, mother_id: int, entry_date: date) -> None:
+        journal_entry = (
+            self.db.query(JournalEntry)
+            .filter(JournalEntry.logged_on == entry_date, JournalEntry.author_id == mother_id)
+            .first()
+        )
         if journal_entry is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Journal entry not found")
-        if journal_entry.author_id != mother_id:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to delete this entry")
         self.db.delete(journal_entry)
