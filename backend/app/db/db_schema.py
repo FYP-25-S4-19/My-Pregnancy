@@ -303,7 +303,7 @@ class JournalEntry(Base):
     author: Mapped["PregnantWoman"] = relationship(back_populates="journal_entries")
 
     content: Mapped[str] = mapped_column(Text)
-    logged_on: Mapped[date]
+    logged_on: Mapped[date] = mapped_column(index=True)
 
     # Since this is the only metric that is composed of multiple values,
     # I'll just put it directly here for simplicity (as opposed to have a dedicated table)
@@ -311,8 +311,12 @@ class JournalEntry(Base):
     diastolic: Mapped[int] = mapped_column(server_default=text("0"))
 
     # NOTE: The actual chosen options are inside each "Metric Log"
-    journal_binary_metric_logs: Mapped[list["JournalBinaryMetricLog"]] = relationship(back_populates="journal_entry")
-    journal_scalar_metric_logs: Mapped[list["JournalScalarMetricLog"]] = relationship(back_populates="journal_entry")
+    journal_binary_metric_logs: Mapped[list["JournalBinaryMetricLog"]] = relationship(
+        back_populates="journal_entry", cascade="all, delete-orphan"
+    )
+    journal_scalar_metric_logs: Mapped[list["JournalScalarMetricLog"]] = relationship(
+        back_populates="journal_entry", cascade="all, delete-orphan"
+    )
 
 
 # Association table associating a "Journal Entry" with a "Binary Metric"
@@ -411,7 +415,9 @@ class Recipe(Base):
     prepare_time_minutes: Mapped[int]
     serving_count: Mapped[int]
     instructions: Mapped[str]
-    recipe_ingredients: Mapped[list["RecipeIngredient"]] = relationship(back_populates="recipe")
+    recipe_ingredients: Mapped[list["RecipeIngredient"]] = relationship(
+        back_populates="recipe", cascade="all, delete-orphan"
+    )
 
 
 class Ingredient(Base):
@@ -480,7 +486,7 @@ class Notification(Base):
     __tablename__ = "notifications"
     id: Mapped[int] = mapped_column(primary_key=True)
 
-    recipient_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    recipient_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
     recipient: Mapped["User"] = relationship(back_populates="notifications")
 
     content: Mapped[str]
@@ -491,7 +497,7 @@ class Notification(Base):
     #
     # I'll just assume that all the "seen" ones can be soft-deleted
     # Perhaps an occasional job can be run on the server to hard-delete those marked as seen
-    is_seen: Mapped[bool] = mapped_column(server_default=text("FALSE"))
+    is_seen: Mapped[bool] = mapped_column(server_default=text("FALSE"), index=True)
 
     # ----- Type + Data -----
     # For use at the application layer. Perhaps the type can dictate where you are led to when the app is clicked
