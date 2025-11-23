@@ -246,7 +246,7 @@ def test_delete_article_success(
     db_session.commit()
 
     response = client.delete(f"/articles/{article.id}")
-    assert response.status_code == status.HTTP_200_OK
+    assert response.status_code == status.HTTP_204_NO_CONTENT, "Article should be deleted successfully"
 
     edu_article = db_session.get(EduArticle, article.id)
     assert edu_article is None, "Article should be 'None'"

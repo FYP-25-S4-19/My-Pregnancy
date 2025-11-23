@@ -9,7 +9,7 @@ from app.db.db_schema import PregnantWoman
 from app.features.journal.journal_models import GetJournalEntryResponse, UpsertJournalEntryRequest
 from app.features.journal.journal_service import JournalService
 
-journal_router = APIRouter(prefix="/journal")
+journal_router = APIRouter(prefix="/journals")
 
 
 def get_journal_service(db: Session = Depends(get_db)) -> JournalService:

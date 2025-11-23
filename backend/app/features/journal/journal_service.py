@@ -84,6 +84,11 @@ class JournalService:
         return response_list
 
     def upsert_journal_entry(self, mother_id: int, entry_date: date, request: UpsertJournalEntryRequest) -> None:
+        if entry_date > date.today():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail="Journal entry date cannot be in the future"
+            )
+
         # 1. Check for Existing Entry (Eager load relationships for update/create)
         stmt = (
             select(JournalEntry)

@@ -18,13 +18,13 @@ def get_appointment_service(db: Session = Depends(get_db)) -> AppointmentService
     return AppointmentService(db)
 
 
-@appointments_router.post("/", status_code=status.HTTP_201_CREATED)
+@appointments_router.post("/", response_model=None, status_code=status.HTTP_201_CREATED)
 def create_appointment(
     request: CreateAppointmentRequest,
     service: AppointmentService = Depends(get_appointment_service),
     db: Session = Depends(get_db),
     mother: PregnantWoman = Depends(require_role(PregnantWoman)),
-):
+) -> None:
     try:
         service.create_appointment_request(request.doctor_id, mother.id, request.start_time)
         db.commit()
@@ -40,13 +40,13 @@ def get_all_appointments(
     return service.get_all_appointments(user)
 
 
-@appointments_router.patch("/")
+@appointments_router.patch("/", response_model=None, status_code=status.HTTP_204_NO_CONTENT)
 def edit_appointment_start_time(
     request: EditAppointmentRequest,
     service: AppointmentService = Depends(get_appointment_service),
     db: Session = Depends(get_db),
     mother: PregnantWoman = Depends(require_role(PregnantWoman)),
-):
+) -> None:
     try:
         service.edit_appointment_start_time(request, mother.id)
         db.commit()
@@ -55,13 +55,13 @@ def edit_appointment_start_time(
         raise
 
 
-@appointments_router.delete("/{appointment_id}")
+@appointments_router.delete("/{appointment_id}", response_model=None, status_code=status.HTTP_204_NO_CONTENT)
 def delete_appointment(
     appointment_id: int,
     service: AppointmentService = Depends(get_appointment_service),
     db: Session = Depends(get_db),
     mother: PregnantWoman = Depends(require_role(PregnantWoman)),
-):
+) -> None:
     try:
         service.delete_appointment(appointment_id, mother.id)
         db.commit()
@@ -70,13 +70,13 @@ def delete_appointment(
         raise
 
 
-@appointments_router.patch("/{appointment_id}/accept")
+@appointments_router.patch("/{appointment_id}/accept", response_model=None, status_code=status.HTTP_204_NO_CONTENT)
 def accept_appointment(
     appointment_id: int,
     service: AppointmentService = Depends(get_appointment_service),
     db: Session = Depends(get_db),
     doctor: VolunteerDoctor = Depends(require_role(VolunteerDoctor)),
-):
+) -> None:
     try:
         service.accept_appointment(appointment_id, doctor.id)
         db.commit()
@@ -85,13 +85,13 @@ def accept_appointment(
         raise
 
 
-@appointments_router.patch("/{appointment_id}/reject")
+@appointments_router.patch("/{appointment_id}/reject", response_model=None, status_code=status.HTTP_204_NO_CONTENT)
 def reject_appointment(
     appointment_id: int,
     service: AppointmentService = Depends(get_appointment_service),
     db: Session = Depends(get_db),
     doctor: VolunteerDoctor = Depends(require_role(VolunteerDoctor)),
-):
+) -> None:
     try:
         service.reject_appointment(appointment_id, doctor.id)
         db.commit()

@@ -94,7 +94,7 @@ def test_edit_appointment_success(
         "/appointments",
         content=EditAppointmentRequest(appointment_id=appointment.id, new_start_time=new_start_time).model_dump_json(),
     )
-    assert response.status_code == status.HTTP_200_OK, "Editing appointment 'new_start_time' should succeed"
+    assert response.status_code == status.HTTP_204_NO_CONTENT, "Editing appointment 'new_start_time' should return 204"
 
 
 def test_edit_appointment_not_found(authenticated_pregnant_woman_client: tuple[TestClient, PregnantWoman]) -> None:
@@ -156,7 +156,7 @@ def test_delete_appointment_success(
     db_session.commit()
 
     delete_response = client.delete(f"/appointments/{appointment.id}")
-    assert delete_response.status_code == status.HTTP_200_OK, "Deleting appointment should succeed"
+    assert delete_response.status_code == status.HTTP_204_NO_CONTENT, "Deleting appointment should return 204"
 
     deleted_appointment = db_session.get(Appointment, appointment.id)
     assert deleted_appointment is None, "Appointment should be deleted from the database"
@@ -213,7 +213,7 @@ def test_accept_appointment_success(
     db_session.add(appointment)
     db_session.commit()
     accept_response = client.patch(f"/appointments/{appointment.id}/accept")
-    assert accept_response.status_code == status.HTTP_200_OK, "Accepting appointment should succeed"
+    assert accept_response.status_code == status.HTTP_204_NO_CONTENT, "Accepting appointment should return 204"
 
     updated_appointment = db_session.get(Appointment, appointment.id)
     assert updated_appointment is not None, "Appointment should exist in the database"
@@ -236,7 +236,7 @@ def test_reject_appointment_success(
     db_session.add(appointment)
     db_session.commit()
     reject_response = client.patch(f"/appointments/{appointment.id}/reject")
-    assert reject_response.status_code == status.HTTP_200_OK, "Rejecting appointment should succeed"
+    assert reject_response.status_code == status.HTTP_204_NO_CONTENT, "Rejecting appointment should return a 204"
 
     updated_appointment = db_session.get(Appointment, appointment.id)
     assert updated_appointment is not None, "Appointment should exist in the database"
