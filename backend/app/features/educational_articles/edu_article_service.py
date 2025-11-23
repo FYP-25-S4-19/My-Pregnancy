@@ -69,5 +69,5 @@ class EduArticleService:
         if article is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
         if article.author_id != deleter.id:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
         self.db.delete(article)

@@ -267,7 +267,7 @@ def test_delete_article_not_authorized(
     db_session.commit()
 
     response = client.delete(f"/articles/{article.id}")
-    assert response.status_code == status.HTTP_401_UNAUTHORIZED, (
+    assert response.status_code == status.HTTP_403_FORBIDDEN, (
         "Trying to delete an article which was not authored by you"
     )
 

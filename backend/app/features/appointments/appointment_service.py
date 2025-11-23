@@ -33,7 +33,7 @@ class AppointmentService:
     def get_all_appointments(self, user: User) -> list[AppointmentResponse]:
         is_participant: bool = user.role == UserRole.PREGNANT_WOMAN or user.role == UserRole.VOLUNTEER_DOCTOR
         if not is_participant:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
 
         all_appointments = (
             self.db.query(Appointment).where(Appointment.volunteer_doctor_id == user.id).all()
@@ -67,7 +67,7 @@ class AppointmentService:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Invalid appointment ID")
         if appointment.mother_id != mother_id:
             raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED, detail="Attempting to modify appointment for another entity"
+                status_code=status.HTTP_403_FORBIDDEN, detail="Attempting to modify appointment for another entity"
             )
         if req.new_start_time <= datetime.now():
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Start time must be in the future")
@@ -79,7 +79,7 @@ class AppointmentService:
         if appointment is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
         if appointment.mother_id != mother_id:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
         self.db.delete(appointment)
 
     def accept_appointment(self, appointment_id: int, doctor_id: int) -> None:
@@ -87,9 +87,9 @@ class AppointmentService:
         if appointment is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
         if appointment.volunteer_doctor_id != doctor_id:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
         if appointment.status == AppointmentStatus.ACCEPTED:
-            raise HTTPException(status_code=status.HTTP_304_NOT_MODIFIED, detail="Appointment is already accepted")
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Appointment is already accepted")
         if appointment.status != AppointmentStatus.PENDING_ACCEPT_REJECT:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST, detail="Only pending appointments can be accepted"
@@ -101,9 +101,9 @@ class AppointmentService:
         if appointment is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
         if appointment.volunteer_doctor_id != doctor_id:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
         if appointment.status == AppointmentStatus.REJECTED:
-            raise HTTPException(status_code=status.HTTP_304_NOT_MODIFIED, detail="Appointment is already rejected")
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Appointment is already rejected")
         if appointment.status != AppointmentStatus.PENDING_ACCEPT_REJECT:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST, detail="Only pending appointments can be rejected"

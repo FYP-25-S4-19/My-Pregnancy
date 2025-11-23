@@ -189,7 +189,7 @@ def test_delete_appointment_for_other_user(
     db_session.commit()
 
     delete_response = authorized_client.delete(f"/appointments/{other_mother_appointment.id}")
-    assert delete_response.status_code == status.HTTP_401_UNAUTHORIZED, (
+    assert delete_response.status_code == status.HTTP_403_FORBIDDEN, (
         "Should not allow deleting appointment belonging to another user"
     )
 
@@ -282,7 +282,7 @@ def test_accept_appointment_unauthorized(
     db_session.commit()
 
     accept_response = authorized_client.patch(f"/appointments/{other_doctor_appointment.id}/accept")
-    assert accept_response.status_code == status.HTTP_401_UNAUTHORIZED, (
+    assert accept_response.status_code == status.HTTP_403_FORBIDDEN, (
         "Should not allow accepting appointment belonging to another doctor"
     )
 
@@ -304,7 +304,7 @@ def test_accept_appointment_already_accepted(
     db_session.commit()
 
     accept_response = client.patch(f"/appointments/{appointment.id}/accept")
-    assert accept_response.status_code == status.HTTP_304_NOT_MODIFIED, (
+    assert accept_response.status_code == status.HTTP_409_CONFLICT, (
         "Should not be able to accept an already accepted appointment"
     )
 
@@ -328,7 +328,7 @@ def test_reject_appointment_unauthorized(
     db_session.commit()
 
     reject_response = authorized_client.patch(f"/appointments/{other_doctor_appointment.id}/reject")
-    assert reject_response.status_code == status.HTTP_401_UNAUTHORIZED, (
+    assert reject_response.status_code == status.HTTP_403_FORBIDDEN, (
         "Should not allow rejecting appointment belonging to another doctor"
     )
 
@@ -350,6 +350,6 @@ def test_reject_appointment_already_rejected(
     db_session.commit()
 
     reject_response = client.patch(f"/appointments/{appointment.id}/reject")
-    assert reject_response.status_code == status.HTTP_304_NOT_MODIFIED, (
+    assert reject_response.status_code == status.HTTP_409_CONFLICT, (
         "Should not be able to reject an already rejected appointment"
     )
