@@ -32,8 +32,12 @@ WORKDIR /app
 
 # Install *only* runtime dependencies for Python packages
 # (psycopg2-binary needs libpq-dev)
+#
+# Install make, which is needed to run migrations (and other scripts) in the Makefile
+# Unconventional, but it's easier for me to manage than writing separate shell scripts
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq-dev \
+    make \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy the pre-built virtual environment from the builder stage

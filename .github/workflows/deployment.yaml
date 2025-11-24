@@ -54,8 +54,7 @@ jobs:
               "sudo docker image prune -a -f",
               "aws ecr get-login-password --region ${{ vars.AWS_REGION }} | docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}",
               "sudo docker-compose pull",
-              "sudo docker-compose up -d --remove-orphans",
-              "sleep 10",
-              "sudo docker-compose exec -T api alembic upgrade head"
+              "sudo docker-compose up -d --remove-orphans --wait",
+              "sudo docker exec api alembic upgrade head"
             ]' \
             --region ${{ vars.AWS_REGION }}
