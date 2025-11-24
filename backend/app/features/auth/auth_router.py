@@ -14,7 +14,7 @@ def get_auth_service(db: Session = Depends(get_db), ph: PasswordHasher = Depends
     return AuthService(db, ph)
 
 
-@auth_router.post("/register", response_model=None, status_code=status.HTTP_201_CREATED)
+@auth_router.post("/register", status_code=status.HTTP_201_CREATED)
 def register_via_username_email(
     req: CreatePregAccountRequest, auth_service: AuthService = Depends(get_auth_service), db: Session = Depends(get_db)
 ):

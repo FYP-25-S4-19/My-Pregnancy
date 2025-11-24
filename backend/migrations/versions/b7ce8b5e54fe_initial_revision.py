@@ -1,8 +1,8 @@
 """Initial revision
 
-Revision ID: c12c86058af3
+Revision ID: b7ce8b5e54fe
 Revises:
-Create Date: 2025-11-21 13:08:21.628314
+Create Date: 2025-11-24 01:41:38.812256
 
 """
 
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = "c12c86058af3"
+revision: str = "b7ce8b5e54fe"
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -174,6 +174,8 @@ def upgrade() -> None:
         ),
         sa.PrimaryKeyConstraint("id"),
     )
+    op.create_index(op.f("ix_notifications_is_seen"), "notifications", ["is_seen"], unique=False)
+    op.create_index(op.f("ix_notifications_recipient_id"), "notifications", ["recipient_id"], unique=False)
     op.create_table(
         "nutritionists",
         sa.Column("id", sa.Integer(), nullable=False),
@@ -303,12 +305,15 @@ def upgrade() -> None:
         sa.Column("author_id", sa.Integer(), nullable=False),
         sa.Column("content", sa.Text(), nullable=False),
         sa.Column("logged_on", sa.Date(), nullable=False),
+        sa.Column("systolic", sa.Integer(), server_default=sa.text("0"), nullable=False),
+        sa.Column("diastolic", sa.Integer(), server_default=sa.text("0"), nullable=False),
         sa.ForeignKeyConstraint(
             ["author_id"],
             ["pregnant_women.id"],
         ),
         sa.PrimaryKeyConstraint("id"),
     )
+    op.create_index(op.f("ix_journal_entries_logged_on"), "journal_entries", ["logged_on"], unique=False)
     op.create_table(
         "kick_tracker_sessions",
         sa.Column("id", sa.Integer(), nullable=False),
@@ -382,17 +387,6 @@ def upgrade() -> None:
         sa.PrimaryKeyConstraint("journal_entry_id", "binary_metric_id"),
     )
     op.create_table(
-        "journal_blood_pressure_logs",
-        sa.Column("journal_entry_id", sa.Integer(), nullable=False),
-        sa.Column("systolic", sa.Integer(), nullable=False),
-        sa.Column("diastolic", sa.Integer(), nullable=False),
-        sa.ForeignKeyConstraint(
-            ["journal_entry_id"],
-            ["journal_entries.id"],
-        ),
-        sa.PrimaryKeyConstraint("journal_entry_id"),
-    )
-    op.create_table(
         "journal_scalar_metric_logs",
         sa.Column("journal_entry_id", sa.Integer(), nullable=False),
         sa.Column("scalar_metric_id", sa.Integer(), nullable=False),
@@ -458,12 +452,12 @@ def downgrade() -> None:
     op.drop_table("recipe_ingredients")
     op.drop_table("kick_tracker_kicks")
     op.drop_table("journal_scalar_metric_logs")
-    op.drop_table("journal_blood_pressure_logs")
     op.drop_table("journal_binary_metric_logs")
     op.drop_table("thread_comments")
     op.drop_table("saved_volunteer_doctors")
     op.drop_table("recipes")
     op.drop_table("kick_tracker_sessions")
+    op.drop_index(op.f("ix_journal_entries_logged_on"), table_name="journal_entries")
     op.drop_table("journal_entries")
     op.drop_table("edu_articles")
     op.drop_table("community_thread_likes")
@@ -472,6 +466,8 @@ def downgrade() -> None:
     op.drop_table("user_app_feedback")
     op.drop_table("pregnant_women")
     op.drop_table("nutritionists")
+    op.drop_index(op.f("ix_notifications_recipient_id"), table_name="notifications")
+    op.drop_index(op.f("ix_notifications_is_seen"), table_name="notifications")
     op.drop_table("notifications")
     op.drop_table("expo_push_tokens")
     op.drop_table("community_threads")

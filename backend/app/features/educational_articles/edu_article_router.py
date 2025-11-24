@@ -38,7 +38,7 @@ def create_article(
     db: Session = Depends(get_db),
     doctor: VolunteerDoctor = Depends(require_role(VolunteerDoctor)),
     service: EduArticleService = Depends(get_edu_articles_service),
-):
+) -> None:
     try:
         service.create_article(category, title, content_markdown, img_data, doctor)
         db.commit()
@@ -47,13 +47,13 @@ def create_article(
         raise
 
 
-@edu_articles_router.delete("/{article_id}")
+@edu_articles_router.delete("/{article_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_article(
     article_id: int,
     service: EduArticleService = Depends(get_edu_articles_service),
     db: Session = Depends(get_db),
     deleter: VolunteerDoctor = Depends(require_role(VolunteerDoctor)),
-):
+) -> None:
     try:
         service.delete_article(article_id, deleter)
         db.commit()
