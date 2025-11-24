@@ -49,12 +49,13 @@ jobs:
             --instance-ids "${{ vars.EC2_INSTANCE_ID }}" \
             --document-name "AWS-RunShellScript" \
             --parameters commands='[
-              "cd ~/app",
-              "aws ecr get-login-password --region ${{ vars.AWS_REGION }} | \
-              docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}",
+              "exec > /tmp/ssm_deploy.log 2>&1",
+              "cd /home/ec2-user/app",
+              "sudo docker image prune -a -f",
+              "aws ecr get-login-password --region ${{ vars.AWS_REGION }} | docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}",
               "sudo docker-compose pull",
               "sudo docker-compose up -d --remove-orphans",
-              "sudo docker-compose exec api alembic upgrade head",
-              "sudo docker image prune -a -f"
+              "sleep 10",
+              "sudo docker-compose exec -T api alembic upgrade head"
             ]' \
             --region ${{ vars.AWS_REGION }}

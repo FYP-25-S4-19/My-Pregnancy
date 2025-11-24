@@ -37,8 +37,8 @@ jobs:
       - name: Start LocalStack
         uses: LocalStack/setup-localstack@main
         with:
-          image-tag: 'latest'        
-          install-awslocal: true     
+          image-tag: "latest"
+          install-awslocal: true
           use-pro: false
 
       - name: Install dependencies for PostgreSQL Driver
@@ -49,20 +49,20 @@ jobs:
       - name: Install Python dependencies
         working-directory: ./backend
         run: |
-          uv venv 
+          uv venv
           source .venv/bin/activate
           uv sync
 
-      - name: Run database migrations 
+      - name: Run database migrations
         working-directory: ./backend
         run: uv run alembic upgrade head
         env:
           DATABASE_URL: postgresql://mypregnancy-user:mypregnancy-password@localhost:5432/mypregnancy-db
-          
+
       - name: Run PyTest
         working-directory: ./backend
         run: uv run pytest
-        env: 
+        env:
           APP_ENV: dev
           SECRET_KEY: BOFlVC5OMOAyV7qxoQhhlTmUoR37PPy6
           POSTGRES_DB: fyp_db
@@ -73,10 +73,8 @@ jobs:
           DATABASE_URL: postgresql://mypregnancy-user:mypregnancy-password@localhost:5432/mypregnancy-db
           AWS_ACCESS_KEY_ID: test
           AWS_SECRET_ACCESS_KEY: test
-          AWS_DEFAULT_REGION: ap-southeast-1
           AWS_ENDPOINT_URL: http://localstack:4567
-          S3_BUCKET_NAME: mypregnancy-bucket 
-          JWT_EXPIRATION_MINUTES: 30
-          LOCALSTACK_ENDPOINT_URL: http://localhost:4567 
-          
-          
+          LOCALSTACK_ENDPOINT_URL: http://localhost:4567
+          S3_BUCKET_NAME: mypregnancy-bucket
+          S3_BUCKET_REGION: ap-southeast-1
+          JWT_EXPIRATION_MINUTES: 8
