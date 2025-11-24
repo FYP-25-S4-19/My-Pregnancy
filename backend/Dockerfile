@@ -38,6 +38,7 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq-dev \
     make \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy the pre-built virtual environment from the builder stage
