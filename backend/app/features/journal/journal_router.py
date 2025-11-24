@@ -19,14 +19,14 @@ def get_journal_service(db: Session = Depends(get_db)) -> JournalService:
 @journal_router.get("/", response_model=list[GetJournalEntryResponse])
 def get_all_journal_entries_for_mother(
     mother: PregnantWoman = Depends(require_role(PregnantWoman)), service: JournalService = Depends(get_journal_service)
-):
+) -> list[GetJournalEntryResponse]:
     return service.get_journal_entries_for_mother(mother.id)
 
 
 @journal_router.put("/{entry_date}")
 def upsert_journal_entry(
     entry_date: date,
-    request: UpsertJournalEntryRequest,  # We'll rename this to be more generic, e.g., JournalEntryData
+    request: UpsertJournalEntryRequest,
     mother: PregnantWoman = Depends(require_role(PregnantWoman)),
     db: Session = Depends(get_db),
     service: JournalService = Depends(get_journal_service),

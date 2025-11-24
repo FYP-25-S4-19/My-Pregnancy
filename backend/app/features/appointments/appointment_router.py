@@ -18,7 +18,7 @@ def get_appointment_service(db: Session = Depends(get_db)) -> AppointmentService
     return AppointmentService(db)
 
 
-@appointments_router.post("/", response_model=None, status_code=status.HTTP_201_CREATED)
+@appointments_router.post("/", status_code=status.HTTP_201_CREATED)
 def create_appointment(
     request: CreateAppointmentRequest,
     service: AppointmentService = Depends(get_appointment_service),
@@ -40,7 +40,7 @@ def get_all_appointments(
     return service.get_all_appointments(user)
 
 
-@appointments_router.patch("/", response_model=None, status_code=status.HTTP_204_NO_CONTENT)
+@appointments_router.patch("/", status_code=status.HTTP_204_NO_CONTENT)
 def edit_appointment_start_time(
     request: EditAppointmentRequest,
     service: AppointmentService = Depends(get_appointment_service),
@@ -55,7 +55,7 @@ def edit_appointment_start_time(
         raise
 
 
-@appointments_router.delete("/{appointment_id}", response_model=None, status_code=status.HTTP_204_NO_CONTENT)
+@appointments_router.delete("/{appointment_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_appointment(
     appointment_id: int,
     service: AppointmentService = Depends(get_appointment_service),
@@ -70,7 +70,7 @@ def delete_appointment(
         raise
 
 
-@appointments_router.patch("/{appointment_id}/accept", response_model=None, status_code=status.HTTP_204_NO_CONTENT)
+@appointments_router.patch("/{appointment_id}/accept", status_code=status.HTTP_204_NO_CONTENT)
 def accept_appointment(
     appointment_id: int,
     service: AppointmentService = Depends(get_appointment_service),
@@ -85,7 +85,7 @@ def accept_appointment(
         raise
 
 
-@appointments_router.patch("/{appointment_id}/reject", response_model=None, status_code=status.HTTP_204_NO_CONTENT)
+@appointments_router.patch("/{appointment_id}/reject", status_code=status.HTTP_204_NO_CONTENT)
 def reject_appointment(
     appointment_id: int,
     service: AppointmentService = Depends(get_appointment_service),

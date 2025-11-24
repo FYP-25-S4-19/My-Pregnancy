@@ -10,11 +10,6 @@ class BloodPressureData:
     diastolic: int
 
 
-class BinaryMetricUpsert(CustomBaseModel):
-    metric_id: int
-    is_selected: bool
-
-
 class ScalarMetricUpsert(CustomBaseModel):
     metric_id: int
     value: float

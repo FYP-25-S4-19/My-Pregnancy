@@ -5,7 +5,6 @@ repos:
       - id: ruff-check
         name: Ruff Linter & Sorter
         files: ^backend/
-        args: [ --fix ]
 
       - id: ruff-format
         name: Ruff Formatter
