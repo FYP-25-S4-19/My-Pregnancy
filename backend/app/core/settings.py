@@ -15,12 +15,15 @@ class Settings(BaseSettings):
     POSTGRES_PORT: int
     DATABASE_URL: str
 
-    AWS_ACCESS_KEY_ID: str
-    AWS_SECRET_ACCESS_KEY: str
-    AWS_DEFAULT_REGION: str
-    AWS_ENDPOINT_URL: str
+    # These are "nullable" because they are required by LocalStack for local development
+    # but not needed for production with AWS (S3 access is via IAM roles, NOT access keys)
+    AWS_ACCESS_KEY_ID: str | None = None
+    AWS_SECRET_ACCESS_KEY: str | None = None
+    AWS_ENDPOINT_URL: str | None = None
+    LOCALSTACK_ENDPOINT_URL: str | None = None
+
     S3_BUCKET_NAME: str
-    LOCALSTACK_ENDPOINT_URL: str
+    S3_BUCKET_REGION: str
 
     JWT_EXPIRATION_MINUTES: int
 

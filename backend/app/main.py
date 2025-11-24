@@ -14,14 +14,16 @@ from app.features.misc_routes import misc_router
 app: FastAPI
 
 APP_TITLE = "MyPregnancy API"
-if settings.APP_ENV == "dev":
-    app = FastAPI(title=APP_TITLE)
-else:
-    app = FastAPI(title=APP_TITLE, docs_url=None, redoc_url=None, openapi_url=None)
+# if settings.APP_ENV == "dev":
+#     app = FastAPI(title=APP_TITLE)
+# else:
+#     app = FastAPI(title=APP_TITLE, docs_url=None, redoc_url=None, openapi_url=None)
 
+app = FastAPI(title=APP_TITLE)  # For now, makes it easier to test with Swagger UI in prod (our API is public anyway)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:8081", "http://127.0.0.1:8081", "https://mypregnancy.click"],
+    # allow_origins=["http://localhost:8081", "http://127.0.0.1:8081", "https://mypregnancy.click"],
+    allow_origins=["*"],  # As stated above.....allow all origins for now, to make testing easier (blasphemy I know)
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

@@ -2,7 +2,7 @@
 # STAGE 1: The "Builder"
 # This stage installs build tools and compiles your dependencies
 # -----------------------------------------------------------------
-FROM python:3.13.9-slim as builder
+FROM python:3.13.9-slim AS builder
 
 WORKDIR /app
 
