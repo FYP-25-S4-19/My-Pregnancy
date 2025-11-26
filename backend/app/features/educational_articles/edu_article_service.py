@@ -38,7 +38,7 @@ class EduArticleService:
             id=article.id,
             author_id=article.author_id,
             author=full_name,
-            category=article.category,
+            category=article.category.value,
             img_key=None,
             title=article.title,
             content_markdown=article.content_markdown,
@@ -62,6 +62,7 @@ class EduArticleService:
         self.db.flush()
         article_img_key: str = S3StorageInterface.put_article_img(article.id, img_data)
         article.img_key = article_img_key
+        article.img_key = ""
         return article
 
     def delete_article(self, article_id: int, deleter: VolunteerDoctor) -> None:

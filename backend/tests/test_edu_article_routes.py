@@ -34,7 +34,7 @@ def test_get_articles_by_category_success(client: TestClient, db_session: Sessio
         assert isinstance(article["title"], str), "Article should have a 'title' attribute of type 'str'"
 
 
-def test_get_articles_by_nonexistent_category_failure(client: TestClient, db_session: Session) -> None:
+def test_get_articles_by_nonexistent_category_failure(client: TestClient) -> None:
     response = client.get("/articles?category=THERES_NO_WAY_THIS_CATEGORY_EXISTS_KEYBOARD_MASHING_ALFIJLEAIJFL")
     assert response.status_code == status.HTTP_400_BAD_REQUEST
 
@@ -68,7 +68,7 @@ def test_get_article_detailed_success(
     assert data["content_markdown"] == article_content
 
 
-def test_get_article_detailed_invalid_id(client: TestClient, db_session: Session) -> None:
+def test_get_article_detailed_invalid_id(client: TestClient) -> None:
     response = client.get("/articles/1337")
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
@@ -103,7 +103,6 @@ def test_create_article_success(
 
 def test_unregistered_create_article_fail(
     client: TestClient,
-    db_session: Session,
     img_file_fixture,
 ) -> None:
     response = client.post(
@@ -154,7 +153,6 @@ def test_create_article_fail_due_to_duplicate(
 
 def test_admin_create_article_fail(
     authenticated_admin_client: tuple[TestClient, Admin],
-    db_session: Session,
     img_file_fixture,
 ) -> None:
     client, _ = authenticated_admin_client
@@ -172,7 +170,6 @@ def test_admin_create_article_fail(
 
 def test_pregnant_woman_create_article_fail(
     authenticated_pregnant_woman_client: tuple[TestClient, PregnantWoman],
-    db_session: Session,
     img_file_fixture,
 ) -> None:
     client, _ = authenticated_pregnant_woman_client
@@ -192,7 +189,6 @@ def test_pregnant_woman_create_article_fail(
 
 def test_nutritionist_create_article_fail(
     authenticated_nutritionist_client: tuple[TestClient, Nutritionist],
-    db_session: Session,
     img_file_fixture,
 ) -> None:
     client, _ = authenticated_nutritionist_client
@@ -210,9 +206,9 @@ def test_nutritionist_create_article_fail(
     )
 
 
-# ==========================================================================
-# ========================= DELETE ARTICLES ================================
-# ==========================================================================
+# # ==========================================================================
+# # ========================= DELETE ARTICLES ================================
+# # ==========================================================================
 def test_unregistered_delete_article_fail(client: TestClient, db_session: Session) -> None:
     article = EduArticle(
         author_id=1337,
@@ -275,10 +271,8 @@ def test_delete_article_not_authorized(
     assert edu_article is not None, "Article should be still exist"
 
 
-def test_delete_nonexistent_article(
-    authenticated_doctor_client: tuple[TestClient, VolunteerDoctor], db_session: Session
-) -> None:
-    client, doctor = authenticated_doctor_client
+def test_delete_nonexistent_article(authenticated_doctor_client: tuple[TestClient, VolunteerDoctor]) -> None:
+    client, _ = authenticated_doctor_client
 
     response = client.delete("/articles/3275")
     assert response.status_code == status.HTTP_404_NOT_FOUND, "Article should not exist"

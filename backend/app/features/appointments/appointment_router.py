@@ -11,7 +11,7 @@ from app.features.appointments.appointment_models import (
 )
 from app.features.appointments.appointment_service import AppointmentService
 
-appointments_router = APIRouter(prefix="/appointments")
+appointments_router = APIRouter(prefix="/appointments", tags=["Appointments"])
 
 
 def get_appointment_service(db: Session = Depends(get_db)) -> AppointmentService:

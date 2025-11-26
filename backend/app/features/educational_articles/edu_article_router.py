@@ -10,7 +10,7 @@ from app.features.educational_articles.edu_article_models import (
 )
 from app.features.educational_articles.edu_article_service import EduArticleService
 
-edu_articles_router = APIRouter(prefix="/articles")
+edu_articles_router = APIRouter(prefix="/articles", tags=["Educational Articles"])
 
 
 def get_edu_articles_service(db: Session = Depends(get_db)) -> EduArticleService:

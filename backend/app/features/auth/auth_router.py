@@ -7,7 +7,7 @@ from app.db.db_config import get_db
 from app.features.auth.auth_models import AuthLoginRequest, AuthLoginResponse, CreatePregAccountRequest
 from app.features.auth.auth_service import AuthService
 
-auth_router = APIRouter(prefix="/auth")
+auth_router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 
 def get_auth_service(db: Session = Depends(get_db), ph: PasswordHasher = Depends(get_password_hasher)):
