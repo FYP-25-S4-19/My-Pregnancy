@@ -82,7 +82,12 @@ def img_file_fixture() -> dict[str, tuple[str, bytes, str]]:
 @pytest_asyncio.fixture(scope="function")
 async def admin(db_session: AsyncSession) -> Admin:
     admin = Admin(
-        username="test_admin", email="admin@test.com", password_hash="hashed_password_123", role=UserRole.ADMIN
+        first_name="admin_firstname",
+        middle_name="admin_middlename",
+        last_name="admin_lastname",
+        email="admin@test.com",
+        password_hash="hashed_password_123",
+        role=UserRole.ADMIN,
     )
     db_session.add(admin)
     await db_session.commit()
@@ -118,7 +123,6 @@ async def volunteer_doctor_factory(db_session: AsyncSession):
             kwargs["qualification_id"] = qualification.id
 
         defaults = {
-            "username": f"doctor_{unique_id}",
             "role": UserRole.VOLUNTEER_DOCTOR,
             "email": f"doctor_{unique_id}@test.com",
             "password_hash": "hashed_password_123",
@@ -164,12 +168,13 @@ async def pregnant_woman_factory(db_session: AsyncSession):
     async def _create_woman(**kwargs) -> PregnantWoman:
         unique_id = str(uuid.uuid4())
         defaults = {
-            "username": f"mother_{unique_id}",
+            "first_name": unique_id,
+            "middle_name": unique_id,
+            "last_name": unique_id,
             "role": UserRole.PREGNANT_WOMAN,
             "email": f"mother_{unique_id}@test.com",
             "password_hash": "hashed_password_456",
         }
-
         user_data = defaults | kwargs
         mother = PregnantWoman(**user_data)
         db_session.add(mother)
@@ -217,7 +222,6 @@ async def nutritionist_factory(db_session: AsyncSession) -> Callable[..., Any]:
             kwargs["qualification_id"] = qualification.id
 
         defaults = {
-            "username": f"nutritionist_{unique_id}",
             "role": UserRole.NUTRITIONIST,
             "email": f"nutritionist_{unique_id}@test.com",
             "password_hash": "hashed_password_789",

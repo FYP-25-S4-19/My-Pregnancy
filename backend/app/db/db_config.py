@@ -11,17 +11,13 @@ SYNC_DATABASE_URL = os.getenv("SYNC_DATABASE_URL") or ""
 if not SYNC_DATABASE_URL:
     raise RuntimeError("SYNC_DATABASE_URL not set in '.env' file'")
 
-
-ASYNC_DATABASE_URL = os.getenv("ASYNC_DATABASE_URL") or ""
-if not ASYNC_DATABASE_URL:
-    raise RuntimeError("ASYNC_DATABASE_URL not set in '.env' file'")
-# --------------------------------------------------------------------------
-# Synchronous Database Connection
-# Used for: Scripts, Seeding, Alembic Migrations (often)
-# --------------------------------------------------------------------------
 engine = create_engine(SYNC_DATABASE_URL, pool_pre_ping=True)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
+# --------------------------------------------------------------------------
+ASYNC_DATABASE_URL = os.getenv("ASYNC_DATABASE_URL") or ""
+if not ASYNC_DATABASE_URL:
+    raise RuntimeError("ASYNC_DATABASE_URL not set in '.env' file'")
 
 async_engine = create_async_engine(ASYNC_DATABASE_URL, pool_pre_ping=True)
 AsyncSessionLocal = async_sessionmaker(
@@ -33,6 +29,7 @@ AsyncSessionLocal = async_sessionmaker(
 )
 
 
+# --------------------------------------------------------------------------
 async def get_db():
     async with AsyncSessionLocal() as db:
         try:

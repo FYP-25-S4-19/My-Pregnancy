@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 
 from argon2 import PasswordHasher
 from fastapi import HTTPException, status
-from sqlalchemy import or_, select
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.security import TokenData
@@ -17,16 +17,17 @@ class AuthService:
         self.db = db
         self.ph = ph
 
-    async def register_via_username_email(self, req: CreatePregAccountRequest) -> PregnantWoman:
-        query = select(User).where(or_(User.email == req.email, User.username == req.username))
-        result = await self.db.execute(query)
-        existing_user: User | None = result.scalars().first()
+    async def register_via_email(self, req: CreatePregAccountRequest) -> PregnantWoman:
+        stmt = select(User).where(User.email == req.email)
+        user_with_email: User | None = (await self.db.execute(stmt)).scalars().first()
 
-        if existing_user is not None:  # Already exists
-            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Username or email already in use")
+        if user_with_email is not None:  # Already exists
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already in use")
 
         new_preg_woman = PregnantWoman(
-            username=req.username,
+            first_name=req.first_name,
+            middle_name=req.middle_name,
+            last_name=req.last_name,
             role=UserRole.PREGNANT_WOMAN,
             email=req.email,
             password_hash=self.ph.hash(req.password),
@@ -36,10 +37,9 @@ class AuthService:
         self.db.add(new_preg_woman)
         return new_preg_woman
 
-    async def login_via_username(self, req: AuthLoginRequest) -> AuthLoginResponse:
-        query = select(User).where(User.username == req.username)
-        result = await self.db.execute(query)
-        user: User | None = result.scalars().first()
+    async def login_via_email(self, req: AuthLoginRequest) -> AuthLoginResponse:
+        stmt = select(User).where(User.email == req.email)
+        user: User | None = (await self.db.execute(stmt)).scalar_one_or_none()
 
         if not user or not user.is_active:
             raise HTTPException(

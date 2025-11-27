@@ -21,7 +21,7 @@ async def register_via_username_email(
     db: AsyncSession = Depends(get_db),
 ):
     try:
-        await auth_service.register_via_username_email(req)
+        await auth_service.register_via_email(req)
         await db.commit()
     except:
         await db.rollback()
@@ -32,7 +32,7 @@ async def register_via_username_email(
 async def login_via_username(
     req: AuthLoginRequest, auth_service: AuthService = Depends(get_auth_service)
 ) -> AuthLoginResponse:
-    return await auth_service.login_via_username(req)
+    return await auth_service.login_via_email(req)
 
 
 # oauth = OAuth()

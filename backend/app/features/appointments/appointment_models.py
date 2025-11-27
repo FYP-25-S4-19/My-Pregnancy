@@ -15,7 +15,7 @@ class AppointmentResponse(CustomBaseModel):
     doctor_name: str
 
     mother_id: int
-    mother_username: str
+    mother_name: str
 
     start_time: datetime
     status: str

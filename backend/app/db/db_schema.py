@@ -106,8 +106,11 @@ class User(Base):
     type: Mapped[str]
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    username: Mapped[str] = mapped_column(String(100), unique=True)
     profile_img_key: Mapped[str | None]
+
+    first_name: Mapped[str] = mapped_column(String(64))
+    middle_name: Mapped[str | None] = mapped_column(String(64))  # Middle name optional
+    last_name: Mapped[str] = mapped_column(String(64))
 
     role: Mapped["UserRole"] = mapped_column(SQLAlchemyEnum(UserRole))
 
@@ -135,12 +138,6 @@ class VolunteerDoctor(User):
     __mapper_args__ = {"polymorphic_identity": "volunteer_doctor"}
     id: Mapped[int] = mapped_column(ForeignKey("users.id"), primary_key=True)
 
-    # For all other subclasses of the base "User", they may use just "username"
-    # However, it would be more professional for Doctors & Nutritionists to have their full names available
-    first_name: Mapped[str] = mapped_column(String(64))
-    middle_name: Mapped[str | None] = mapped_column(String(64))  # Middle name optional
-    last_name: Mapped[str] = mapped_column(String(64))
-
     # Linking to their specific instance of their creds in the "medical credentials" table
     qualification_id: Mapped[int] = mapped_column(ForeignKey("doctor_qualifications.id"))
     qualification: Mapped["DoctorQualification"] = relationship(back_populates="doctor")
@@ -164,7 +161,6 @@ class PregnantWoman(User):
     saved_volunteer_doctors: Mapped[list["SavedVolunteerDoctor"]] = relationship(back_populates="mother")
     appointments: Mapped[list["Appointment"]] = relationship(back_populates="mother")
     journal_entries: Mapped[list["JournalEntry"]] = relationship(back_populates="author")
-    # bump_entries: Mapped[list["BumpEntry"]] = relationship(back_populates="uploader")
     kick_tracker_sessions: Mapped[list["KickTrackerSession"]] = relationship(back_populates="mother")
 
 
@@ -172,12 +168,6 @@ class Nutritionist(User):
     __tablename__ = "nutritionists"
     __mapper_args__ = {"polymorphic_identity": "nutritionist"}
     id: Mapped[int] = mapped_column(ForeignKey("users.id"), primary_key=True)
-
-    # For all other subclasses of the base "User", they may use just "username"
-    # However, it would be more professional for Doctors & Nutritionists to have their full names available
-    first_name: Mapped[str] = mapped_column(String(64))
-    middle_name: Mapped[str | None] = mapped_column(String(64))  # Middle name optional
-    last_name: Mapped[str] = mapped_column(String(64))
 
     # Linking to their specific instance of their creds in the "medical credentials" table
     qualification_id: Mapped[int] = mapped_column(ForeignKey("nutritionist_qualifications.id"))
@@ -187,9 +177,9 @@ class Nutritionist(User):
     recipes_created: Mapped[list["Recipe"]] = relationship(back_populates="nutritionist")
 
 
-# ==================================================
-# ================ QUALIFICATIONS ==================
-# ==================================================
+# ===========================================================
+# ==================== QUALIFICATIONS =======================
+# ===========================================================
 
 
 # The actual INSTANCES of "Medical Qualification" - Each VolunteerDoctor should have one!
@@ -216,9 +206,9 @@ class NutritionistQualification(Base):
     nutritionist: Mapped["Nutritionist"] = relationship(back_populates="qualification")
 
 
-# ================================================
-# =========== EDUCATIONAL CONTENT ================
-# ================================================
+# ===========================================================
+# ================== EDUCATIONAL CONTENT ====================
+# ===========================================================
 class EduArticle(Base):
     __tablename__ = "edu_articles"
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -516,10 +506,11 @@ class Notification(Base):
 class DoctorAccountCreationRequest(Base):
     __tablename__ = "doctor_account_creation_requests"
     id: Mapped[int] = mapped_column(primary_key=True)
-    email: Mapped[str] = mapped_column(String(255), unique=True)
     first_name: Mapped[str] = mapped_column(String(64))
     middle_name: Mapped[str | None] = mapped_column(String(64))  # Middle name optional
     last_name: Mapped[str] = mapped_column(String(64))
+    email: Mapped[str] = mapped_column(String(255), unique=True)
+    password: Mapped[str] = mapped_column()
     qualification_option: Mapped["DoctorQualificationOption"] = mapped_column(SQLAlchemyEnum(DoctorQualificationOption))
     qualification_img_key: Mapped[str | None]
     account_status: Mapped["AccountCreationRequestStatus"] = mapped_column(

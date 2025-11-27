@@ -1,8 +1,8 @@
 """Initial revision
 
-Revision ID: 523ab2920d18
+Revision ID: 7f6ab90db1c1
 Revises:
-Create Date: 2025-11-27 19:25:43.831373
+Create Date: 2025-11-27 20:16:41.246388
 
 """
 
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = "523ab2920d18"
+revision: str = "7f6ab90db1c1"
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -46,6 +46,7 @@ def upgrade() -> None:
         "doctor_account_creation_requests",
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("email", sa.String(length=255), nullable=False),
+        sa.Column("password", sa.String(), nullable=False),
         sa.Column("first_name", sa.String(length=64), nullable=False),
         sa.Column("middle_name", sa.String(length=64), nullable=True),
         sa.Column("last_name", sa.String(length=64), nullable=False),
@@ -122,8 +123,10 @@ def upgrade() -> None:
         "users",
         sa.Column("type", sa.String(), nullable=False),
         sa.Column("id", sa.Integer(), nullable=False),
-        sa.Column("username", sa.String(length=100), nullable=False),
         sa.Column("profile_img_key", sa.String(), nullable=True),
+        sa.Column("first_name", sa.String(length=64), nullable=False),
+        sa.Column("middle_name", sa.String(length=64), nullable=True),
+        sa.Column("last_name", sa.String(length=64), nullable=False),
         sa.Column(
             "role",
             sa.Enum("ADMIN", "VOLUNTEER_DOCTOR", "PREGNANT_WOMAN", "NUTRITIONIST", name="userrole"),
@@ -135,7 +138,6 @@ def upgrade() -> None:
         sa.Column("is_active", sa.Boolean(), server_default=sa.text("TRUE"), nullable=False),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("email"),
-        sa.UniqueConstraint("username"),
     )
     op.create_table(
         "admins",
@@ -203,9 +205,6 @@ def upgrade() -> None:
     op.create_table(
         "nutritionists",
         sa.Column("id", sa.Integer(), nullable=False),
-        sa.Column("first_name", sa.String(length=64), nullable=False),
-        sa.Column("middle_name", sa.String(length=64), nullable=True),
-        sa.Column("last_name", sa.String(length=64), nullable=False),
         sa.Column("qualification_id", sa.Integer(), nullable=False),
         sa.Column("is_verified", sa.Boolean(), server_default=sa.text("FALSE"), nullable=False),
         sa.ForeignKeyConstraint(
@@ -243,9 +242,6 @@ def upgrade() -> None:
     op.create_table(
         "volunteer_doctors",
         sa.Column("id", sa.Integer(), nullable=False),
-        sa.Column("first_name", sa.String(length=64), nullable=False),
-        sa.Column("middle_name", sa.String(length=64), nullable=True),
-        sa.Column("last_name", sa.String(length=64), nullable=False),
         sa.Column("qualification_id", sa.Integer(), nullable=False),
         sa.Column("is_verified", sa.Boolean(), server_default=sa.text("FALSE"), nullable=False),
         sa.ForeignKeyConstraint(

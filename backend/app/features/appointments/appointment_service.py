@@ -62,7 +62,9 @@ class AppointmentService:
                         part for part in [doctor.first_name, doctor.middle_name, doctor.last_name] if part
                     ),
                     mother_id=mother.id,
-                    mother_username=mother.username,
+                    mother_name=" ".join(
+                        part for part in [mother.first_name, mother.middle_name, mother.last_name] if part
+                    ),
                     start_time=appointment.start_time,
                     status=appointment.status.value,
                 )

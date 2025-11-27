@@ -4,14 +4,16 @@ from app.core.custom_base_model import CustomBaseModel
 
 
 class CreatePregAccountRequest(CustomBaseModel):
-    username: str
+    first_name: str
+    middle_name: str | None = None
+    last_name: str
     email: str
     password: str
-    due_date: date | None
+    due_date: date | None = None
 
 
 class AuthLoginRequest(CustomBaseModel):
-    username: str
+    email: str
     password: str
 
 

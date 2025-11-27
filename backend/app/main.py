@@ -9,6 +9,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from starlette.responses import JSONResponse
 
 from app.core.settings import settings
+from app.features.accounts.account_router import account_router
 from app.features.appointments.appointment_router import appointments_router
 from app.features.auth.auth_router import auth_router
 from app.features.educational_articles.edu_article_router import edu_articles_router
@@ -41,6 +42,7 @@ app.include_router(auth_router)
 app.include_router(edu_articles_router)
 app.include_router(appointments_router)
 app.include_router(journal_router)
+app.include_router(account_router)
 app.include_router(misc_router)
 app.add_middleware(SessionMiddleware, secret_key=settings.SECRET_KEY)
 

@@ -69,13 +69,16 @@ class UsersGenerator:
                 continue
 
             fake_created_at: datetime = faker.date_time_between(start_date="-3y", end_date="now")
-            username = folder_item.stem  # Exclude the extension
+            full_name: str = folder_item.stem  # Exclude the extension
+            fullname_parts: list[str] = full_name.split("_")
 
             preg_woman = PregnantWoman(
-                username=username,
                 role=UserRole.PREGNANT_WOMAN,
-                email=f"{username}@gmail.com",
-                password_hash=password_hasher.hash(username),
+                first_name=fullname_parts[0],
+                middle_name=fullname_parts[1] if len(fullname_parts) >= 3 else "",
+                last_name=fullname_parts[2] if len(fullname_parts) >= 3 else fullname_parts[1],
+                email=f"{full_name}@gmail.com",
+                password_hash=password_hasher.hash(full_name),
                 created_at=fake_created_at,
                 due_date=(  # 30% chance of the "due date" being null
                     fake_created_at + timedelta(days=random.randint(20, 260)) if random.random() > 0.3 else None
@@ -121,7 +124,6 @@ class UsersGenerator:
                 qualification_option=random.choice(list(DoctorQualificationOption)),
             )
             doctor = VolunteerDoctor(
-                username=fullname,  # Feels like doctors really should be using their full name only
                 first_name=fullname_parts[0],
                 middle_name=fullname_parts[1] if len(fullname_parts) >= 3 else "",
                 last_name=fullname_parts[2] if len(fullname_parts) >= 3 else fullname_parts[1],
@@ -184,7 +186,6 @@ class UsersGenerator:
                 qualification_option=random.choice(list(NutritionistQualificationOption)),
             )
             nutritionist = Nutritionist(
-                username=fullname,  # Feels like nutritionists really should be using their full name only
                 first_name=fullname_parts[0],
                 middle_name=fullname_parts[1] if len(fullname_parts) >= 3 else "",
                 last_name=fullname_parts[2] if len(fullname_parts) >= 3 else fullname_parts[1],
