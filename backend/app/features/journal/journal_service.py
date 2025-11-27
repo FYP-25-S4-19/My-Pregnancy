@@ -3,7 +3,8 @@ from datetime import date
 
 from fastapi import HTTPException, status
 from sqlalchemy import Sequence, select
-from sqlalchemy.orm import Session, selectinload
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.db.db_schema import BinaryMetric, JournalBinaryMetricLog, JournalEntry, JournalScalarMetricLog
 from app.features.journal.journal_models import (
@@ -17,15 +18,16 @@ from app.features.journal.journal_models import (
 
 
 class JournalService:
-    def __init__(self, db: Session):
+    def __init__(self, db: AsyncSession):
         self.db = db
 
-    def get_journal_entries_for_mother(self, mother_id: int) -> list[GetJournalEntryResponse]:
+    async def get_journal_entries_for_mother(self, mother_id: int) -> list[GetJournalEntryResponse]:
         # Fetch all possible options
         #
         # We need this to render the "unselected" options (False).
         # We sort by ID so the UI always renders them in the same order.
-        all_binary_defs: Sequence[BinaryMetric] = self.db.scalars(select(BinaryMetric).order_by(BinaryMetric.id)).all()
+        binary_defs_result = await self.db.execute(select(BinaryMetric).order_by(BinaryMetric.id))
+        all_binary_defs: Sequence[BinaryMetric] = binary_defs_result.scalars().all()
 
         # Fetch user data
         stmt = (
@@ -39,7 +41,8 @@ class JournalService:
             )
             .order_by(JournalEntry.logged_on.desc())
         )
-        entries = self.db.scalars(stmt).all()
+        entries_result = await self.db.execute(stmt)
+        entries = entries_result.scalars().all()
 
         response_list: list[GetJournalEntryResponse] = []
         for entry in entries:
@@ -83,7 +86,7 @@ class JournalService:
             )
         return response_list
 
-    def upsert_journal_entry(self, mother_id: int, entry_date: date, request: UpsertJournalEntryRequest) -> None:
+    async def upsert_journal_entry(self, mother_id: int, entry_date: date, request: UpsertJournalEntryRequest) -> None:
         if entry_date > date.today():
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST, detail="Journal entry date cannot be in the future"
@@ -98,7 +101,8 @@ class JournalService:
                 selectinload(JournalEntry.journal_scalar_metric_logs),
             )
         )
-        entry = self.db.scalars(stmt).first()
+        result = await self.db.execute(stmt)
+        entry = result.scalars().first()
 
         if entry is None:
             entry = JournalEntry(
@@ -109,7 +113,7 @@ class JournalService:
                 diastolic=request.blood_pressure.diastolic if request.blood_pressure else 0,
             )
             self.db.add(entry)
-            self.db.flush()
+            await self.db.flush()
 
         if request.content is not None:
             entry.content = request.content
@@ -130,12 +134,11 @@ class JournalService:
             for bm_id in request.binary_metric_ids:
                 entry.journal_binary_metric_logs.append(JournalBinaryMetricLog(binary_metric_id=bm_id))
 
-    def delete_journal_entry(self, mother_id: int, entry_date: date) -> None:
-        journal_entry = (
-            self.db.query(JournalEntry)
-            .filter(JournalEntry.logged_on == entry_date, JournalEntry.author_id == mother_id)
-            .first()
-        )
+    async def delete_journal_entry(self, mother_id: int, entry_date: date) -> None:
+        stmt = select(JournalEntry).where(JournalEntry.logged_on == entry_date, JournalEntry.author_id == mother_id)
+        result = await self.db.execute(stmt)
+        journal_entry = result.scalars().first()
+
         if journal_entry is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Journal entry not found")
-        self.db.delete(journal_entry)
+        await self.db.delete(journal_entry)

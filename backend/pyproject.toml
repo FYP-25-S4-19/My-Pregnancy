@@ -30,6 +30,7 @@ dependencies = [
     "sentry-sdk>=2.44.0",
     "beautifulsoup4>=4.14.2",
     "requests>=2.32.5",
+    "asyncpg>=0.31.0",
 ]
 
 # --------------------------------------------

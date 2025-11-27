@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, status
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.security import require_role
 from app.db.db_config import get_db
@@ -11,90 +11,90 @@ from app.features.appointments.appointment_models import (
 )
 from app.features.appointments.appointment_service import AppointmentService
 
-appointments_router = APIRouter(prefix="/appointments", tags=["Appointments"])
+appointments_router = APIRouter(prefix="/appointments")
 
 
-def get_appointment_service(db: Session = Depends(get_db)) -> AppointmentService:
+def get_appointment_service(db: AsyncSession = Depends(get_db)) -> AppointmentService:
     return AppointmentService(db)
 
 
 @appointments_router.post("/", status_code=status.HTTP_201_CREATED)
-def create_appointment(
+async def create_appointment(
     request: CreateAppointmentRequest,
     service: AppointmentService = Depends(get_appointment_service),
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     mother: PregnantWoman = Depends(require_role(PregnantWoman)),
 ) -> None:
     try:
-        service.create_appointment_request(request.doctor_id, mother.id, request.start_time)
-        db.commit()
+        await service.create_appointment_request(request.doctor_id, mother.id, request.start_time)
+        await db.commit()
     except:
-        db.rollback()
+        await db.rollback()
         raise
 
 
 @appointments_router.get("/", response_model=list[AppointmentResponse])
-def get_all_appointments(
+async def get_all_appointments(
     service: AppointmentService = Depends(get_appointment_service), user: User = Depends(require_role(User))
 ) -> list[AppointmentResponse]:
-    return service.get_all_appointments(user)
+    return await service.get_all_appointments(user)
 
 
 @appointments_router.patch("/", status_code=status.HTTP_204_NO_CONTENT)
-def edit_appointment_start_time(
+async def edit_appointment_start_time(
     request: EditAppointmentRequest,
     service: AppointmentService = Depends(get_appointment_service),
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     mother: PregnantWoman = Depends(require_role(PregnantWoman)),
 ) -> None:
     try:
-        service.edit_appointment_start_time(request, mother.id)
-        db.commit()
+        await service.edit_appointment_start_time(request, mother.id)
+        await db.commit()
     except:
-        db.rollback()
+        await db.rollback()
         raise
 
 
 @appointments_router.delete("/{appointment_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_appointment(
+async def delete_appointment(
     appointment_id: int,
     service: AppointmentService = Depends(get_appointment_service),
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     mother: PregnantWoman = Depends(require_role(PregnantWoman)),
 ) -> None:
     try:
-        service.delete_appointment(appointment_id, mother.id)
-        db.commit()
+        await service.delete_appointment(appointment_id, mother.id)
+        await db.commit()
     except:
-        db.rollback()
+        await db.rollback()
         raise
 
 
 @appointments_router.patch("/{appointment_id}/accept", status_code=status.HTTP_204_NO_CONTENT)
-def accept_appointment(
+async def accept_appointment(
     appointment_id: int,
     service: AppointmentService = Depends(get_appointment_service),
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     doctor: VolunteerDoctor = Depends(require_role(VolunteerDoctor)),
 ) -> None:
     try:
-        service.accept_appointment(appointment_id, doctor.id)
-        db.commit()
+        await service.accept_appointment(appointment_id, doctor.id)
+        await db.commit()
     except:
-        db.rollback()
+        await db.rollback()
         raise
 
 
 @appointments_router.patch("/{appointment_id}/reject", status_code=status.HTTP_204_NO_CONTENT)
-def reject_appointment(
+async def reject_appointment(
     appointment_id: int,
     service: AppointmentService = Depends(get_appointment_service),
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     doctor: VolunteerDoctor = Depends(require_role(VolunteerDoctor)),
 ) -> None:
     try:
-        service.reject_appointment(appointment_id, doctor.id)
-        db.commit()
+        await service.reject_appointment(appointment_id, doctor.id)
+        await db.commit()
     except:
-        db.rollback()
+        await db.rollback()
         raise

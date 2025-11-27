@@ -2,8 +2,8 @@ from datetime import datetime, timedelta
 
 from argon2 import PasswordHasher
 from fastapi import HTTPException, status
-from sqlalchemy import or_
-from sqlalchemy.orm import Session
+from sqlalchemy import or_, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.security import TokenData
 from app.core.settings import settings
@@ -13,14 +13,15 @@ from app.shared.utils import create_access_token
 
 
 class AuthService:
-    def __init__(self, db: Session, ph: PasswordHasher):
+    def __init__(self, db: AsyncSession, ph: PasswordHasher):
         self.db = db
         self.ph = ph
 
-    def register_via_username_email(self, req: CreatePregAccountRequest) -> PregnantWoman:
-        existing_user: User | None = (
-            self.db.query(User).filter(or_(User.email == req.email, User.username == req.username)).first()
-        )
+    async def register_via_username_email(self, req: CreatePregAccountRequest) -> PregnantWoman:
+        query = select(User).where(or_(User.email == req.email, User.username == req.username))
+        result = await self.db.execute(query)
+        existing_user: User | None = result.scalars().first()
+
         if existing_user is not None:  # Already exists
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Username or email already in use")
 
@@ -35,8 +36,10 @@ class AuthService:
         self.db.add(new_preg_woman)
         return new_preg_woman
 
-    def login_via_username(self, req: AuthLoginRequest) -> AuthLoginResponse:
-        user: User | None = self.db.query(User).filter(User.username == req.username).first()
+    async def login_via_username(self, req: AuthLoginRequest) -> AuthLoginResponse:
+        query = select(User).where(User.username == req.username)
+        result = await self.db.execute(query)
+        user: User | None = result.scalars().first()
 
         if not user or not user.is_active:
             raise HTTPException(

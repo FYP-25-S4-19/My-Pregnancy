@@ -1,6 +1,6 @@
 from argon2 import PasswordHasher
 from fastapi import APIRouter, Depends, status
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.password_hasher_config import get_password_hasher
 from app.db.db_config import get_db
@@ -10,27 +10,29 @@ from app.features.auth.auth_service import AuthService
 auth_router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 
-def get_auth_service(db: Session = Depends(get_db), ph: PasswordHasher = Depends(get_password_hasher)):
+def get_auth_service(db: AsyncSession = Depends(get_db), ph: PasswordHasher = Depends(get_password_hasher)):
     return AuthService(db, ph)
 
 
 @auth_router.post("/register", status_code=status.HTTP_201_CREATED)
-def register_via_username_email(
-    req: CreatePregAccountRequest, auth_service: AuthService = Depends(get_auth_service), db: Session = Depends(get_db)
+async def register_via_username_email(
+    req: CreatePregAccountRequest,
+    auth_service: AuthService = Depends(get_auth_service),
+    db: AsyncSession = Depends(get_db),
 ):
     try:
-        auth_service.register_via_username_email(req)
-        db.commit()
+        await auth_service.register_via_username_email(req)
+        await db.commit()
     except:
-        db.rollback()
+        await db.rollback()
         raise
 
 
 @auth_router.post("/login", response_model=AuthLoginResponse, status_code=status.HTTP_200_OK)
-def login_via_username(
+async def login_via_username(
     req: AuthLoginRequest, auth_service: AuthService = Depends(get_auth_service)
 ) -> AuthLoginResponse:
-    return auth_service.login_via_username(req)
+    return await auth_service.login_via_username(req)
 
 
 # oauth = OAuth()

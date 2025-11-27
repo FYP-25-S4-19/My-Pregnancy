@@ -1,6 +1,7 @@
 from fastapi import HTTPException, UploadFile, status
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.db.db_schema import EduArticle, EduArticleCategory, VolunteerDoctor
 from app.features.educational_articles.edu_article_models import (
@@ -11,22 +12,24 @@ from app.shared.s3_storage_interface import S3StorageInterface
 
 
 class EduArticleService:
-    def __init__(self, db: Session):
+    def __init__(self, db: AsyncSession):
         self.db = db
 
-    def get_article_overviews_by_category(self, category: str) -> list[ArticleOverviewResponse]:
+    async def get_article_overviews_by_category(self, category: str) -> list[ArticleOverviewResponse]:
         if category not in [cat.value for cat in list(EduArticleCategory)]:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
 
-        article_overviews = (
-            self.db.execute(select(EduArticle.id, EduArticle.title).where(EduArticle.category == category))
-            .mappings()
-            .all()
-        )
+        query = select(EduArticle.id, EduArticle.title).where(EduArticle.category == category)
+        result = await self.db.execute(query)
+        article_overviews = result.mappings().all()
+
         return [ArticleOverviewResponse(id=ao.id, title=ao.title) for ao in article_overviews]
 
-    def get_article_detailed(self, article_id: int) -> ArticleDetailedResponse:
-        article = self.db.get(EduArticle, article_id)
+    async def get_article_detailed(self, article_id: int) -> ArticleDetailedResponse:
+        # Use selectinload to eagerly load the author relationship
+        query = select(EduArticle).options(selectinload(EduArticle.author)).where(EduArticle.id == article_id)
+        result = await self.db.execute(query)
+        article = result.scalars().first()
 
         if article is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
@@ -44,10 +47,13 @@ class EduArticleService:
             content_markdown=article.content_markdown,
         )
 
-    def create_article(
+    async def create_article(
         self, category: str, title: str, content_markdown: str, img_data: UploadFile, doctor: VolunteerDoctor
     ) -> EduArticle | None:
-        existing_articles = self.db.query(EduArticle).where(EduArticle.title == title).all()
+        query = select(EduArticle).where(EduArticle.title == title)
+        result = await self.db.execute(query)
+        existing_articles = result.scalars().all()
+
         if len(existing_articles) > 0:
             raise HTTPException(status_code=status.HTTP_409_CONFLICT)
 
@@ -59,16 +65,17 @@ class EduArticleService:
             content_markdown=content_markdown,
         )
         self.db.add(article)
-        self.db.flush()
+        await self.db.flush()
+
         article_img_key: str = S3StorageInterface.put_article_img(article.id, img_data)
         article.img_key = article_img_key
         article.img_key = ""
         return article
 
-    def delete_article(self, article_id: int, deleter: VolunteerDoctor) -> None:
-        article = self.db.get(EduArticle, article_id)
+    async def delete_article(self, article_id: int, deleter: VolunteerDoctor) -> None:
+        article = await self.db.get(EduArticle, article_id)
         if article is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
         if article.author_id != deleter.id:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
-        self.db.delete(article)
+        await self.db.delete(article)
