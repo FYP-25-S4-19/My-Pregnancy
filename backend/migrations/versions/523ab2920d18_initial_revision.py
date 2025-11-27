@@ -1,8 +1,8 @@
 """Initial revision
 
-Revision ID: b7ce8b5e54fe
+Revision ID: 523ab2920d18
 Revises:
-Create Date: 2025-11-24 01:41:38.812256
+Create Date: 2025-11-27 19:25:43.831373
 
 """
 
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = "b7ce8b5e54fe"
+revision: str = "523ab2920d18"
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -41,6 +41,30 @@ def upgrade() -> None:
         ),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("label"),
+    )
+    op.create_table(
+        "doctor_account_creation_requests",
+        sa.Column("id", sa.Integer(), nullable=False),
+        sa.Column("email", sa.String(length=255), nullable=False),
+        sa.Column("first_name", sa.String(length=64), nullable=False),
+        sa.Column("middle_name", sa.String(length=64), nullable=True),
+        sa.Column("last_name", sa.String(length=64), nullable=False),
+        sa.Column(
+            "qualification_option",
+            sa.Enum("MD", "DO", "MBBS", "MBChB", "BMed", "BM", name="doctorqualificationoption"),
+            nullable=False,
+        ),
+        sa.Column("qualification_img_key", sa.String(), nullable=True),
+        sa.Column(
+            "account_status",
+            sa.Enum("PENDING", "APPROVED", "REJECTED", name="accountcreationrequeststatus"),
+            server_default=sa.text("'PENDING'"),
+            nullable=False,
+        ),
+        sa.Column("reject_reason", sa.String(), nullable=True),
+        sa.Column("requested_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
+        sa.PrimaryKeyConstraint("id"),
+        sa.UniqueConstraint("email"),
     )
     op.create_table(
         "doctor_qualifications",
@@ -477,5 +501,6 @@ def downgrade() -> None:
     op.drop_table("nutritionist_qualifications")
     op.drop_table("ingredients")
     op.drop_table("doctor_qualifications")
+    op.drop_table("doctor_account_creation_requests")
     op.drop_table("binary_metrics")
     # ### end Alembic commands ###

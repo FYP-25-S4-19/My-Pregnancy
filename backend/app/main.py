@@ -29,10 +29,8 @@ app = (
     )
     else FastAPI(title=APP_TITLE)
 )
-
 app.add_middleware(
     CORSMiddleware,
-    # allow_origins=["http://localhost:8081", "http://127.0.0.1:8081", "https://mypregnancy.click"],
     allow_origins=["*"],  # Allow all origins for now, to make testing easier (blasphemy I know)
     allow_credentials=True,
     allow_methods=["*"],

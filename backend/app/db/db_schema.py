@@ -29,6 +29,12 @@ class AppointmentStatus(Enum):
     COMPLETED = "COMPLETED"
 
 
+class AccountCreationRequestStatus(Enum):
+    PENDING = "PENDING"
+    APPROVED = "APPROVED"
+    REJECTED = "REJECTED"
+
+
 class UserRole(Enum):
     ADMIN = "ADMIN"
     VOLUNTEER_DOCTOR = "VOLUNTEER_DOCTOR"
@@ -353,9 +359,9 @@ class JournalScalarMetricLog(Base):
     value: Mapped[float]
 
 
-# ============================================
-# ============ COMMUNITY FORUM ===============
-# ============================================
+# ===========================================================
+# ==================== COMMUNITY FORUM ======================
+# ===========================================================
 # A 'thread' is what you would usually call a 'forum post'
 #
 # I hesitated to call it 'post', just because of possible weird names that would
@@ -505,6 +511,22 @@ class Notification(Base):
     # type = "message_reply", data = "<SOME_JSON_DATA>" (i.e. JSON object containing link to message)
     type: Mapped["NotificationType"] = mapped_column(SQLAlchemyEnum(NotificationType))
     data: Mapped[str]
+
+
+class DoctorAccountCreationRequest(Base):
+    __tablename__ = "doctor_account_creation_requests"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    email: Mapped[str] = mapped_column(String(255), unique=True)
+    first_name: Mapped[str] = mapped_column(String(64))
+    middle_name: Mapped[str | None] = mapped_column(String(64))  # Middle name optional
+    last_name: Mapped[str] = mapped_column(String(64))
+    qualification_option: Mapped["DoctorQualificationOption"] = mapped_column(SQLAlchemyEnum(DoctorQualificationOption))
+    qualification_img_key: Mapped[str | None]
+    account_status: Mapped["AccountCreationRequestStatus"] = mapped_column(
+        SQLAlchemyEnum(AccountCreationRequestStatus), server_default=text("'PENDING'")
+    )
+    reject_reason: Mapped[str | None]
+    requested_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 
 class ExpoPushToken(Base):
