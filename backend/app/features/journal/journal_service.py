@@ -34,9 +34,7 @@ class JournalService:
             select(JournalEntry)
             .where(JournalEntry.author_id == mother_id)
             .options(
-                # Load SELECTED Binary Logs
                 selectinload(JournalEntry.journal_binary_metric_logs),
-                # Load Scalar Logs AND their Definitions (Label/Units)
                 selectinload(JournalEntry.journal_scalar_metric_logs).joinedload(JournalScalarMetricLog.scalar_metric),
             )
             .order_by(JournalEntry.logged_on.desc())

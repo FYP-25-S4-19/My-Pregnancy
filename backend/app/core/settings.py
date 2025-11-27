@@ -13,7 +13,8 @@ class Settings(BaseSettings):
     POSTGRES_PASSWORD: str
     POSTGRES_SERVER: str
     POSTGRES_PORT: int
-    DATABASE_URL: str
+    SYNC_DATABASE_URL: str
+    ASYNC_DATABASE_URL: str
 
     # These are "nullable" because they are required by LocalStack for local development
     # but not needed for production with AWS (S3 access is via IAM roles, NOT access keys)
