@@ -28,6 +28,9 @@ class Settings(BaseSettings):
 
     JWT_EXPIRATION_MINUTES: int
 
+    DOCS_USERNAME: str | None = None
+    DOCS_PASSWORD: str | None = None
+
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
 
