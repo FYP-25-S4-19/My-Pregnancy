@@ -1,8 +1,8 @@
 """Initial revision
 
-Revision ID: 7f6ab90db1c1
+Revision ID: 42597e63d408
 Revises:
-Create Date: 2025-11-27 20:16:41.246388
+Create Date: 2025-11-28 12:01:07.209968
 
 """
 
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = "7f6ab90db1c1"
+revision: str = "42597e63d408"
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -45,11 +45,11 @@ def upgrade() -> None:
     op.create_table(
         "doctor_account_creation_requests",
         sa.Column("id", sa.Integer(), nullable=False),
-        sa.Column("email", sa.String(length=255), nullable=False),
-        sa.Column("password", sa.String(), nullable=False),
         sa.Column("first_name", sa.String(length=64), nullable=False),
         sa.Column("middle_name", sa.String(length=64), nullable=True),
         sa.Column("last_name", sa.String(length=64), nullable=False),
+        sa.Column("email", sa.String(length=255), nullable=False),
+        sa.Column("password", sa.String(), nullable=False),
         sa.Column(
             "qualification_option",
             sa.Enum("MD", "DO", "MBBS", "MBChB", "BMed", "BM", name="doctorqualificationoption"),
@@ -86,6 +86,43 @@ def upgrade() -> None:
         sa.Column("carbs_per_100g", sa.Float(), nullable=True),
         sa.Column("fats_per_100g", sa.Float(), nullable=True),
         sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_table(
+        "nutritionist_account_creation_requests",
+        sa.Column("id", sa.Integer(), nullable=False),
+        sa.Column("first_name", sa.String(length=64), nullable=False),
+        sa.Column("middle_name", sa.String(length=64), nullable=True),
+        sa.Column("last_name", sa.String(length=64), nullable=False),
+        sa.Column("email", sa.String(length=255), nullable=False),
+        sa.Column("password", sa.String(), nullable=False),
+        sa.Column(
+            "qualification_option",
+            sa.Enum(
+                "BSC_NUTRITION",
+                "BSC_DIETETICS",
+                "MSC_NUTRITION",
+                "MSC_DIETETICS",
+                "RD",
+                "RDN",
+                "CNS",
+                "DIPLOMA_CLINICAL_NUTRITION",
+                "DIPLOMA_NUTRITION",
+                "CERTIFIED_NUTRITIONIST",
+                name="nutritionistqualificationoption",
+            ),
+            nullable=False,
+        ),
+        sa.Column("qualification_img_key", sa.String(), nullable=True),
+        sa.Column(
+            "account_status",
+            sa.Enum("PENDING", "APPROVED", "REJECTED", name="accountcreationrequeststatus"),
+            server_default=sa.text("'PENDING'"),
+            nullable=False,
+        ),
+        sa.Column("reject_reason", sa.String(), nullable=True),
+        sa.Column("requested_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
+        sa.PrimaryKeyConstraint("id"),
+        sa.UniqueConstraint("email"),
     )
     op.create_table(
         "nutritionist_qualifications",
@@ -206,7 +243,6 @@ def upgrade() -> None:
         "nutritionists",
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("qualification_id", sa.Integer(), nullable=False),
-        sa.Column("is_verified", sa.Boolean(), server_default=sa.text("FALSE"), nullable=False),
         sa.ForeignKeyConstraint(
             ["id"],
             ["users.id"],
@@ -243,7 +279,6 @@ def upgrade() -> None:
         "volunteer_doctors",
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("qualification_id", sa.Integer(), nullable=False),
-        sa.Column("is_verified", sa.Boolean(), server_default=sa.text("FALSE"), nullable=False),
         sa.ForeignKeyConstraint(
             ["id"],
             ["users.id"],
@@ -495,6 +530,7 @@ def downgrade() -> None:
     op.drop_table("users")
     op.drop_table("scalar_metrics")
     op.drop_table("nutritionist_qualifications")
+    op.drop_table("nutritionist_account_creation_requests")
     op.drop_table("ingredients")
     op.drop_table("doctor_qualifications")
     op.drop_table("doctor_account_creation_requests")

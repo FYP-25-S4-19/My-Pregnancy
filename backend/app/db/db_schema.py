@@ -4,7 +4,6 @@ from datetime import date, datetime
 from enum import Enum, IntEnum
 
 from sqlalchemy import (
-    Boolean,
     DateTime,
     ForeignKey,
     String,
@@ -142,8 +141,6 @@ class VolunteerDoctor(User):
     qualification_id: Mapped[int] = mapped_column(ForeignKey("doctor_qualifications.id"))
     qualification: Mapped["DoctorQualification"] = relationship(back_populates="doctor")
 
-    is_verified: Mapped[bool] = mapped_column(Boolean, server_default=text("FALSE"))
-
     # Keep track of the "Pregnant Women" who have "saved" you
     saved_by: Mapped[list["SavedVolunteerDoctor"]] = relationship(back_populates="volunteer_doctor")
     appointments: Mapped[list["Appointment"]] = relationship(back_populates="volunteer_doctor")
@@ -173,7 +170,6 @@ class Nutritionist(User):
     qualification_id: Mapped[int] = mapped_column(ForeignKey("nutritionist_qualifications.id"))
     qualification: Mapped["NutritionistQualification"] = relationship(back_populates="nutritionist")
 
-    is_verified: Mapped[bool] = mapped_column(Boolean, server_default=text("FALSE"))
     recipes_created: Mapped[list["Recipe"]] = relationship(back_populates="nutritionist")
 
 
@@ -512,6 +508,25 @@ class DoctorAccountCreationRequest(Base):
     email: Mapped[str] = mapped_column(String(255), unique=True)
     password: Mapped[str] = mapped_column()
     qualification_option: Mapped["DoctorQualificationOption"] = mapped_column(SQLAlchemyEnum(DoctorQualificationOption))
+    qualification_img_key: Mapped[str | None]
+    account_status: Mapped["AccountCreationRequestStatus"] = mapped_column(
+        SQLAlchemyEnum(AccountCreationRequestStatus), server_default=text("'PENDING'")
+    )
+    reject_reason: Mapped[str | None]
+    requested_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class NutritionistAccountCreationRequest(Base):
+    __tablename__ = "nutritionist_account_creation_requests"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    first_name: Mapped[str] = mapped_column(String(64))
+    middle_name: Mapped[str | None] = mapped_column(String(64))  # Middle name optional
+    last_name: Mapped[str] = mapped_column(String(64))
+    email: Mapped[str] = mapped_column(String(255), unique=True)
+    password: Mapped[str] = mapped_column()
+    qualification_option: Mapped["NutritionistQualificationOption"] = mapped_column(
+        SQLAlchemyEnum(NutritionistQualificationOption)
+    )
     qualification_img_key: Mapped[str | None]
     account_status: Mapped["AccountCreationRequestStatus"] = mapped_column(
         SQLAlchemyEnum(AccountCreationRequestStatus), server_default=text("'PENDING'")
