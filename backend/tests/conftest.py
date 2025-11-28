@@ -2,9 +2,9 @@ import uuid
 from datetime import datetime, timedelta
 from typing import Any, AsyncGenerator, Callable
 
-import httpx
 import pytest
 import pytest_asyncio
+from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.ext.asyncio.engine import AsyncEngine
 from sqlalchemy.pool import StaticPool
@@ -61,12 +61,12 @@ async def db_session() -> AsyncGenerator[AsyncSession, None]:
 
 
 @pytest_asyncio.fixture(scope="function")
-async def client(db_session: AsyncSession) -> AsyncGenerator[httpx.AsyncClient, None]:
+async def client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
     async def override_get_db():
         yield db_session
 
     app.dependency_overrides[get_db] = override_get_db
-    async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://test") as c:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as c:
         yield c
     app.dependency_overrides.clear()
 
@@ -95,7 +95,7 @@ async def admin(db_session: AsyncSession) -> Admin:
 
 
 @pytest_asyncio.fixture(scope="function")
-async def authenticated_admin_client(client: httpx.AsyncClient, admin: Admin) -> tuple[httpx.AsyncClient, Admin]:
+async def authenticated_admin_client(client: AsyncClient, admin: Admin) -> tuple[AsyncClient, Admin]:
     jwt_token: str = create_access_token(
         token_data=TokenData(
             sub=str(admin.id),
@@ -128,7 +128,6 @@ async def volunteer_doctor_factory(db_session: AsyncSession):
             "password_hash": "hashed_password_123",
             "first_name": "John",
             "last_name": "Doe",
-            "is_verified": True,
         }
 
         user_data = defaults | kwargs
@@ -147,8 +146,8 @@ async def volunteer_doctor(volunteer_doctor_factory: Callable) -> VolunteerDocto
 
 @pytest_asyncio.fixture(scope="function")
 async def authenticated_doctor_client(
-    client: httpx.AsyncClient, volunteer_doctor: VolunteerDoctor
-) -> tuple[httpx.AsyncClient, VolunteerDoctor]:
+    client: AsyncClient, volunteer_doctor: VolunteerDoctor
+) -> tuple[AsyncClient, VolunteerDoctor]:
     jwt_token: str = create_access_token(
         token_data=TokenData(
             sub=str(volunteer_doctor.id),
@@ -191,8 +190,8 @@ async def pregnant_woman(pregnant_woman_factory: Callable) -> PregnantWoman:
 
 @pytest_asyncio.fixture(scope="function")
 async def authenticated_pregnant_woman_client(
-    client: httpx.AsyncClient, pregnant_woman: PregnantWoman
-) -> tuple[httpx.AsyncClient, PregnantWoman]:
+    client: AsyncClient, pregnant_woman: PregnantWoman
+) -> tuple[AsyncClient, PregnantWoman]:
     jwt_token: str = create_access_token(
         token_data=TokenData(
             sub=str(pregnant_woman.id),
@@ -227,7 +226,6 @@ async def nutritionist_factory(db_session: AsyncSession) -> Callable[..., Any]:
             "password_hash": "hashed_password_789",
             "first_name": "Jane",
             "last_name": "Smith",
-            "is_verified": True,
         }
 
         user_data = defaults | kwargs
@@ -246,8 +244,8 @@ async def nutritionist(nutritionist_factory: Callable) -> Nutritionist:
 
 @pytest_asyncio.fixture(scope="function")
 async def authenticated_nutritionist_client(
-    client: httpx.AsyncClient, nutritionist: Nutritionist
-) -> tuple[httpx.AsyncClient, Nutritionist]:
+    client: AsyncClient, nutritionist: Nutritionist
+) -> tuple[AsyncClient, Nutritionist]:
     jwt_token: str = create_access_token(
         token_data=TokenData(
             sub=str(nutritionist.id),

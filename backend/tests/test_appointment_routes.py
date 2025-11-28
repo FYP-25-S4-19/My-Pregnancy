@@ -1,9 +1,9 @@
 from datetime import datetime, timedelta
 from typing import Callable
 
-import httpx
 import pytest
 from fastapi import status
+from httpx import AsyncClient
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -24,7 +24,7 @@ from app.features.appointments.appointment_models import (
 # =========================================================================
 @pytest.mark.asyncio
 async def test_create_appointment_success(
-    authenticated_pregnant_woman_client: tuple[httpx.AsyncClient, PregnantWoman],
+    authenticated_pregnant_woman_client: tuple[AsyncClient, PregnantWoman],
     volunteer_doctor: VolunteerDoctor,
     db_session: AsyncSession,
 ) -> None:
@@ -50,7 +50,7 @@ async def test_create_appointment_success(
 
 @pytest.mark.asyncio
 async def test_create_appointment_doctor_not_found(
-    authenticated_pregnant_woman_client: tuple[httpx.AsyncClient, PregnantWoman],
+    authenticated_pregnant_woman_client: tuple[AsyncClient, PregnantWoman],
 ) -> None:
     client, _ = authenticated_pregnant_woman_client
     start_time: datetime = datetime.now() + timedelta(days=1)
@@ -64,7 +64,7 @@ async def test_create_appointment_doctor_not_found(
 
 @pytest.mark.asyncio
 async def test_create_appointment_past_start_time(
-    authenticated_pregnant_woman_client: tuple[httpx.AsyncClient, PregnantWoman],
+    authenticated_pregnant_woman_client: tuple[AsyncClient, PregnantWoman],
     volunteer_doctor: VolunteerDoctor,
 ) -> None:
     client, _ = authenticated_pregnant_woman_client
@@ -81,7 +81,7 @@ async def test_create_appointment_past_start_time(
 # =========================================================================
 @pytest.mark.asyncio
 async def test_edit_appointment_success(
-    authenticated_pregnant_woman_client: tuple[httpx.AsyncClient, PregnantWoman],
+    authenticated_pregnant_woman_client: tuple[AsyncClient, PregnantWoman],
     volunteer_doctor: VolunteerDoctor,
     db_session: AsyncSession,
 ) -> None:
@@ -107,7 +107,7 @@ async def test_edit_appointment_success(
 
 @pytest.mark.asyncio
 async def test_edit_appointment_not_found(
-    authenticated_pregnant_woman_client: tuple[httpx.AsyncClient, PregnantWoman],
+    authenticated_pregnant_woman_client: tuple[AsyncClient, PregnantWoman],
 ) -> None:
     client, _ = authenticated_pregnant_woman_client
 
@@ -123,7 +123,7 @@ async def test_edit_appointment_not_found(
 
 @pytest.mark.asyncio
 async def test_edit_appointment_past_start_time(
-    authenticated_pregnant_woman_client: tuple[httpx.AsyncClient, PregnantWoman],
+    authenticated_pregnant_woman_client: tuple[AsyncClient, PregnantWoman],
     volunteer_doctor: VolunteerDoctor,
     db_session: AsyncSession,
 ) -> None:
@@ -153,7 +153,7 @@ async def test_edit_appointment_past_start_time(
 # =========================================================================
 @pytest.mark.asyncio
 async def test_delete_appointment_success(
-    authenticated_pregnant_woman_client: tuple[httpx.AsyncClient, PregnantWoman],
+    authenticated_pregnant_woman_client: tuple[AsyncClient, PregnantWoman],
     volunteer_doctor: VolunteerDoctor,
     db_session: AsyncSession,
 ) -> None:
@@ -177,7 +177,7 @@ async def test_delete_appointment_success(
 
 @pytest.mark.asyncio
 async def test_delete_appointment_not_found(
-    authenticated_pregnant_woman_client: tuple[httpx.AsyncClient, PregnantWoman],
+    authenticated_pregnant_woman_client: tuple[AsyncClient, PregnantWoman],
 ) -> None:
     client, _ = authenticated_pregnant_woman_client
     delete_response = await client.delete("/appointments/9999")
@@ -188,7 +188,7 @@ async def test_delete_appointment_not_found(
 
 @pytest.mark.asyncio
 async def test_delete_appointment_for_other_user(
-    authenticated_pregnant_woman_client: tuple[httpx.AsyncClient, PregnantWoman],
+    authenticated_pregnant_woman_client: tuple[AsyncClient, PregnantWoman],
     pregnant_woman_factory: Callable,
     volunteer_doctor: VolunteerDoctor,
     db_session: AsyncSession,
@@ -216,7 +216,7 @@ async def test_delete_appointment_for_other_user(
 # =========================================================================
 @pytest.mark.asyncio
 async def test_accept_appointment_success(
-    authenticated_doctor_client: tuple[httpx.AsyncClient, VolunteerDoctor],
+    authenticated_doctor_client: tuple[AsyncClient, VolunteerDoctor],
     pregnant_woman: PregnantWoman,
     db_session: AsyncSession,
 ) -> None:
@@ -240,7 +240,7 @@ async def test_accept_appointment_success(
 
 @pytest.mark.asyncio
 async def test_reject_appointment_success(
-    authenticated_doctor_client: tuple[httpx.AsyncClient, VolunteerDoctor],
+    authenticated_doctor_client: tuple[AsyncClient, VolunteerDoctor],
     pregnant_woman: PregnantWoman,
     db_session: AsyncSession,
 ) -> None:
@@ -264,7 +264,7 @@ async def test_reject_appointment_success(
 
 @pytest.mark.asyncio
 async def test_accept_appointment_not_found(
-    authenticated_doctor_client: tuple[httpx.AsyncClient, VolunteerDoctor],
+    authenticated_doctor_client: tuple[AsyncClient, VolunteerDoctor],
 ) -> None:
     client, _ = authenticated_doctor_client
     accept_response = await client.patch("/appointments/9999/accept")
@@ -275,7 +275,7 @@ async def test_accept_appointment_not_found(
 
 @pytest.mark.asyncio
 async def test_reject_appointment_not_found(
-    authenticated_doctor_client: tuple[httpx.AsyncClient, VolunteerDoctor],
+    authenticated_doctor_client: tuple[AsyncClient, VolunteerDoctor],
 ) -> None:
     client, _ = authenticated_doctor_client
     reject_response = await client.patch("/appointments/9999/reject")
@@ -286,7 +286,7 @@ async def test_reject_appointment_not_found(
 
 @pytest.mark.asyncio
 async def test_accept_appointment_unauthorized(
-    authenticated_doctor_client: tuple[httpx.AsyncClient, VolunteerDoctor],
+    authenticated_doctor_client: tuple[AsyncClient, VolunteerDoctor],
     volunteer_doctor_factory: Callable,
     pregnant_woman: PregnantWoman,
     db_session: AsyncSession,
@@ -311,7 +311,7 @@ async def test_accept_appointment_unauthorized(
 
 @pytest.mark.asyncio
 async def test_accept_appointment_already_accepted(
-    authenticated_doctor_client: tuple[httpx.AsyncClient, VolunteerDoctor],
+    authenticated_doctor_client: tuple[AsyncClient, VolunteerDoctor],
     pregnant_woman: PregnantWoman,
     db_session: AsyncSession,
 ) -> None:
@@ -334,7 +334,7 @@ async def test_accept_appointment_already_accepted(
 
 @pytest.mark.asyncio
 async def test_reject_appointment_unauthorized(
-    authenticated_doctor_client: tuple[httpx.AsyncClient, VolunteerDoctor],
+    authenticated_doctor_client: tuple[AsyncClient, VolunteerDoctor],
     volunteer_doctor_factory: Callable,
     pregnant_woman: PregnantWoman,
     db_session: AsyncSession,
@@ -359,7 +359,7 @@ async def test_reject_appointment_unauthorized(
 
 @pytest.mark.asyncio
 async def test_reject_appointment_already_rejected(
-    authenticated_doctor_client: tuple[httpx.AsyncClient, VolunteerDoctor],
+    authenticated_doctor_client: tuple[AsyncClient, VolunteerDoctor],
     pregnant_woman: PregnantWoman,
     db_session: AsyncSession,
 ) -> None:
