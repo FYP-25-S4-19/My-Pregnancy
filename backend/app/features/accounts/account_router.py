@@ -1,10 +1,12 @@
+from argon2 import PasswordHasher
 from fastapi import APIRouter, Depends, File, Form, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.password_hasher_config import get_password_hasher
 from app.core.security import require_role
 from app.db.db_config import get_db
 from app.db.db_schema import Admin, UserRole
-from app.features.accounts.account_models import AccountCreationRequestView, RejectAcccountCreationRequestReason
+from app.features.accounts.account_models import AccountCreationRequestView, RejectAccountCreationRequestReason
 from app.features.accounts.account_service import AccountService
 
 account_router = APIRouter(prefix="/account-requests", tags=["Account Creation Requests"])
@@ -85,10 +87,11 @@ async def accept_doctor_account_creation_request(
     request_id: int,
     _: Admin = Depends(require_role(Admin)),
     service: AccountService = Depends(get_account_service),
+    password_hasher: PasswordHasher = Depends(get_password_hasher),
     db: AsyncSession = Depends(get_db),
 ):
     try:
-        await service.accept_doctor_account_creation_request(request_id)
+        await service.accept_doctor_account_creation_request(request_id, password_hasher)
         await db.commit()
     except:
         await db.rollback()
@@ -98,7 +101,7 @@ async def accept_doctor_account_creation_request(
 @account_router.patch("/doctors/{request_id}/reject", status_code=status.HTTP_204_NO_CONTENT)
 async def reject_doctor_account_creation_request(
     request_id: int,
-    request: RejectAcccountCreationRequestReason,
+    request: RejectAccountCreationRequestReason,
     _: Admin = Depends(require_role(Admin)),
     service: AccountService = Depends(get_account_service),
     db: AsyncSession = Depends(get_db),
@@ -116,10 +119,11 @@ async def accept_nutritionist_account_creation_request(
     request_id: int,
     _: Admin = Depends(require_role(Admin)),
     service: AccountService = Depends(get_account_service),
+    password_hasher: PasswordHasher = Depends(get_password_hasher),
     db: AsyncSession = Depends(get_db),
 ):
     try:
-        await service.accept_nutritionist_account_creation_request(request_id)
+        await service.accept_nutritionist_account_creation_request(request_id, password_hasher)
         await db.commit()
     except:
         await db.rollback()
@@ -129,7 +133,7 @@ async def accept_nutritionist_account_creation_request(
 @account_router.patch("/nutritionists/{request_id}/reject", status_code=status.HTTP_204_NO_CONTENT)
 async def reject_nutritionist_account_creation_request(
     request_id: int,
-    request: RejectAcccountCreationRequestReason,
+    request: RejectAccountCreationRequestReason,
     _: Admin = Depends(require_role(Admin)),
     service: AccountService = Depends(get_account_service),
     db: AsyncSession = Depends(get_db),

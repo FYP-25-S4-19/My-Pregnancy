@@ -146,7 +146,7 @@ class S3StorageInterface:
             url: str = s3_client.generate_presigned_url(
                 ClientMethod="get_object",
                 Params={"Bucket": settings.S3_BUCKET_NAME, "Key": obj_key},
-                ExpiresIn=expires_in_seconds,  # URL is valid for 15 minutes (900 seconds)
+                ExpiresIn=expires_in_seconds,
             )
             return url
         except (BotoCoreError, ClientError) as e:

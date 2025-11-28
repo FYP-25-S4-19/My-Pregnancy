@@ -13,5 +13,5 @@ class AccountCreationRequestView(CustomBaseModel):
     submitted_at: datetime
 
 
-class RejectAcccountCreationRequestReason(CustomBaseModel):
+class RejectAccountCreationRequestReason(CustomBaseModel):
     reject_reason: str

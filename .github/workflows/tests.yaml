@@ -70,7 +70,8 @@ jobs:
           POSTGRES_PASSWORD: fyp_password
           POSTGRES_SERVER: localhost
           POSTGRES_PORT: 5432
-          DATABASE_URL: postgresql://mypregnancy-user:mypregnancy-password@localhost:5432/mypregnancy-db
+          SYNC_DATABASE_URL: postgresql+psycopg2://mypregnancy-user:mypregnancy-password@localhost:5432/mypregnancy-db
+          ASYNC_DATABASE_URL: postgresql+asyncpg://mypregnancy-user:mypregnancy-password@localhost:5432/mypregnancy-db
           AWS_ACCESS_KEY_ID: test
           AWS_SECRET_ACCESS_KEY: test
           AWS_ENDPOINT_URL: http://localstack:4567

@@ -1,3 +1,4 @@
+from argon2 import PasswordHasher
 from fastapi import HTTPException, UploadFile, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -118,7 +119,7 @@ class AccountService:
             )
             self.db.add(nutritionist_acc_creation_req)
 
-    async def accept_doctor_account_creation_request(self, request_id: int) -> None:
+    async def accept_doctor_account_creation_request(self, request_id: int, password_hasher: PasswordHasher) -> None:
         stmt = select(DoctorAccountCreationRequest).where(DoctorAccountCreationRequest.id == request_id)
         acc_creation_req = (await self.db.execute(stmt)).scalar_one_or_none()
         if acc_creation_req is None:
@@ -140,8 +141,8 @@ class AccountService:
             middle_name=acc_creation_req.middle_name,
             last_name=acc_creation_req.last_name,
             email=acc_creation_req.email,
-            password_hash=acc_creation_req.password,
-            qualification=acc_creation_req.qualification_option,
+            password_hash=password_hasher.hash(acc_creation_req.password),
+            qualification=dr_qualification,
         )
         self.db.add(new_doctor)
         await self.db.flush()  # To get the new doctor ID
@@ -172,7 +173,9 @@ class AccountService:
         acc_creation_req.account_status = AccountCreationRequestStatus.REJECTED
         acc_creation_req.reject_reason = reject_reason
 
-    async def accept_nutritionist_account_creation_request(self, request_id: int) -> None:
+    async def accept_nutritionist_account_creation_request(
+        self, request_id: int, password_hasher: PasswordHasher
+    ) -> None:
         stmt = select(NutritionistAccountCreationRequest).where(NutritionistAccountCreationRequest.id == request_id)
         acc_creation_req = (await self.db.execute(stmt)).scalar_one_or_none()
         if acc_creation_req is None:
@@ -194,7 +197,7 @@ class AccountService:
             middle_name=acc_creation_req.middle_name,
             last_name=acc_creation_req.last_name,
             email=acc_creation_req.email,
-            password_hash=acc_creation_req.password,
+            password_hash=password_hasher.hash(acc_creation_req.password),
             qualification=nutri_qualification,
         )
         self.db.add(new_nutritionist)

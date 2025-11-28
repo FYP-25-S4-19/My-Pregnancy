@@ -10,7 +10,6 @@ A mobile application designed to support women throughout their pregnancy
 
 - [Node.js _(via nvm)_](https://nodejs.org/en/download)
   - Install the LTS: `nvm install --lts && nvm use --lts`
-- [Python](https://www.python.org/downloads/) _(>=3.12 should be fine)_
 - [Docker](https://www.docker.com/)
 - [Android Studio](https://developer.android.com/studio)
 - [uv](https://docs.astral.sh/uv/)
@@ -24,7 +23,7 @@ For these next steps, you will need two terminals - one for the frontend and one
 #### Frontend
 
 1. `cd frontend`
-2. **[First time]** 
+2. **[First time]**
     - Install dependencies: `npm i`
     - Create a copy of the `.env.example` and rename it to `.env`
 
@@ -65,14 +64,17 @@ Currently, schemas are all defined within `./app/db/db_schema.py`
 
 _If you ever need to install or uninstall a new Python package during development, make sure that you first activate your virtual environment_
 
-Adding packages: `uv add <MY_PACKAGE>`
-Removing packages: `uv remove <MY_PACKAGE>`
-Sync up with lockfile: `uv sync`
+* Adding packages: `uv add <MY_PACKAGE>`
+* Removing packages: `uv remove <MY_PACKAGE>`
+* Sync up with lockfile: `uv sync`
 
 #### Testing
 
 Simply run `pytest`
 That's it.
+
+### Managing LocalStack
+Will can manage your LocalStack resources through the web console [here](https://app.localstack.cloud/inst/default/status) _(will require a free account)_
 
 ---
 
@@ -83,4 +85,3 @@ That's it.
 ## Service Architecture (Updated 16-Nov-25)
 
 <img src="assets/service_architecture.png">
-
