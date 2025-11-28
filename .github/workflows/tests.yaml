@@ -41,6 +41,9 @@ jobs:
           install-awslocal: true
           use-pro: false
 
+      - name: Initialize S3 Bucket in LocalStack
+        run: awslocal s3 mb s3://mypregnancy-bucket --region ap-southeast-1
+
       - name: Install dependencies for PostgreSQL Driver
         run: |
           sudo apt-get update
