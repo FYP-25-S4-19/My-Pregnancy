@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import date, datetime
-from enum import Enum, IntEnum
+from enum import Enum
 
 from sqlalchemy import (
     DateTime,
@@ -51,26 +51,26 @@ class BinaryMetricCategory(Enum):
     OTHERS = "OTHERS"
 
 
-class DoctorQualificationOption(IntEnum):
-    MD = 1
-    DO = 2
-    MBBS = 3
-    MBChB = 4
-    BMed = 5
-    BM = 6
+class DoctorQualificationOption(Enum):
+    MD = "MD"
+    DO = "DO"
+    MBBS = "MBBS"
+    MBChB = "MBChB"
+    BMed = "BMed"
+    BM = "BM"
 
 
-class NutritionistQualificationOption(IntEnum):
-    BSC_NUTRITION = 1
-    BSC_DIETETICS = 2
-    MSC_NUTRITION = 3
-    MSC_DIETETICS = 4
-    RD = 5
-    RDN = 6
-    CNS = 7
-    DIPLOMA_CLINICAL_NUTRITION = 8
-    DIPLOMA_NUTRITION = 9
-    CERTIFIED_NUTRITIONIST = 10
+class NutritionistQualificationOption(Enum):
+    BSC_NUTRITION = "BSC_NUTRITION"
+    BSC_DIETETICS = "BSC_DIETETICS"
+    MSC_NUTRITION = "MSC_NUTRITION"
+    MSC_DIETETICS = "MSC_DIETETICS"
+    RD = "RD"
+    RDN = "RDN"
+    CNS = "CNS"
+    DIPLOMA_CLINICAL_NUTRITION = "DIPLOMA_CLINICAL_NUTRITION"
+    DIPLOMA_NUTRITION = "DIPLOMA_NUTRITION"
+    CERTIFIED_NUTRITIONIST = "CERTIFIED_NUTRITIONIST"
 
 
 class EduArticleCategory(Enum):
@@ -508,12 +508,12 @@ class DoctorAccountCreationRequest(Base):
     email: Mapped[str] = mapped_column(String(255), unique=True)
     password: Mapped[str] = mapped_column()
     qualification_option: Mapped["DoctorQualificationOption"] = mapped_column(SQLAlchemyEnum(DoctorQualificationOption))
-    qualification_img_key: Mapped[str | None]
+    qualification_img_key: Mapped[str]
     account_status: Mapped["AccountCreationRequestStatus"] = mapped_column(
         SQLAlchemyEnum(AccountCreationRequestStatus), server_default=text("'PENDING'")
     )
     reject_reason: Mapped[str | None]
-    requested_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    submitted_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 
 class NutritionistAccountCreationRequest(Base):
@@ -527,12 +527,12 @@ class NutritionistAccountCreationRequest(Base):
     qualification_option: Mapped["NutritionistQualificationOption"] = mapped_column(
         SQLAlchemyEnum(NutritionistQualificationOption)
     )
-    qualification_img_key: Mapped[str | None]
+    qualification_img_key: Mapped[str]
     account_status: Mapped["AccountCreationRequestStatus"] = mapped_column(
         SQLAlchemyEnum(AccountCreationRequestStatus), server_default=text("'PENDING'")
     )
     reject_reason: Mapped[str | None]
-    requested_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    submitted_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 
 class ExpoPushToken(Base):

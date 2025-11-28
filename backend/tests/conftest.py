@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime, timedelta
-from typing import Any, AsyncGenerator, Callable
+from typing import Any, AsyncGenerator, Awaitable, Callable
 
 import pytest
 import pytest_asyncio
@@ -72,26 +72,61 @@ async def client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
 
 
 @pytest.fixture(scope="session")
-def img_file_fixture() -> dict[str, tuple[str, bytes, str]]:
-    return {"img_data": ("test_image.jpg", b"fake image bytes here", "image/jpeg")}
+def img_file_fixture() -> tuple[str, bytes, str]:
+    """
+    If you have a 'multipart/form-data' endpoint that requires an image upload,
+    you can use this fixture to provide a valid PNG image file for testing.
+    ...
+    Say that your endpoint accepts a parameter named `le_random_image: UploadFile = File(...)`,
+    then in your test you can pass it in like so:
+    ...
+    async def test_your_endpoint(client: AsyncClient, img_file_fixture: tuple[str, bytes, str]):
+        file_name, file_bytes, content_type = img_file_fixture
+        response = await client.post(
+            "/your-endpoint",
+            files={"le_random_image": (file_name, file_bytes, content_type)},
+        )
+    """
+    valid_png = (  # Minimal 1x1 PNG
+        b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15\xc4\x89"
+        b"\x00\x00\x00\nIDATx\x9cc\x00\x01\x00\x00\x05\x00\x01\r\n-\xb4\x00\x00\x00\x00IEND\xaeB`\x82"
+    )
+    return ("test_image.png", valid_png, "image/png")
 
 
 # ========================================================================
 # ========================== ADMIN FIXTURES ==============================
 # ========================================================================
+CreateAdminCallable = Callable[
+    ...,  # Accepts any keyword arguments (**kwargs)
+    Awaitable[Admin],  # Must return an awaitable object (a coroutine) that resolves to Admin
+]
+
+
 @pytest_asyncio.fixture(scope="function")
-async def admin(db_session: AsyncSession) -> Admin:
-    admin = Admin(
-        first_name="admin_firstname",
-        middle_name="admin_middlename",
-        last_name="admin_lastname",
-        email="admin@test.com",
-        password_hash="hashed_password_123",
-        role=UserRole.ADMIN,
-    )
-    db_session.add(admin)
-    await db_session.commit()
-    return admin
+async def admin_factory(db_session: AsyncSession, **kwargs: Any) -> CreateAdminCallable:
+    async def _create_admin(**kwargs) -> Admin:
+        unique_id = str(uuid.uuid4())
+        defaults = {
+            "role": UserRole.ADMIN,
+            "email": f"admin_{unique_id}@test.com",
+            "password_hash": "hashed_password_123",
+            "first_name": "Admin",
+            "last_name": "McAdminface",
+        }
+
+        user_data = defaults | kwargs
+        admin = Admin(**user_data)
+        db_session.add(admin)
+        await db_session.commit()
+        return admin
+
+    return _create_admin
+
+
+@pytest_asyncio.fixture(scope="function")
+async def admin(admin_factory: CreateAdminCallable) -> Admin:
+    return await admin_factory()
 
 
 @pytest_asyncio.fixture(scope="function")
@@ -110,17 +145,21 @@ async def authenticated_admin_client(client: AsyncClient, admin: Admin) -> tuple
 # ========================================================================
 # ===================== VOLUNTEER DOCTOR FIXTURES ========================
 # ========================================================================
+CreateDoctorCallable = Callable[
+    ...,  # Accepts any keyword arguments (**kwargs)
+    Awaitable[VolunteerDoctor],  # Must return an awaitable object (a coroutine) that resolves to VolunteerDoctor
+]
+
+
 @pytest_asyncio.fixture(scope="function")
-async def volunteer_doctor_factory(db_session: AsyncSession):
+async def volunteer_doctor_factory(db_session: AsyncSession) -> CreateDoctorCallable:
     async def _create_doctor(**kwargs) -> VolunteerDoctor:
         unique_id = str(uuid.uuid4())
 
-        # Create qualification if not provided
-        if "qualification_id" not in kwargs:
+        if "qualification" not in kwargs:
             qualification = DoctorQualification(qualification_option=DoctorQualificationOption.MD)
-            db_session.add(qualification)
-            await db_session.flush()
-            kwargs["qualification_id"] = qualification.id
+        else:
+            qualification = kwargs.pop("qualification")
 
         defaults = {
             "role": UserRole.VOLUNTEER_DOCTOR,
@@ -132,15 +171,18 @@ async def volunteer_doctor_factory(db_session: AsyncSession):
 
         user_data = defaults | kwargs
         doctor = VolunteerDoctor(**user_data)
+        doctor.qualification = qualification
+
         db_session.add(doctor)
         await db_session.commit()
+        await db_session.refresh(doctor, attribute_names=["qualification"])
         return doctor
 
     return _create_doctor
 
 
 @pytest_asyncio.fixture(scope="function")
-async def volunteer_doctor(volunteer_doctor_factory: Callable) -> VolunteerDoctor:
+async def volunteer_doctor(volunteer_doctor_factory: CreateDoctorCallable) -> VolunteerDoctor:
     return await volunteer_doctor_factory()
 
 
@@ -162,8 +204,14 @@ async def authenticated_doctor_client(
 # ========================================================================
 # ====================== PREGNANT WOMAN FIXTURES =========================
 # ========================================================================
+CreatePregnantWomanCallable = Callable[
+    ...,  # Accepts any keyword arguments (**kwargs)
+    Awaitable[PregnantWoman],  # Must return an awaitable object (a coroutine) that resolves to PregnantWoman
+]
+
+
 @pytest_asyncio.fixture(scope="function")
-async def pregnant_woman_factory(db_session: AsyncSession):
+async def pregnant_woman_factory(db_session: AsyncSession) -> CreatePregnantWomanCallable:
     async def _create_woman(**kwargs) -> PregnantWoman:
         unique_id = str(uuid.uuid4())
         defaults = {
@@ -184,7 +232,7 @@ async def pregnant_woman_factory(db_session: AsyncSession):
 
 
 @pytest_asyncio.fixture(scope="function")
-async def pregnant_woman(pregnant_woman_factory: Callable) -> PregnantWoman:
+async def pregnant_woman(pregnant_woman_factory: CreatePregnantWomanCallable) -> PregnantWoman:
     return await pregnant_woman_factory()
 
 
@@ -206,8 +254,14 @@ async def authenticated_pregnant_woman_client(
 # ========================================================================
 # ====================== NUTRITIONIST FIXTURES ===========================
 # ========================================================================
+CreateNutritionistCallable = Callable[
+    ...,  # Accepts any keyword arguments (**kwargs)
+    Awaitable[Nutritionist],  # Must return an awaitable object (a coroutine) that resolves to Nutritionist
+]
+
+
 @pytest_asyncio.fixture(scope="function")
-async def nutritionist_factory(db_session: AsyncSession) -> Callable[..., Any]:
+async def nutritionist_factory(db_session: AsyncSession) -> CreateNutritionistCallable:
     async def _create_nutritionist(**kwargs) -> Nutritionist:
         unique_id = str(uuid.uuid4())
 
@@ -238,7 +292,7 @@ async def nutritionist_factory(db_session: AsyncSession) -> Callable[..., Any]:
 
 
 @pytest_asyncio.fixture(scope="function")
-async def nutritionist(nutritionist_factory: Callable) -> Nutritionist:
+async def nutritionist(nutritionist_factory: CreateNutritionistCallable) -> Nutritionist:
     return await nutritionist_factory()
 
 

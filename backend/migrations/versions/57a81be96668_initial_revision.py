@@ -1,8 +1,8 @@
 """Initial revision
 
-Revision ID: 42597e63d408
+Revision ID: 57a81be96668
 Revises:
-Create Date: 2025-11-28 12:01:07.209968
+Create Date: 2025-11-28 16:37:40.237255
 
 """
 
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = "42597e63d408"
+revision: str = "57a81be96668"
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -55,7 +55,7 @@ def upgrade() -> None:
             sa.Enum("MD", "DO", "MBBS", "MBChB", "BMed", "BM", name="doctorqualificationoption"),
             nullable=False,
         ),
-        sa.Column("qualification_img_key", sa.String(), nullable=True),
+        sa.Column("qualification_img_key", sa.String(), nullable=False),
         sa.Column(
             "account_status",
             sa.Enum("PENDING", "APPROVED", "REJECTED", name="accountcreationrequeststatus"),
@@ -63,7 +63,7 @@ def upgrade() -> None:
             nullable=False,
         ),
         sa.Column("reject_reason", sa.String(), nullable=True),
-        sa.Column("requested_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
+        sa.Column("submitted_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("email"),
     )
@@ -112,7 +112,7 @@ def upgrade() -> None:
             ),
             nullable=False,
         ),
-        sa.Column("qualification_img_key", sa.String(), nullable=True),
+        sa.Column("qualification_img_key", sa.String(), nullable=False),
         sa.Column(
             "account_status",
             sa.Enum("PENDING", "APPROVED", "REJECTED", name="accountcreationrequeststatus"),
@@ -120,7 +120,7 @@ def upgrade() -> None:
             nullable=False,
         ),
         sa.Column("reject_reason", sa.String(), nullable=True),
-        sa.Column("requested_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
+        sa.Column("submitted_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("email"),
     )

@@ -67,9 +67,8 @@ class EduArticleService:
         self.db.add(article)
         await self.db.flush()
 
-        article_img_key: str = S3StorageInterface.put_article_img(article.id, img_data)
+        article_img_key: str | None = S3StorageInterface.put_article_img(article.id, img_data)
         article.img_key = article_img_key
-        article.img_key = ""
         return article
 
     async def delete_article(self, article_id: int, deleter: VolunteerDoctor) -> None:

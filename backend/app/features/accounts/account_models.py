@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from app.core.custom_base_model import CustomBaseModel
 
 
@@ -7,6 +9,8 @@ class AccountCreationRequestView(CustomBaseModel):
     last_name: str
     qualification_option: str
     qualification_img_url: str
+    user_role: str
+    submitted_at: datetime
 
 
 class RejectAcccountCreationRequestReason(CustomBaseModel):

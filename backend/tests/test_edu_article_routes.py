@@ -1,8 +1,8 @@
 import uuid
 
-import httpx
 import pytest
 from fastapi import status
+from httpx import AsyncClient
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -13,7 +13,7 @@ from app.db.db_schema import Admin, EduArticle, EduArticleCategory, Nutritionist
 # ========================== GET ARTICLES =================================
 # =========================================================================
 @pytest.mark.asyncio
-async def test_get_articles_by_category_success(client: httpx.AsyncClient, db_session: AsyncSession) -> None:
+async def test_get_articles_by_category_success(client: AsyncClient, db_session: AsyncSession) -> None:
     for article_category in EduArticleCategory:
         edu_article = EduArticle(
             author_id=1,
@@ -38,14 +38,14 @@ async def test_get_articles_by_category_success(client: httpx.AsyncClient, db_se
 
 
 @pytest.mark.asyncio
-async def test_get_articles_by_nonexistent_category_failure(client: httpx.AsyncClient) -> None:
+async def test_get_articles_by_nonexistent_category_failure(client: AsyncClient) -> None:
     response = await client.get("/articles/?category=THERES_NO_WAY_THIS_CATEGORY_EXISTS_KEYBOARD_MASHING_ALFIJLEAIJFL")
     assert response.status_code == status.HTTP_400_BAD_REQUEST
 
 
 @pytest.mark.asyncio
 async def test_get_article_detailed_success(
-    authenticated_doctor_client: tuple[httpx.AsyncClient, VolunteerDoctor], db_session: AsyncSession
+    authenticated_doctor_client: tuple[AsyncClient, VolunteerDoctor], db_session: AsyncSession
 ) -> None:
     client, doctor = authenticated_doctor_client
 
@@ -74,7 +74,7 @@ async def test_get_article_detailed_success(
 
 
 @pytest.mark.asyncio
-async def test_get_article_detailed_invalid_id(client: httpx.AsyncClient) -> None:
+async def test_get_article_detailed_invalid_id(client: AsyncClient) -> None:
     response = await client.get("/articles/1337")
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
@@ -84,7 +84,7 @@ async def test_get_article_detailed_invalid_id(client: httpx.AsyncClient) -> Non
 # ==========================================================================
 @pytest.mark.asyncio
 async def test_create_article_success(
-    authenticated_doctor_client: tuple[httpx.AsyncClient, VolunteerDoctor],
+    authenticated_doctor_client: tuple[AsyncClient, VolunteerDoctor],
     db_session: AsyncSession,
     img_file_fixture,
 ) -> None:
@@ -93,11 +93,11 @@ async def test_create_article_success(
     response = await client.post(
         "/articles/",
         data={
-            "title": "1st Trimester Guide",
             "category": EduArticleCategory.BABY.value,
+            "title": "1st Trimester Guide",
             "content_markdown": "Le random content",
         },
-        files=img_file_fixture,
+        files={"img_data": img_file_fixture},
     )
     assert response.status_code == status.HTTP_201_CREATED
 
@@ -112,7 +112,7 @@ async def test_create_article_success(
 
 @pytest.mark.asyncio
 async def test_unregistered_create_article_fail(
-    client: httpx.AsyncClient,
+    client: AsyncClient,
     img_file_fixture,
 ) -> None:
     response = await client.post(
@@ -122,7 +122,7 @@ async def test_unregistered_create_article_fail(
             "category": EduArticleCategory.BABY.value,
             "content_markdown": "Le random content",
         },
-        files=img_file_fixture,
+        files={"img_data": img_file_fixture},
     )
     assert response.status_code == status.HTTP_403_FORBIDDEN, (
         "Unauthenticated user should NOT have permissions to create article"
@@ -131,7 +131,7 @@ async def test_unregistered_create_article_fail(
 
 @pytest.mark.asyncio
 async def test_create_article_fail_due_to_duplicate(
-    authenticated_doctor_client: tuple[httpx.AsyncClient, VolunteerDoctor],
+    authenticated_doctor_client: tuple[AsyncClient, VolunteerDoctor],
     db_session: AsyncSession,
     img_file_fixture,
 ) -> None:
@@ -157,14 +157,14 @@ async def test_create_article_fail_due_to_duplicate(
             "category": EduArticleCategory.BABY.value,
             "content_markdown": article_content,
         },
-        files=img_file_fixture,
+        files={"img_data": img_file_fixture},
     )
     assert response.status_code == status.HTTP_409_CONFLICT, "Article already exists, there should be a conflict"
 
 
 @pytest.mark.asyncio
 async def test_admin_create_article_fail(
-    authenticated_admin_client: tuple[httpx.AsyncClient, Admin],
+    authenticated_admin_client: tuple[AsyncClient, Admin],
     img_file_fixture,
 ) -> None:
     client, _ = authenticated_admin_client
@@ -175,14 +175,14 @@ async def test_admin_create_article_fail(
             "category": EduArticleCategory.BABY.value,
             "content_markdown": "Le random content",
         },
-        files=img_file_fixture,
+        files={"img_data": img_file_fixture},
     )
     assert response.status_code == status.HTTP_403_FORBIDDEN, "Admin user should NOT have permissions to create article"
 
 
 @pytest.mark.asyncio
 async def test_pregnant_woman_create_article_fail(
-    authenticated_pregnant_woman_client: tuple[httpx.AsyncClient, PregnantWoman],
+    authenticated_pregnant_woman_client: tuple[AsyncClient, PregnantWoman],
     img_file_fixture,
 ) -> None:
     client, _ = authenticated_pregnant_woman_client
@@ -193,7 +193,7 @@ async def test_pregnant_woman_create_article_fail(
             "category": EduArticleCategory.BABY.value,
             "content_markdown": "Le random content",
         },
-        files=img_file_fixture,
+        files={"img_data": img_file_fixture},
     )
     assert response.status_code == status.HTTP_403_FORBIDDEN, (
         "Pregnant women should NOT have permissions to create article"
@@ -202,7 +202,7 @@ async def test_pregnant_woman_create_article_fail(
 
 @pytest.mark.asyncio
 async def test_nutritionist_create_article_fail(
-    authenticated_nutritionist_client: tuple[httpx.AsyncClient, Nutritionist],
+    authenticated_nutritionist_client: tuple[AsyncClient, Nutritionist],
     img_file_fixture,
 ) -> None:
     client, _ = authenticated_nutritionist_client
@@ -213,18 +213,18 @@ async def test_nutritionist_create_article_fail(
             "category": EduArticleCategory.BABY.value,
             "content_markdown": "Le random content",
         },
-        files=img_file_fixture,
+        files={"img_data": img_file_fixture},
     )
     assert response.status_code == status.HTTP_403_FORBIDDEN, (
         "Nutritionist should NOT have permissions to create article"
     )
 
 
-# # ==========================================================================
-# # ========================= DELETE ARTICLES ================================
-# # ==========================================================================
+# ==========================================================================
+# ========================= DELETE ARTICLES ================================
+# ==========================================================================
 @pytest.mark.asyncio
-async def test_unregistered_delete_article_fail(client: httpx.AsyncClient, db_session: AsyncSession) -> None:
+async def test_unregistered_delete_article_fail(client: AsyncClient, db_session: AsyncSession) -> None:
     article = EduArticle(
         author_id=1337,
         category=EduArticleCategory.BODY,
@@ -245,7 +245,7 @@ async def test_unregistered_delete_article_fail(client: httpx.AsyncClient, db_se
 
 @pytest.mark.asyncio
 async def test_delete_article_success(
-    authenticated_doctor_client: tuple[httpx.AsyncClient, VolunteerDoctor], db_session: AsyncSession
+    authenticated_doctor_client: tuple[AsyncClient, VolunteerDoctor], db_session: AsyncSession
 ) -> None:
     client, doctor = authenticated_doctor_client
     article = EduArticle(
@@ -268,7 +268,7 @@ async def test_delete_article_success(
 
 @pytest.mark.asyncio
 async def test_delete_article_not_authorized(
-    authenticated_doctor_client: tuple[httpx.AsyncClient, VolunteerDoctor], db_session: AsyncSession
+    authenticated_doctor_client: tuple[AsyncClient, VolunteerDoctor], db_session: AsyncSession
 ) -> None:
     client, doctor = authenticated_doctor_client
     article = EduArticle(
@@ -293,7 +293,7 @@ async def test_delete_article_not_authorized(
 
 @pytest.mark.asyncio
 async def test_delete_nonexistent_article(
-    authenticated_doctor_client: tuple[httpx.AsyncClient, VolunteerDoctor],
+    authenticated_doctor_client: tuple[AsyncClient, VolunteerDoctor],
 ) -> None:
     client, _ = authenticated_doctor_client
 

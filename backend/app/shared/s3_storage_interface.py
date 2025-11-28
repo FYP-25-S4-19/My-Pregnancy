@@ -31,6 +31,35 @@ class S3StorageInterface:
             content_type=str(staging_qualification_img.content_type),
         )
 
+    @staticmethod
+    def promote_staging_qualification_img(user_id: int, staging_img_key: str) -> str | None:
+        """
+        Moves a qualification image from the staging area to the permanent qualifications storage.
+
+        Args:
+            staging_obj_key: The S3 object key of the staging qualification image.
+            user_id: The user ID to associate with the permanent qualification image.
+        """
+        try:
+            permanent_obj_key: str = f"{S3StorageInterface.QUALIFICATION_PREFIX}/{user_id}"
+            s3_client.copy_object(
+                CopySource={
+                    "Bucket": settings.S3_BUCKET_NAME,
+                    "Key": staging_img_key,
+                },
+                Bucket=settings.S3_BUCKET_NAME,
+                Key=permanent_obj_key,
+            )
+
+            s3_client.delete_object(
+                Bucket=settings.S3_BUCKET_NAME,
+                Key=staging_img_key,
+            )
+            return permanent_obj_key
+        except (BotoCoreError, ClientError) as e:
+            print(f"Error promoting staging qualification image {staging_img_key}: {e}")
+            return None
+
     # =======================================================
     # ================= EDU ARTICLE IMAGES ==================
     # =======================================================
@@ -102,7 +131,7 @@ class S3StorageInterface:
         )
 
     @staticmethod
-    def get_presigned_url(obj_key: str) -> str | None:
+    def get_presigned_url(obj_key: str, expires_in_seconds: int) -> str | None:
         """
         Generates a temporary, presigned URL for a private S3 object.
 
@@ -117,7 +146,7 @@ class S3StorageInterface:
             url: str = s3_client.generate_presigned_url(
                 ClientMethod="get_object",
                 Params={"Bucket": settings.S3_BUCKET_NAME, "Key": obj_key},
-                ExpiresIn=900,  # URL is valid for 15 minutes (900 seconds)
+                ExpiresIn=expires_in_seconds,  # URL is valid for 15 minutes (900 seconds)
             )
             return url
         except (BotoCoreError, ClientError) as e:
