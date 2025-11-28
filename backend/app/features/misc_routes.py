@@ -1,8 +1,8 @@
 from fastapi import APIRouter
 
-misc_router = APIRouter()
+misc_router = APIRouter(tags=["Miscellaneous"])
 
 
 @misc_router.get("/")
-def index():
+async def index():
     return "Ping!"

@@ -41,6 +41,9 @@ jobs:
           install-awslocal: true
           use-pro: false
 
+      - name: Initialize S3 Bucket in LocalStack
+        run: awslocal s3 mb s3://mypregnancy-bucket --region ap-southeast-1
+
       - name: Install dependencies for PostgreSQL Driver
         run: |
           sudo apt-get update
@@ -57,7 +60,7 @@ jobs:
         working-directory: ./backend
         run: uv run alembic upgrade head
         env:
-          DATABASE_URL: postgresql://mypregnancy-user:mypregnancy-password@localhost:5432/mypregnancy-db
+          SYNC_DATABASE_URL: postgresql+psycopg2://mypregnancy-user:mypregnancy-password@localhost:5432/mypregnancy-db
 
       - name: Run PyTest
         working-directory: ./backend
@@ -70,11 +73,12 @@ jobs:
           POSTGRES_PASSWORD: fyp_password
           POSTGRES_SERVER: localhost
           POSTGRES_PORT: 5432
-          DATABASE_URL: postgresql://mypregnancy-user:mypregnancy-password@localhost:5432/mypregnancy-db
+          SYNC_DATABASE_URL: postgresql+psycopg2://mypregnancy-user:mypregnancy-password@localhost:5432/mypregnancy-db
+          ASYNC_DATABASE_URL: postgresql+asyncpg://mypregnancy-user:mypregnancy-password@localhost:5432/mypregnancy-db
           AWS_ACCESS_KEY_ID: test
           AWS_SECRET_ACCESS_KEY: test
-          AWS_ENDPOINT_URL: http://localstack:4567
-          LOCALSTACK_ENDPOINT_URL: http://localhost:4567
+          AWS_ENDPOINT_URL: http://localstack:4566
+          LOCALSTACK_ENDPOINT_URL: http://localhost:4566
           S3_BUCKET_NAME: mypregnancy-bucket
           S3_BUCKET_REGION: ap-southeast-1
           JWT_EXPIRATION_MINUTES: 8

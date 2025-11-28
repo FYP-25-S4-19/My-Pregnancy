@@ -11,7 +11,7 @@ from app.db.db_schema import Base
 
 load_dotenv()
 
-db_url = os.getenv("DATABASE_URL")
+db_url = os.getenv("SYNC_DATABASE_URL")  # Make use of the SYNCHRONOUS connection string
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

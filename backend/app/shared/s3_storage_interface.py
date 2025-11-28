@@ -1,4 +1,5 @@
 import mimetypes
+import uuid
 from typing import BinaryIO
 
 from botocore.exceptions import BotoCoreError, ClientError
@@ -9,6 +10,56 @@ from app.core.settings import settings
 
 
 class S3StorageInterface:
+    # =======================================================================================
+    # ============== STAGING AREA FOR QUALIFICATIONS (DOCTOR + NUTRITIONIST) ================
+    # =======================================================================================
+    """
+    When uploading a qualification image for an account creation request, it is first stored in a staging area.
+    Once the request is approved, the image is moved to the permanent qualifications storage.
+
+    We use the prefix to differentiate between the "staging qualifications" for the Doctors & Nutritionists.
+    """
+
+    STAGING_QUALIFICATION_PREFIX = "staging-qualifications"
+
+    @staticmethod
+    def put_staging_qualification_img(staging_qualification_img: UploadFile) -> str | None:
+        return S3StorageInterface._upload_file_stream(
+            prefix=S3StorageInterface.STAGING_QUALIFICATION_PREFIX,
+            file_name=str(uuid.uuid4()),
+            file_obj=staging_qualification_img.file,
+            content_type=str(staging_qualification_img.content_type),
+        )
+
+    @staticmethod
+    def promote_staging_qualification_img(user_id: int, staging_img_key: str) -> str | None:
+        """
+        Moves a qualification image from the staging area to the permanent qualifications storage.
+
+        Args:
+            staging_obj_key: The S3 object key of the staging qualification image.
+            user_id: The user ID to associate with the permanent qualification image.
+        """
+        try:
+            permanent_obj_key: str = f"{S3StorageInterface.QUALIFICATION_PREFIX}/{user_id}"
+            s3_client.copy_object(
+                CopySource={
+                    "Bucket": settings.S3_BUCKET_NAME,
+                    "Key": staging_img_key,
+                },
+                Bucket=settings.S3_BUCKET_NAME,
+                Key=permanent_obj_key,
+            )
+
+            s3_client.delete_object(
+                Bucket=settings.S3_BUCKET_NAME,
+                Key=staging_img_key,
+            )
+            return permanent_obj_key
+        except (BotoCoreError, ClientError) as e:
+            print(f"Error promoting staging qualification image {staging_img_key}: {e}")
+            return None
+
     # =======================================================
     # ================= EDU ARTICLE IMAGES ==================
     # =======================================================
@@ -20,7 +71,7 @@ class S3StorageInterface:
             prefix=S3StorageInterface.ARTICLE_PREFIX,
             file_name=str(article_id),
             file_obj=article_img.file,
-            content_type=article_img.content_type,
+            content_type=str(article_img.content_type),
         )
 
     # =====================================================
@@ -34,7 +85,7 @@ class S3StorageInterface:
             prefix=S3StorageInterface.QUALIFICATION_PREFIX,
             file_name=str(user_id),
             file_obj=qualification_img.file,
-            content_type=qualification_img.content_type,
+            content_type=str(qualification_img.content_type),
         )
 
     @staticmethod
@@ -56,7 +107,7 @@ class S3StorageInterface:
             prefix=S3StorageInterface.PROFILE_PREFIX,
             file_name=str(user_id),
             file_obj=profile_img.file,
-            content_type=profile_img.content_type,
+            content_type=str(profile_img.content_type),
         )
 
     @staticmethod
@@ -71,7 +122,16 @@ class S3StorageInterface:
     # ==================== COMMON ========================
     # ====================================================
     @staticmethod
-    def get_presigned_url(obj_key: str) -> str | None:
+    def put_uploadfile(prefix: str, file_name: str, uploadfile: UploadFile) -> str | None:
+        return S3StorageInterface._upload_file_stream(
+            prefix=prefix,
+            file_name=file_name,
+            file_obj=uploadfile.file,
+            content_type=str(uploadfile.content_type),
+        )
+
+    @staticmethod
+    def get_presigned_url(obj_key: str, expires_in_seconds: int) -> str | None:
         """
         Generates a temporary, presigned URL for a private S3 object.
 
@@ -86,7 +146,7 @@ class S3StorageInterface:
             url: str = s3_client.generate_presigned_url(
                 ClientMethod="get_object",
                 Params={"Bucket": settings.S3_BUCKET_NAME, "Key": obj_key},
-                ExpiresIn=900,  # URL is valid for 15 minutes (900 seconds)
+                ExpiresIn=expires_in_seconds,
             )
             return url
         except (BotoCoreError, ClientError) as e:
@@ -127,7 +187,6 @@ class S3StorageInterface:
                     extension = ".jpg"
 
             obj_key = f"{prefix}/{file_name}{extension}"
-            # print("S3StorageInterface, Obj Key: ", obj_key)
             s3_client.upload_fileobj(
                 Fileobj=file_obj,
                 Bucket=settings.S3_BUCKET_NAME,

@@ -1,8 +1,8 @@
 """Initial revision
 
-Revision ID: b7ce8b5e54fe
+Revision ID: 57a81be96668
 Revises:
-Create Date: 2025-11-24 01:41:38.812256
+Create Date: 2025-11-28 16:37:40.237255
 
 """
 
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = "b7ce8b5e54fe"
+revision: str = "57a81be96668"
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -43,6 +43,31 @@ def upgrade() -> None:
         sa.UniqueConstraint("label"),
     )
     op.create_table(
+        "doctor_account_creation_requests",
+        sa.Column("id", sa.Integer(), nullable=False),
+        sa.Column("first_name", sa.String(length=64), nullable=False),
+        sa.Column("middle_name", sa.String(length=64), nullable=True),
+        sa.Column("last_name", sa.String(length=64), nullable=False),
+        sa.Column("email", sa.String(length=255), nullable=False),
+        sa.Column("password", sa.String(), nullable=False),
+        sa.Column(
+            "qualification_option",
+            sa.Enum("MD", "DO", "MBBS", "MBChB", "BMed", "BM", name="doctorqualificationoption"),
+            nullable=False,
+        ),
+        sa.Column("qualification_img_key", sa.String(), nullable=False),
+        sa.Column(
+            "account_status",
+            sa.Enum("PENDING", "APPROVED", "REJECTED", name="accountcreationrequeststatus"),
+            server_default=sa.text("'PENDING'"),
+            nullable=False,
+        ),
+        sa.Column("reject_reason", sa.String(), nullable=True),
+        sa.Column("submitted_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
+        sa.PrimaryKeyConstraint("id"),
+        sa.UniqueConstraint("email"),
+    )
+    op.create_table(
         "doctor_qualifications",
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("qualification_img_key", sa.String(), nullable=True),
@@ -61,6 +86,43 @@ def upgrade() -> None:
         sa.Column("carbs_per_100g", sa.Float(), nullable=True),
         sa.Column("fats_per_100g", sa.Float(), nullable=True),
         sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_table(
+        "nutritionist_account_creation_requests",
+        sa.Column("id", sa.Integer(), nullable=False),
+        sa.Column("first_name", sa.String(length=64), nullable=False),
+        sa.Column("middle_name", sa.String(length=64), nullable=True),
+        sa.Column("last_name", sa.String(length=64), nullable=False),
+        sa.Column("email", sa.String(length=255), nullable=False),
+        sa.Column("password", sa.String(), nullable=False),
+        sa.Column(
+            "qualification_option",
+            sa.Enum(
+                "BSC_NUTRITION",
+                "BSC_DIETETICS",
+                "MSC_NUTRITION",
+                "MSC_DIETETICS",
+                "RD",
+                "RDN",
+                "CNS",
+                "DIPLOMA_CLINICAL_NUTRITION",
+                "DIPLOMA_NUTRITION",
+                "CERTIFIED_NUTRITIONIST",
+                name="nutritionistqualificationoption",
+            ),
+            nullable=False,
+        ),
+        sa.Column("qualification_img_key", sa.String(), nullable=False),
+        sa.Column(
+            "account_status",
+            sa.Enum("PENDING", "APPROVED", "REJECTED", name="accountcreationrequeststatus"),
+            server_default=sa.text("'PENDING'"),
+            nullable=False,
+        ),
+        sa.Column("reject_reason", sa.String(), nullable=True),
+        sa.Column("submitted_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
+        sa.PrimaryKeyConstraint("id"),
+        sa.UniqueConstraint("email"),
     )
     op.create_table(
         "nutritionist_qualifications",
@@ -98,8 +160,10 @@ def upgrade() -> None:
         "users",
         sa.Column("type", sa.String(), nullable=False),
         sa.Column("id", sa.Integer(), nullable=False),
-        sa.Column("username", sa.String(length=100), nullable=False),
         sa.Column("profile_img_key", sa.String(), nullable=True),
+        sa.Column("first_name", sa.String(length=64), nullable=False),
+        sa.Column("middle_name", sa.String(length=64), nullable=True),
+        sa.Column("last_name", sa.String(length=64), nullable=False),
         sa.Column(
             "role",
             sa.Enum("ADMIN", "VOLUNTEER_DOCTOR", "PREGNANT_WOMAN", "NUTRITIONIST", name="userrole"),
@@ -111,7 +175,6 @@ def upgrade() -> None:
         sa.Column("is_active", sa.Boolean(), server_default=sa.text("TRUE"), nullable=False),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("email"),
-        sa.UniqueConstraint("username"),
     )
     op.create_table(
         "admins",
@@ -179,11 +242,7 @@ def upgrade() -> None:
     op.create_table(
         "nutritionists",
         sa.Column("id", sa.Integer(), nullable=False),
-        sa.Column("first_name", sa.String(length=64), nullable=False),
-        sa.Column("middle_name", sa.String(length=64), nullable=True),
-        sa.Column("last_name", sa.String(length=64), nullable=False),
         sa.Column("qualification_id", sa.Integer(), nullable=False),
-        sa.Column("is_verified", sa.Boolean(), server_default=sa.text("FALSE"), nullable=False),
         sa.ForeignKeyConstraint(
             ["id"],
             ["users.id"],
@@ -219,11 +278,7 @@ def upgrade() -> None:
     op.create_table(
         "volunteer_doctors",
         sa.Column("id", sa.Integer(), nullable=False),
-        sa.Column("first_name", sa.String(length=64), nullable=False),
-        sa.Column("middle_name", sa.String(length=64), nullable=True),
-        sa.Column("last_name", sa.String(length=64), nullable=False),
         sa.Column("qualification_id", sa.Integer(), nullable=False),
-        sa.Column("is_verified", sa.Boolean(), server_default=sa.text("FALSE"), nullable=False),
         sa.ForeignKeyConstraint(
             ["id"],
             ["users.id"],
@@ -475,7 +530,9 @@ def downgrade() -> None:
     op.drop_table("users")
     op.drop_table("scalar_metrics")
     op.drop_table("nutritionist_qualifications")
+    op.drop_table("nutritionist_account_creation_requests")
     op.drop_table("ingredients")
     op.drop_table("doctor_qualifications")
+    op.drop_table("doctor_account_creation_requests")
     op.drop_table("binary_metrics")
     # ### end Alembic commands ###

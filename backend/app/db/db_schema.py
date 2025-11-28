@@ -1,10 +1,9 @@
 from __future__ import annotations
 
 from datetime import date, datetime
-from enum import Enum, IntEnum
+from enum import Enum
 
 from sqlalchemy import (
-    Boolean,
     DateTime,
     ForeignKey,
     String,
@@ -29,6 +28,12 @@ class AppointmentStatus(Enum):
     COMPLETED = "COMPLETED"
 
 
+class AccountCreationRequestStatus(Enum):
+    PENDING = "PENDING"
+    APPROVED = "APPROVED"
+    REJECTED = "REJECTED"
+
+
 class UserRole(Enum):
     ADMIN = "ADMIN"
     VOLUNTEER_DOCTOR = "VOLUNTEER_DOCTOR"
@@ -46,26 +51,26 @@ class BinaryMetricCategory(Enum):
     OTHERS = "OTHERS"
 
 
-class DoctorQualificationOption(IntEnum):
-    MD = 1
-    DO = 2
-    MBBS = 3
-    MBChB = 4
-    BMed = 5
-    BM = 6
+class DoctorQualificationOption(Enum):
+    MD = "MD"
+    DO = "DO"
+    MBBS = "MBBS"
+    MBChB = "MBChB"
+    BMed = "BMed"
+    BM = "BM"
 
 
-class NutritionistQualificationOption(IntEnum):
-    BSC_NUTRITION = 1
-    BSC_DIETETICS = 2
-    MSC_NUTRITION = 3
-    MSC_DIETETICS = 4
-    RD = 5
-    RDN = 6
-    CNS = 7
-    DIPLOMA_CLINICAL_NUTRITION = 8
-    DIPLOMA_NUTRITION = 9
-    CERTIFIED_NUTRITIONIST = 10
+class NutritionistQualificationOption(Enum):
+    BSC_NUTRITION = "BSC_NUTRITION"
+    BSC_DIETETICS = "BSC_DIETETICS"
+    MSC_NUTRITION = "MSC_NUTRITION"
+    MSC_DIETETICS = "MSC_DIETETICS"
+    RD = "RD"
+    RDN = "RDN"
+    CNS = "CNS"
+    DIPLOMA_CLINICAL_NUTRITION = "DIPLOMA_CLINICAL_NUTRITION"
+    DIPLOMA_NUTRITION = "DIPLOMA_NUTRITION"
+    CERTIFIED_NUTRITIONIST = "CERTIFIED_NUTRITIONIST"
 
 
 class EduArticleCategory(Enum):
@@ -100,8 +105,11 @@ class User(Base):
     type: Mapped[str]
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    username: Mapped[str] = mapped_column(String(100), unique=True)
     profile_img_key: Mapped[str | None]
+
+    first_name: Mapped[str] = mapped_column(String(64))
+    middle_name: Mapped[str | None] = mapped_column(String(64))  # Middle name optional
+    last_name: Mapped[str] = mapped_column(String(64))
 
     role: Mapped["UserRole"] = mapped_column(SQLAlchemyEnum(UserRole))
 
@@ -129,17 +137,9 @@ class VolunteerDoctor(User):
     __mapper_args__ = {"polymorphic_identity": "volunteer_doctor"}
     id: Mapped[int] = mapped_column(ForeignKey("users.id"), primary_key=True)
 
-    # For all other subclasses of the base "User", they may use just "username"
-    # However, it would be more professional for Doctors & Nutritionists to have their full names available
-    first_name: Mapped[str] = mapped_column(String(64))
-    middle_name: Mapped[str | None] = mapped_column(String(64))  # Middle name optional
-    last_name: Mapped[str] = mapped_column(String(64))
-
     # Linking to their specific instance of their creds in the "medical credentials" table
     qualification_id: Mapped[int] = mapped_column(ForeignKey("doctor_qualifications.id"))
     qualification: Mapped["DoctorQualification"] = relationship(back_populates="doctor")
-
-    is_verified: Mapped[bool] = mapped_column(Boolean, server_default=text("FALSE"))
 
     # Keep track of the "Pregnant Women" who have "saved" you
     saved_by: Mapped[list["SavedVolunteerDoctor"]] = relationship(back_populates="volunteer_doctor")
@@ -158,7 +158,6 @@ class PregnantWoman(User):
     saved_volunteer_doctors: Mapped[list["SavedVolunteerDoctor"]] = relationship(back_populates="mother")
     appointments: Mapped[list["Appointment"]] = relationship(back_populates="mother")
     journal_entries: Mapped[list["JournalEntry"]] = relationship(back_populates="author")
-    # bump_entries: Mapped[list["BumpEntry"]] = relationship(back_populates="uploader")
     kick_tracker_sessions: Mapped[list["KickTrackerSession"]] = relationship(back_populates="mother")
 
 
@@ -167,23 +166,16 @@ class Nutritionist(User):
     __mapper_args__ = {"polymorphic_identity": "nutritionist"}
     id: Mapped[int] = mapped_column(ForeignKey("users.id"), primary_key=True)
 
-    # For all other subclasses of the base "User", they may use just "username"
-    # However, it would be more professional for Doctors & Nutritionists to have their full names available
-    first_name: Mapped[str] = mapped_column(String(64))
-    middle_name: Mapped[str | None] = mapped_column(String(64))  # Middle name optional
-    last_name: Mapped[str] = mapped_column(String(64))
-
     # Linking to their specific instance of their creds in the "medical credentials" table
     qualification_id: Mapped[int] = mapped_column(ForeignKey("nutritionist_qualifications.id"))
     qualification: Mapped["NutritionistQualification"] = relationship(back_populates="nutritionist")
 
-    is_verified: Mapped[bool] = mapped_column(Boolean, server_default=text("FALSE"))
     recipes_created: Mapped[list["Recipe"]] = relationship(back_populates="nutritionist")
 
 
-# ==================================================
-# ================ QUALIFICATIONS ==================
-# ==================================================
+# ===========================================================
+# ==================== QUALIFICATIONS =======================
+# ===========================================================
 
 
 # The actual INSTANCES of "Medical Qualification" - Each VolunteerDoctor should have one!
@@ -210,9 +202,9 @@ class NutritionistQualification(Base):
     nutritionist: Mapped["Nutritionist"] = relationship(back_populates="qualification")
 
 
-# ================================================
-# =========== EDUCATIONAL CONTENT ================
-# ================================================
+# ===========================================================
+# ================== EDUCATIONAL CONTENT ====================
+# ===========================================================
 class EduArticle(Base):
     __tablename__ = "edu_articles"
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -353,9 +345,9 @@ class JournalScalarMetricLog(Base):
     value: Mapped[float]
 
 
-# ============================================
-# ============ COMMUNITY FORUM ===============
-# ============================================
+# ===========================================================
+# ==================== COMMUNITY FORUM ======================
+# ===========================================================
 # A 'thread' is what you would usually call a 'forum post'
 #
 # I hesitated to call it 'post', just because of possible weird names that would
@@ -505,6 +497,42 @@ class Notification(Base):
     # type = "message_reply", data = "<SOME_JSON_DATA>" (i.e. JSON object containing link to message)
     type: Mapped["NotificationType"] = mapped_column(SQLAlchemyEnum(NotificationType))
     data: Mapped[str]
+
+
+class DoctorAccountCreationRequest(Base):
+    __tablename__ = "doctor_account_creation_requests"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    first_name: Mapped[str] = mapped_column(String(64))
+    middle_name: Mapped[str | None] = mapped_column(String(64))  # Middle name optional
+    last_name: Mapped[str] = mapped_column(String(64))
+    email: Mapped[str] = mapped_column(String(255), unique=True)
+    password: Mapped[str] = mapped_column()
+    qualification_option: Mapped["DoctorQualificationOption"] = mapped_column(SQLAlchemyEnum(DoctorQualificationOption))
+    qualification_img_key: Mapped[str]
+    account_status: Mapped["AccountCreationRequestStatus"] = mapped_column(
+        SQLAlchemyEnum(AccountCreationRequestStatus), server_default=text("'PENDING'")
+    )
+    reject_reason: Mapped[str | None]
+    submitted_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class NutritionistAccountCreationRequest(Base):
+    __tablename__ = "nutritionist_account_creation_requests"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    first_name: Mapped[str] = mapped_column(String(64))
+    middle_name: Mapped[str | None] = mapped_column(String(64))  # Middle name optional
+    last_name: Mapped[str] = mapped_column(String(64))
+    email: Mapped[str] = mapped_column(String(255), unique=True)
+    password: Mapped[str] = mapped_column()
+    qualification_option: Mapped["NutritionistQualificationOption"] = mapped_column(
+        SQLAlchemyEnum(NutritionistQualificationOption)
+    )
+    qualification_img_key: Mapped[str]
+    account_status: Mapped["AccountCreationRequestStatus"] = mapped_column(
+        SQLAlchemyEnum(AccountCreationRequestStatus), server_default=text("'PENDING'")
+    )
+    reject_reason: Mapped[str | None]
+    submitted_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 
 class ExpoPushToken(Base):
