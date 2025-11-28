@@ -57,7 +57,7 @@ jobs:
         working-directory: ./backend
         run: uv run alembic upgrade head
         env:
-          DATABASE_URL: postgresql://mypregnancy-user:mypregnancy-password@localhost:5432/mypregnancy-db
+          SYNC_DATABASE_URL: postgresql+psycopg2://mypregnancy-user:mypregnancy-password@localhost:5432/mypregnancy-db
 
       - name: Run PyTest
         working-directory: ./backend
