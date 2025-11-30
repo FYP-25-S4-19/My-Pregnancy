@@ -6,12 +6,13 @@ A mobile application designed to support women throughout their pregnancy
 
 ## Quick start
 
-#### Prerequisites
+### Prerequisites
 
 - [Node.js _(via nvm)_](https://nodejs.org/en/download)
   - Install the LTS: `nvm install --lts && nvm use --lts`
 - [Docker](https://www.docker.com/)
 - [Android Studio](https://developer.android.com/studio)
+  - Make sure to follow the [Expo docs](https://docs.expo.dev/get-started/set-up-your-environment/?platform=android&device=physical&mode=development-build&buildEnv=local) develop using _Android Device & Development Build_
 - [uv](https://docs.astral.sh/uv/)
   - Windows: ```powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"```
   - MacOS & Linux: ```curl -LsSf https://astral.sh/uv/install.sh | sh```
@@ -20,20 +21,41 @@ A mobile application designed to support women throughout their pregnancy
 
 For these next steps, you will need two terminals - one for the frontend and one for the backend
 
-#### Frontend
+### Frontend
 
 1. `cd frontend`
 2. **[First time]**
     - Install dependencies: `npm i`
     - Create a copy of the `.env.example` and rename it to `.env`
 
-3. Start:
-   - Android emulator: `npm run android`
-   - iOS _(MacOS only)_: `npm run ios`
-   - Web: `npm run web`
-4. Stop: `Ctrl-C`
+Now, there are multiple ways of running the app, but I highly recommend a local build
 
-#### Backend
+#### Locally build development APK
+First create a _development build_ of your APK
+- You need first globally instal the EAS CLI `npm install -g eas-cli`
+- Login to EAS _(requires an account)_: `eas login`
+- Build! `eas build --profile development --platform android --local`
+  - The `--local` flag is very important here, otherwise it will eat up your free EAS _"cloud builds"_
+- Once completed, the path to the generated APK will be generated. Transfer this onto your mobile device and install it
+
+Next, you have 2 options for allowing your mobile device to connect
+- **Wireless:** Assuming your mobile device is on the same private network and subnet, you'd have to create 2 firewall rules
+  - Allow inbound TCP 192.168.1.0/24 on port 8081 _(Expo Metro Bundler)_
+  - Allow inbound TCP 192.168.1.0/24 on port 8000 _(FastAPI backend)_
+
+- **Wired:** I have no idea how, but you can research into making use of `adb reverse`
+
+
+From now on, during development, you just have to
+- Call `npx expo start --dev-client --tunnel`, a QR code should be presented
+- Scan the code using the previously installed APK on your mobile device
+
+#### Android Emulator
+Similar to the previous method of _building a local dev APK_, but you run via `npx expo start:android`
+
+If you have properly previously configured the Android Studio step at the start, the emulator should open automagically
+
+### Backend
 
 1. `cd backend`
 2. **[First Time]**
@@ -43,7 +65,7 @@ For these next steps, you will need two terminals - one for the frontend and one
       - Windows: `venv\Scripts\Activate.bat`
    - Install dependencies: `uv sync`
    - Create a copy of the `.env.example` and rename it to `.env`
-3. Building for first time? `docker compose up --build`. Otherwise, just `docker compose up`
+3. `docker compose up` _(Having issues? Try to force a fresh build with_ `docker compose up --build --remove-orphans` _)_
 4. `docker compose down` to stop the running container(s)
 
 ---

@@ -1,38 +1,13 @@
-import { api } from '@/constants/api';
-import React, { useEffect } from 'react';
-import {
-  ImageBackground,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View
-} from 'react-native';
+import React from "react";
+import { ImageBackground, StatusBar, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-const image = require('../../assets/images/wallpaper.jpg');
+const image = require("../../../assets/images/wallpaper.jpg");
 
-export default function HomeScreen() {
-  useEffect(() => {
-    try {
-      const fetchAsync = async () => {
-        const res = await api.get("/docs")
-        console.log("Data from API: ", res.data)
-      }
-      fetchAsync()
-    } catch (err) {
-      console.log(err)
-    }
-  }, [])
-
+export default function PreRegisterScreen() {
   return (
-    <ImageBackground
-      source={image}
-      style={styles.background}
-      resizeMode="cover"
-    >
+    <ImageBackground source={image} style={styles.background} resizeMode="cover">
       <StatusBar barStyle="dark-content" />
       <View style={styles.container}>
-
         {/* App Title */}
         <View style={styles.titleContainer}>
           <Text style={styles.titleSmall}>my</Text>
@@ -45,23 +20,20 @@ export default function HomeScreen() {
         {/* Buttons */}
         <TouchableOpacity
           style={[styles.button, styles.primaryButton]}
-          onPress={() => console.log('Mom-to-be selected')}
+          onPress={() => console.log("Mom-to-be selected")}
         >
           <Text style={styles.primaryButtonText}>I'm a Mom-to-be</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={[styles.button, styles.secondaryButton]}
-          onPress={() => console.log('Specialist selected')}
+          onPress={() => console.log("Specialist selected")}
         >
           <Text style={styles.secondaryButtonText}>I'm a Specialist</Text>
         </TouchableOpacity>
 
         {/* Admin Login Link */}
-        <TouchableOpacity
-          style={styles.adminLogin}
-          onPress={() => console.log('Admin Login pressed')}
-        >
+        <TouchableOpacity style={styles.adminLogin} onPress={() => console.log("Admin Login pressed")}>
           <Text style={styles.adminLoginText}>Admin Login →</Text>
         </TouchableOpacity>
       </View>
@@ -75,63 +47,63 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     paddingHorizontal: 20,
   },
   titleContainer: {
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 80, // Space between title and question
   },
   titleSmall: {
     fontSize: 24,
-    color: '#6d2828',
+    color: "#6d2828",
     // For a cursive font, you would load a custom font with Expo Font
-    // fontFamily: 'YourCursiveFont', 
+    // fontFamily: 'YourCursiveFont',
     lineHeight: 26,
   },
   titleLarge: {
     fontSize: 40,
-    fontWeight: 'bold',
-    color: '#6d2828',
+    fontWeight: "bold",
+    color: "#6d2828",
     // For a rounded, bold font, you would load a custom font
-    // fontFamily: 'YourRoundedBoldFont', 
+    // fontFamily: 'YourRoundedBoldFont',
   },
   questionText: {
     fontSize: 18,
-    color: '#6d2828',
+    color: "#6d2828",
     marginBottom: 30, // Space between question and first button
   },
   button: {
-    width: '90%',
+    width: "90%",
     paddingVertical: 16,
     borderRadius: 50, // This creates the pill shape
-    alignItems: 'center',
+    alignItems: "center",
     marginVertical: 8,
   },
   primaryButton: {
-    backgroundColor: '#FADADD', // A soft pink color
+    backgroundColor: "#FADADD", // A soft pink color
   },
   primaryButtonText: {
-    color: '#6d2828',
+    color: "#6d2828",
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   secondaryButton: {
-    backgroundColor: '#FFF8F8', // A very light, almost white pink
+    backgroundColor: "#FFF8F8", // A very light, almost white pink
     borderWidth: 1.5,
-    borderColor: '#FADADD',
+    borderColor: "#FADADD",
   },
   secondaryButtonText: {
-    color: '#6d2828',
+    color: "#6d2828",
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   adminLogin: {
     marginTop: 20, // Space above the admin login link
   },
   adminLoginText: {
     fontSize: 14,
-    color: '#6d2828',
+    color: "#6d2828",
   },
 });
