@@ -30,7 +30,7 @@ class AuthService:
             last_name=req.last_name,
             role=UserRole.PREGNANT_WOMAN,
             email=req.email,
-            password_hash=self.ph.hash(req.password),
+            hashed_password=self.ph.hash(req.password),
             due_date=req.due_date,
             profile_img_key="",
         )
@@ -47,7 +47,7 @@ class AuthService:
             )
 
         try:
-            self.ph.verify(str(user.password_hash), req.password)
+            self.ph.verify(str(user.hashed_password), req.password)
         except Exception:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials or user not found"

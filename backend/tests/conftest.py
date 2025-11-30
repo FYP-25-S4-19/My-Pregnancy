@@ -110,7 +110,7 @@ async def admin_factory(db_session: AsyncSession, **kwargs: Any) -> CreateAdminC
         defaults = {
             "role": UserRole.ADMIN,
             "email": f"admin_{unique_id}@test.com",
-            "password_hash": "hashed_password_123",
+            "hashed_password": "hashed_password_123",
             "first_name": "Admin",
             "last_name": "McAdminface",
         }
@@ -164,7 +164,7 @@ async def volunteer_doctor_factory(db_session: AsyncSession) -> CreateDoctorCall
         defaults = {
             "role": UserRole.VOLUNTEER_DOCTOR,
             "email": f"doctor_{unique_id}@test.com",
-            "password_hash": "hashed_password_123",
+            "hashed_password": "hashed_password_123",
             "first_name": "John",
             "last_name": "Doe",
         }
@@ -220,7 +220,7 @@ async def pregnant_woman_factory(db_session: AsyncSession) -> CreatePregnantWoma
             "last_name": unique_id,
             "role": UserRole.PREGNANT_WOMAN,
             "email": f"mother_{unique_id}@test.com",
-            "password_hash": "hashed_password_456",
+            "hashed_password": "hashed_password_456",
         }
         user_data = defaults | kwargs
         mother = PregnantWoman(**user_data)
@@ -277,7 +277,7 @@ async def nutritionist_factory(db_session: AsyncSession) -> CreateNutritionistCa
         defaults = {
             "role": UserRole.NUTRITIONIST,
             "email": f"nutritionist_{unique_id}@test.com",
-            "password_hash": "hashed_password_789",
+            "hashed_password": "hashed_password_789",
             "first_name": "Jane",
             "last_name": "Smith",
         }

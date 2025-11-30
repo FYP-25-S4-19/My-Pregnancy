@@ -1,8 +1,8 @@
-"""Initial revision
+"""Yet another descriptive migration
 
-Revision ID: 57a81be96668
+Revision ID: 23f29fb8eaee
 Revises:
-Create Date: 2025-11-28 16:37:40.237255
+Create Date: 2025-11-30 18:43:07.240842
 
 """
 
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = "57a81be96668"
+revision: str = "23f29fb8eaee"
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -159,8 +159,8 @@ def upgrade() -> None:
     op.create_table(
         "users",
         sa.Column("type", sa.String(), nullable=False),
-        sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("profile_img_key", sa.String(), nullable=True),
+        sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("first_name", sa.String(length=64), nullable=False),
         sa.Column("middle_name", sa.String(length=64), nullable=True),
         sa.Column("last_name", sa.String(length=64), nullable=False),
@@ -169,13 +169,15 @@ def upgrade() -> None:
             sa.Enum("ADMIN", "VOLUNTEER_DOCTOR", "PREGNANT_WOMAN", "NUTRITIONIST", name="userrole"),
             nullable=False,
         ),
-        sa.Column("email", sa.String(length=255), nullable=False),
-        sa.Column("password_hash", sa.String(length=128), nullable=False),
         sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
-        sa.Column("is_active", sa.Boolean(), server_default=sa.text("TRUE"), nullable=False),
+        sa.Column("email", sa.String(length=320), nullable=False),
+        sa.Column("hashed_password", sa.String(length=1024), nullable=False),
+        sa.Column("is_active", sa.Boolean(), nullable=False),
+        sa.Column("is_superuser", sa.Boolean(), nullable=False),
+        sa.Column("is_verified", sa.Boolean(), nullable=False),
         sa.PrimaryKeyConstraint("id"),
-        sa.UniqueConstraint("email"),
     )
+    op.create_index(op.f("ix_users_email"), "users", ["email"], unique=True)
     op.create_table(
         "admins",
         sa.Column("id", sa.Integer(), nullable=False),
@@ -527,6 +529,7 @@ def downgrade() -> None:
     op.drop_table("expo_push_tokens")
     op.drop_table("community_threads")
     op.drop_table("admins")
+    op.drop_index(op.f("ix_users_email"), table_name="users")
     op.drop_table("users")
     op.drop_table("scalar_metrics")
     op.drop_table("nutritionist_qualifications")

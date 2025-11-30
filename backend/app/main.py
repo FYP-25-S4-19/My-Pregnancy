@@ -9,12 +9,15 @@ from starlette.middleware.sessions import SessionMiddleware
 from starlette.responses import JSONResponse
 
 from app.core.settings import settings
+from app.core.users import auth_backend, fastapi_users
 from app.features.accounts.account_router import account_router
 from app.features.appointments.appointment_router import appointments_router
-from app.features.auth.auth_router import auth_router
+
+# from app.features.auth.auth_router import auth_router
 from app.features.educational_articles.edu_article_router import edu_articles_router
 from app.features.journal.journal_router import journal_router
 from app.features.misc_routes import misc_router
+from app.schemas import UserCreate, UserRead, UserUpdate
 
 APP_TITLE: str = "MyPregnancy API"
 
@@ -38,12 +41,30 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(auth_router)
+app.include_router(
+    fastapi_users.get_auth_router(auth_backend),
+    prefix="/auth/jwt",
+    tags=["auth"],
+)
+app.include_router(
+    fastapi_users.get_register_router(UserRead, UserCreate),
+    prefix="/auth",
+    tags=["auth"],
+)
+app.include_router(
+    fastapi_users.get_users_router(UserRead, UserUpdate),
+    prefix="/users",
+    tags=["users"],
+)
+
+# Existing Routers
+# app.include_router(auth_router)
 app.include_router(edu_articles_router)
 app.include_router(appointments_router)
 app.include_router(journal_router)
 app.include_router(account_router)
 app.include_router(misc_router)
+
 app.add_middleware(SessionMiddleware, secret_key=settings.SECRET_KEY)
 
 

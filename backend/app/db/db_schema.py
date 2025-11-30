@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import date, datetime
 from enum import Enum
 
+from fastapi_users_db_sqlalchemy import SQLAlchemyBaseUserTable
 from sqlalchemy import (
     DateTime,
     ForeignKey,
@@ -11,9 +12,7 @@ from sqlalchemy import (
     func,
     text,
 )
-from sqlalchemy import (
-    Enum as SQLAlchemyEnum,
-)
+from sqlalchemy import Enum as SQLAlchemyEnum
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
@@ -99,24 +98,21 @@ class NotificationType(Enum):
 # ===========================================
 # ============= GENERAL USER ================
 # ===========================================
-class User(Base):
+class User(SQLAlchemyBaseUserTable[int], Base):
     __tablename__ = "users"
     __mapper_args__ = {"polymorphic_identity": "user", "polymorphic_on": "type"}
     type: Mapped[str]
 
-    id: Mapped[int] = mapped_column(primary_key=True)
     profile_img_key: Mapped[str | None]
 
+    id: Mapped[int] = mapped_column(primary_key=True)
     first_name: Mapped[str] = mapped_column(String(64))
     middle_name: Mapped[str | None] = mapped_column(String(64))  # Middle name optional
     last_name: Mapped[str] = mapped_column(String(64))
 
     role: Mapped["UserRole"] = mapped_column(SQLAlchemyEnum(UserRole))
 
-    email: Mapped[str] = mapped_column(String(255), unique=True)
-    password_hash: Mapped[str] = mapped_column(String(128))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
-    is_active: Mapped[bool] = mapped_column(server_default=text("TRUE"))
 
     threads_created: Mapped[list["CommunityThread"]] = relationship(back_populates="creator")
     thread_comments: Mapped[list["ThreadComment"]] = relationship(back_populates="commenter")

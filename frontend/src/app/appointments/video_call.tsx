@@ -21,29 +21,35 @@ const callId = "o4M0r3gWGHoGjjW6yqoFd";
 const user: User = { id: userId };
 
 export default function VideoCallScreen() {
-  // const [client, setClient] = useState<StreamVideoClient | null>(null);
-  // const [call, setCall] = useState<Call | null>(null);
+  const [client, setClient] = useState<StreamVideoClient | null>(null);
+  const [call, setCall] = useState<Call | null>(null);
 
-  // useEffect(() => {
-  //   const streamClient = StreamVideoClient.getOrCreateInstance({ apiKey, user, token });
-  //   const streamCall = streamClient.call("default", callId);
-  //   streamCall.join({ create: true });
+  const router = useRouter();
 
-  //   setClient(streamClient);
-  //   setCall(streamCall);
-  // }, []);
+  useEffect(() => {
+    const streamClient = StreamVideoClient.getOrCreateInstance({ apiKey, user, token });
+    const streamCall = streamClient.call("default", callId);
+    streamCall.join({ create: true });
 
-  // if (!client || !call) {
-  //   return <Text>Loading...</Text>;
-  // }
+    setClient(streamClient);
+    setCall(streamCall);
+  }, []);
+
+  if (!client || !call) {
+    return <Text>Loading...</Text>;
+  }
+
+  const onHangup = async (): Promise<void> => {
+    await call?.leave();
+    router.back();
+  };
 
   return (
-    <></>
-    // <StreamVideo client={client}>
-    //   <StreamCall call={call}>
-    //     <VideoUI />
-    //     <CallControls />
-    //   </StreamCall>
-    // </StreamVideo>
+    <StreamVideo client={client}>
+      <StreamCall call={call}>
+        <VideoUI />
+        <CallControls onHangupCallHandler={onHangup} />
+      </StreamCall>
+    </StreamVideo>
   );
 }
