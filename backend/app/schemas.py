@@ -12,7 +12,6 @@ class UserRead(schemas.BaseUser[int]):
     last_name: str
     role: UserRole
     profile_img_key: Optional[str] = None
-
     model_config = ConfigDict(from_attributes=True)
 
 

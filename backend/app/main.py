@@ -12,18 +12,15 @@ from app.core.settings import settings
 from app.core.users import auth_backend, fastapi_users
 from app.features.accounts.account_router import account_router
 from app.features.appointments.appointment_router import appointments_router
-
-# from app.features.auth.auth_router import auth_router
 from app.features.educational_articles.edu_article_router import edu_articles_router
 from app.features.journal.journal_router import journal_router
 from app.features.misc_routes import misc_router
 from app.schemas import UserCreate, UserRead, UserUpdate
 
-APP_TITLE: str = "MyPregnancy API"
-
 if not settings.APP_ENV:
     raise ValueError("APP_ENV is not set in environment variables")
 
+APP_TITLE: str = "MyPregnancy API"
 app = (
     FastAPI(title=APP_TITLE, docs_url=None, redoc_url=None, openapi_url=None, default_response_class=UJSONResponse)
     if (
@@ -44,21 +41,18 @@ app.add_middleware(
 app.include_router(
     fastapi_users.get_auth_router(auth_backend),
     prefix="/auth/jwt",
-    tags=["auth"],
+    tags=["Auth"],
 )
 app.include_router(
     fastapi_users.get_register_router(UserRead, UserCreate),
     prefix="/auth",
-    tags=["auth"],
+    tags=["Auth"],
 )
 app.include_router(
     fastapi_users.get_users_router(UserRead, UserUpdate),
     prefix="/users",
-    tags=["users"],
+    tags=["Users"],
 )
-
-# Existing Routers
-# app.include_router(auth_router)
 app.include_router(edu_articles_router)
 app.include_router(appointments_router)
 app.include_router(journal_router)
