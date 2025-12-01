@@ -2,14 +2,8 @@ from typing import Type, TypeVar
 
 from fastapi import Depends, HTTPException, status
 
-from app.core.users import current_active_user
+from app.core.users_manager import current_active_user
 from app.db.db_schema import User
-
-# class TokenData(BaseModel):
-#     sub: str
-#     role: str
-#     exp: datetime
-
 
 T = TypeVar("T", bound=User)
 

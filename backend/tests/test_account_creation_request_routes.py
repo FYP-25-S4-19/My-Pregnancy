@@ -52,7 +52,7 @@ async def test_get_account_creation_requests_success(
 @pytest.mark.asyncio
 async def test_get_account_creation_requests_unauthorized(client: AsyncClient) -> None:
     response = await client.get("/account-requests/")
-    assert response.status_code == status.HTTP_403_FORBIDDEN, "Expected 403 FORBIDDEN for unauthorized access"
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
 
 @pytest.mark.asyncio
@@ -214,4 +214,6 @@ async def test_process_request_unauthorized(
     await db_session.commit()
 
     response = await client.patch(f"/account-requests/doctors/{request.id}/accept")
-    assert response.status_code == status.HTTP_403_FORBIDDEN, "Should not allow unauthorized access to process requests"
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED, (
+        "Should not allow unauthorized access to process requests"
+    )

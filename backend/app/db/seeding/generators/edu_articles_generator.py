@@ -26,7 +26,6 @@ class EduArticlesGenerator:
             )
             all_edu_articles.append(article)
             db.add(article)
-        db.commit()
         return all_edu_articles
 
     @staticmethod
@@ -43,4 +42,3 @@ class EduArticlesGenerator:
             for article in articles_sample:
                 saved_article = SavedEduArticle(saver=mother, article=article)
                 db.add(saved_article)
-        db.commit()

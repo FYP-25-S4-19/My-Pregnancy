@@ -117,6 +117,8 @@ class User(SQLAlchemyBaseUserTable[int], Base):
     threads_created: Mapped[list["CommunityThread"]] = relationship(back_populates="creator")
     thread_comments: Mapped[list["ThreadComment"]] = relationship(back_populates="commenter")
     threads_liked: Mapped[list["CommunityThreadLike"]] = relationship(back_populates="liker")
+    comments_liked: Mapped[list["CommentLike"]] = relationship(back_populates="liker")
+
     feedback_given: Mapped["UserAppFeedback"] = relationship(back_populates="author")
     saved_edu_articles: Mapped[list["SavedEduArticle"]] = relationship(back_populates="saver")
     notifications: Mapped[list["Notification"]] = relationship(back_populates="recipient")
@@ -150,6 +152,7 @@ class PregnantWoman(User):
     id: Mapped[int] = mapped_column(ForeignKey("users.id"), primary_key=True)
 
     due_date: Mapped[date | None]  # Nullable (may not be expecting)
+    date_of_birth: Mapped[date]
 
     saved_volunteer_doctors: Mapped[list["SavedVolunteerDoctor"]] = relationship(back_populates="mother")
     appointments: Mapped[list["Appointment"]] = relationship(back_populates="mother")
@@ -387,6 +390,20 @@ class ThreadComment(Base):
     commented_at: Mapped[datetime]
     content: Mapped[str] = mapped_column(Text)
 
+    comment_likes: Mapped[list["CommentLike"]] = relationship(back_populates="comment")
+
+
+# Assocation table that defines a "user" liking a "comment"
+class CommentLike(Base):
+    __tablename__ = "comment_likes"
+    id: Mapped[int] = mapped_column(primary_key=True)
+
+    liker_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    liker: Mapped["User"] = relationship(back_populates="comments_liked")
+
+    comment_id: Mapped[int] = mapped_column(ForeignKey("thread_comments.id"))
+    comment: Mapped["ThreadComment"] = relationship(back_populates="comment_likes")
+
 
 # ============================================
 # =============== RECIPES ====================
@@ -444,11 +461,11 @@ class KickTrackerSession(Base):
 
     started_at: Mapped[datetime]
     ended_at: Mapped[datetime]
-    kicks: Mapped[list["KickTrackerKicks"]] = relationship(back_populates="session")
+    kicks: Mapped[list["KickTrackerDataPoint"]] = relationship(back_populates="session")
 
 
-class KickTrackerKicks(Base):
-    __tablename__ = "kick_tracker_kicks"
+class KickTrackerDataPoint(Base):
+    __tablename__ = "kick_tracker_data_points"
     id: Mapped[int] = mapped_column(primary_key=True)
     kick_at: Mapped[datetime]
 

@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.core.password_hasher_config import get_password_hasher
 from app.db.db_config import SessionLocal
-from app.db.db_schema import CommunityThread, EduArticle, JournalEntry
+from app.db.db_schema import CommunityThread, EduArticle, JournalEntry, ThreadComment
 from app.db.seeding.generators.defaults_generator import DefaultsGenerator
 from app.db.seeding.generators.edu_articles_generator import EduArticlesGenerator
 from app.db.seeding.generators.forum_content_generator import ForumContentGenerator
@@ -41,7 +41,10 @@ if __name__ == "__main__":
         all_community_threads: list[CommunityThread] = ForumContentGenerator.generate_threads(
             db_session, faker, all_users, 30
         )
-        ForumContentGenerator.generate_comments(db_session, faker, all_users, all_community_threads, 15)
+        all_thread_comments: list[ThreadComment] = ForumContentGenerator.generate_thread_comments(
+            db_session, faker, all_users, all_community_threads, 15
+        )
+        ForumContentGenerator.generate_comment_likes(db_session, preg_women, all_thread_comments)
         print("Finished seeding forum content!\n")
 
         # ---- Generation of journal entries (and corresponding 'random' metric logs) -----
@@ -63,10 +66,12 @@ if __name__ == "__main__":
         print("Finished seeding all recipes!\n")
 
         # ------- Generation of miscellaneous content -------
-        MiscGenerator.generate_user_feedback(db_session, faker, all_users, 0.25)
+        MiscGenerator.generate_user_app_feedback(db_session, faker, all_users, 0.25)
+        MiscGenerator.generate_kick_tracker_sessions(db_session, faker, preg_women)
         MiscGenerator.generate_appointments(db_session, faker, doctors, preg_women, 0.7)
         print("Finished seeding miscellaneous content!\n")
 
+        db_session.commit()
         print("Finished seeding the database!")
     except Exception as e:
         print(f"Exception occurred while seeding database: {e}")

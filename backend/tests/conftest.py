@@ -1,5 +1,5 @@
+import datetime
 import uuid
-from datetime import datetime, timedelta
 from typing import Any, AsyncGenerator, Awaitable, Callable
 
 import pytest
@@ -9,8 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 from sqlalchemy.ext.asyncio.engine import AsyncEngine
 from sqlalchemy.pool import StaticPool
 
-from app.core.security import TokenData
-from app.core.settings import settings
+from app.core.users_manager import get_jwt_strategy
 from app.db.db_config import get_db
 from app.db.db_schema import (
     Admin,
@@ -25,7 +24,6 @@ from app.db.db_schema import (
     VolunteerDoctor,
 )
 from app.main import app
-from app.shared.utils import create_access_token
 
 # Use an in-memory SQLite database for testing with aiosqlite
 # check_same_thread=False is needed for SQLite with async
@@ -80,11 +78,13 @@ def img_file_fixture() -> tuple[str, bytes, str]:
     Say that your endpoint accepts a parameter named `le_random_image: UploadFile = File(...)`,
     then in your test you can pass it in like so:
     ...
-    async def test_your_endpoint(client: AsyncClient, img_file_fixture: tuple[str, bytes, str]):
-        file_name, file_bytes, content_type = img_file_fixture
+    async def test_your_endpoint(
+        client: AsyncClient,
+        img_file_fixture: tuple[str, bytes, str]
+    ):
         response = await client.post(
             "/your-endpoint",
-            files={"le_random_image": (file_name, file_bytes, content_type)},
+            files={"le_random_image": img_file_fixture}, # Note this line
         )
     """
     valid_png = (  # Minimal 1x1 PNG
@@ -131,13 +131,8 @@ async def admin(admin_factory: CreateAdminCallable) -> Admin:
 
 @pytest_asyncio.fixture(scope="function")
 async def authenticated_admin_client(client: AsyncClient, admin: Admin) -> tuple[AsyncClient, Admin]:
-    jwt_token: str = create_access_token(
-        token_data=TokenData(
-            sub=str(admin.id),
-            role=admin.role.value,
-            exp=datetime.now() + timedelta(minutes=settings.JWT_EXPIRATION_MINUTES),
-        )
-    )
+    strategy = get_jwt_strategy()
+    jwt_token: str = await strategy.write_token(admin)
     client.headers["Authorization"] = f"Bearer {jwt_token}"
     return client, admin
 
@@ -190,13 +185,8 @@ async def volunteer_doctor(volunteer_doctor_factory: CreateDoctorCallable) -> Vo
 async def authenticated_doctor_client(
     client: AsyncClient, volunteer_doctor: VolunteerDoctor
 ) -> tuple[AsyncClient, VolunteerDoctor]:
-    jwt_token: str = create_access_token(
-        token_data=TokenData(
-            sub=str(volunteer_doctor.id),
-            role=volunteer_doctor.role.value,
-            exp=datetime.now() + timedelta(minutes=settings.JWT_EXPIRATION_MINUTES),
-        )
-    )
+    strategy = get_jwt_strategy()
+    jwt_token: str = await strategy.write_token(volunteer_doctor)
     client.headers["Authorization"] = f"Bearer {jwt_token}"
     return client, volunteer_doctor
 
@@ -218,6 +208,7 @@ async def pregnant_woman_factory(db_session: AsyncSession) -> CreatePregnantWoma
             "first_name": unique_id,
             "middle_name": unique_id,
             "last_name": unique_id,
+            "date_of_birth": datetime.date(1990, 1, 1),
             "role": UserRole.PREGNANT_WOMAN,
             "email": f"mother_{unique_id}@test.com",
             "hashed_password": "hashed_password_456",
@@ -240,13 +231,8 @@ async def pregnant_woman(pregnant_woman_factory: CreatePregnantWomanCallable) ->
 async def authenticated_pregnant_woman_client(
     client: AsyncClient, pregnant_woman: PregnantWoman
 ) -> tuple[AsyncClient, PregnantWoman]:
-    jwt_token: str = create_access_token(
-        token_data=TokenData(
-            sub=str(pregnant_woman.id),
-            role=pregnant_woman.role.value,
-            exp=datetime.now() + timedelta(minutes=settings.JWT_EXPIRATION_MINUTES),
-        )
-    )
+    strategy = get_jwt_strategy()
+    jwt_token: str = await strategy.write_token(pregnant_woman)
     client.headers["Authorization"] = f"Bearer {jwt_token}"
     return client, pregnant_woman
 
@@ -300,12 +286,7 @@ async def nutritionist(nutritionist_factory: CreateNutritionistCallable) -> Nutr
 async def authenticated_nutritionist_client(
     client: AsyncClient, nutritionist: Nutritionist
 ) -> tuple[AsyncClient, Nutritionist]:
-    jwt_token: str = create_access_token(
-        token_data=TokenData(
-            sub=str(nutritionist.id),
-            role=nutritionist.role.value,
-            exp=datetime.now() + timedelta(minutes=settings.JWT_EXPIRATION_MINUTES),
-        )
-    )
+    strategy = get_jwt_strategy()
+    jwt_token: str = await strategy.write_token(nutritionist)
     client.headers["Authorization"] = f"Bearer {jwt_token}"
     return client, nutritionist

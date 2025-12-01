@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "mypregnancy-api"
 version = "0.1.0"
 description = "The FastAPI backend for the 'MyPregnancy' mobile app and dashboard web-app"
-requires-python = ">=3.12"
+requires-python = ">=3.13"
 
 # -------------------------------------------
 # -------- PRODUCTION DEPENDENCIES ----------
@@ -31,6 +31,7 @@ dependencies = [
     "ujson>=5.11.0",
     "fastapi-users[sqlalchemy, oauth]>=15.0.1",
     "setuptools>=80.9.0",
+    "getstream>=2.5.16",
 ]
 
 # --------------------------------------------

@@ -124,7 +124,7 @@ async def test_unregistered_create_article_fail(
         },
         files={"img_data": img_file_fixture},
     )
-    assert response.status_code == status.HTTP_403_FORBIDDEN, (
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED, (
         "Unauthenticated user should NOT have permissions to create article"
     )
 
@@ -237,7 +237,7 @@ async def test_unregistered_delete_article_fail(client: AsyncClient, db_session:
     article_id = article.id
 
     response = await client.delete(f"/articles/{article_id}")
-    assert response.status_code == status.HTTP_403_FORBIDDEN
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
     edu_article = await db_session.get(EduArticle, article_id)
     assert edu_article is not None, "Article should be still exist"
