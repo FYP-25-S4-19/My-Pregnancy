@@ -3,6 +3,8 @@ from PIL import Image, UnidentifiedImageError
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
+from app.db.db_schema import User
+
 
 def clear_db(db: Session):
     print("Clearing the database....\n")
@@ -25,3 +27,7 @@ def is_valid_image(upload_file: UploadFile) -> bool:
     except UnidentifiedImageError:
         upload_file.file.seek(0)
         return False
+
+
+def format_user_fullname(user: User) -> str:
+    return "".join(name_part for name_part in [user.first_name, user.middle_name, user.last_name] if name_part).strip()

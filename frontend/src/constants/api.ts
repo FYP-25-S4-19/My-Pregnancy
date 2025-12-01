@@ -2,6 +2,7 @@ import axios from "axios";
 import Constants from "expo-constants";
 import { Platform } from "react-native";
 import * as Device from "expo-device";
+import useAuthStore from "../stores/authStore";
 
 if (process.env.EXPO_PUBLIC_APP_ENV !== "dev" && process.env.EXPO_PUBLIC_APP_ENV !== "prod") {
   throw new Error("EXPO_PUBLIC_APP_ENV should be set to either 'dev' or 'prod' explicitly");
@@ -29,4 +30,38 @@ const getBaseUrl = () => {
   }
   throw new Error("Could not determine API URL. Ensure you are running the development server.");
 };
-export const api = axios.create({ baseURL: getBaseUrl() });
+
+const api = axios.create({ baseURL: getBaseUrl() });
+
+/**
+ * Request interceptor to add Authorization header if access token is available
+ */
+api.interceptors.request.use(
+  (config) => {
+    const token = useAuthStore.getState().accessToken;
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  },
+);
+
+/**
+ * Response interceptor to handle 401 errors globally.
+ * If a 401 error is encountered, the user is logged out.
+ */
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      console.log("Authentication error: Token expired or invalid.");
+      useAuthStore.getState().logout();
+    }
+    return Promise.reject(error);
+  },
+);
+
+export default api;

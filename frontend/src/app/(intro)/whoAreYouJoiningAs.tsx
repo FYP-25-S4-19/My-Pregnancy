@@ -3,7 +3,7 @@ import { ImageBackground, StatusBar, StyleSheet, Text, TouchableOpacity, View } 
 
 const image = require("../../../assets/images/wallpaper.jpg");
 
-export default function PreRegisterScreen() {
+export default function WhoAreYouJoiningAsScreen() {
   return (
     <ImageBackground source={image} style={styles.background} resizeMode="cover">
       <StatusBar barStyle="dark-content" />
@@ -22,14 +22,14 @@ export default function PreRegisterScreen() {
           style={[styles.button, styles.primaryButton]}
           onPress={() => console.log("Mom-to-be selected")}
         >
-          <Text style={styles.primaryButtonText}>I'm a Mom-to-be</Text>
+          <Text style={styles.primaryButtonText}>{"I'm a Mom-to-be"}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={[styles.button, styles.secondaryButton]}
           onPress={() => console.log("Specialist selected")}
         >
-          <Text style={styles.secondaryButtonText}>I'm a Specialist</Text>
+          <Text style={styles.secondaryButtonText}>{"I'm a Specialist"}</Text>
         </TouchableOpacity>
 
         {/* Admin Login Link */}

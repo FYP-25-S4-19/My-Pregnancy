@@ -1,4 +1,4 @@
-import { api } from "@/src/constants/api";
+import api from "@/src/constants/api";
 import { useRouter } from "expo-router";
 import React, { useEffect } from "react";
 import { ImageBackground, StatusBar, StyleSheet, Text, TouchableOpacity, View } from "react-native";
@@ -22,16 +22,16 @@ export default function IntroScreen() {
         {/* App Title */}
         <View style={styles.titleContainer}>
           <View>
-            <Text style={styles.titleLarge}>Track Baby's</Text>
+            <Text style={styles.titleLarge}>{"Track Baby's"}</Text>
             <Text style={styles.titleLarge}>Growth</Text>
           </View>
           <Text style={styles.titleSmall}>Week-by-week milestones & tips</Text>
         </View>
-        <TouchableOpacity style={{ marginTop: 20 }} onPress={() => router.push("/(intro)/preregister")}>
-          <Text>Continue as guest →</Text>
+        <TouchableOpacity style={{ marginTop: 20 }} onPress={() => router.push("/login")}>
+          <Text>Login →</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={{ marginTop: 20 }} onPress={() => router.push("/appointments/video_call")}>
-          <Text>DEBUG: Test Video Call Screen</Text>
+        <TouchableOpacity style={{ marginTop: 20 }} onPress={() => router.push("/whoAreYouJoiningAs")}>
+          <Text>Register →</Text>
         </TouchableOpacity>
       </View>
     </ImageBackground>
