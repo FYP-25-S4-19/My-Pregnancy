@@ -132,5 +132,4 @@ class RecipesGenerator:
             Ingredient(name="Yeast (active dry)", protein_per_100g=40, carbs_per_100g=40, fats_per_100g=7),
         ]
         db.add_all(all_ingredients)
-        db.commit()
         return all_ingredients

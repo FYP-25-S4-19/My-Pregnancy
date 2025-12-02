@@ -1,0 +1,63 @@
+import * as SecureStore from "expo-secure-store";
+import { create } from "zustand";
+import { createJSONStorage, persist, StateStorage } from "zustand/middleware";
+
+export interface MeData {
+  id: number;
+  email: string;
+  first_name: string;
+  middle_name: string | null;
+  last_name: string;
+  role: string;
+}
+
+export interface AuthState {
+  me: MeData | null;
+  accessToken: string | null;
+  streamToken: string | null;
+
+  setMe: (me: MeData | null) => void;
+  setAccessToken: (token: string | null) => void;
+  setStreamToken: (token: string | null) => void;
+
+  logout: () => void;
+}
+
+const expoSecureStore: StateStorage = {
+  getItem: async (name: string): Promise<string | null> => {
+    const result = await SecureStore.getItemAsync(name);
+    return result;
+  },
+  setItem: async (name: string, value: string): Promise<void> => {
+    await SecureStore.setItemAsync(name, value);
+  },
+  removeItem: async (name: string): Promise<void> => {
+    await SecureStore.deleteItemAsync(name);
+  },
+};
+
+const useAuthStore = create<AuthState>()(
+  persist(
+    (set) => ({
+      me: null,
+      accessToken: null,
+      streamToken: null,
+
+      setMe: (me) => set({ me }),
+      setAccessToken: (token) => set({ accessToken: token }),
+      setStreamToken: (token) => set({ streamToken: token }),
+
+      logout: () =>
+        set({
+          accessToken: null,
+          streamToken: null,
+        }),
+    }),
+    {
+      name: "auth-storage",
+      storage: createJSONStorage(() => expoSecureStore),
+    },
+  ),
+);
+
+export default useAuthStore;

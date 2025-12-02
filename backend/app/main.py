@@ -9,18 +9,19 @@ from starlette.middleware.sessions import SessionMiddleware
 from starlette.responses import JSONResponse
 
 from app.core.settings import settings
+from app.core.users_manager import auth_backend, fastapi_users
 from app.features.accounts.account_router import account_router
 from app.features.appointments.appointment_router import appointments_router
-from app.features.auth.auth_router import auth_router
 from app.features.educational_articles.edu_article_router import edu_articles_router
+from app.features.getstream.getstream_router import getstream_router
 from app.features.journal.journal_router import journal_router
 from app.features.misc_routes import misc_router
-
-APP_TITLE: str = "MyPregnancy API"
+from app.schemas import UserCreate, UserRead, UserUpdate
 
 if not settings.APP_ENV:
     raise ValueError("APP_ENV is not set in environment variables")
 
+APP_TITLE: str = "MyPregnancy API"
 app = (
     FastAPI(title=APP_TITLE, docs_url=None, redoc_url=None, openapi_url=None, default_response_class=UJSONResponse)
     if (
@@ -32,21 +33,39 @@ app = (
 )
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins for now, to make testing easier (blasphemy I know)
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-app.include_router(auth_router)
+app.include_router(
+    fastapi_users.get_auth_router(auth_backend),
+    prefix="/auth/jwt",
+    tags=["Auth"],
+)
+app.include_router(
+    fastapi_users.get_register_router(UserRead, UserCreate),
+    prefix="/auth",
+    tags=["Auth"],
+)
+app.include_router(
+    fastapi_users.get_users_router(UserRead, UserUpdate),
+    prefix="/users",
+    tags=["Users"],
+)
 app.include_router(edu_articles_router)
 app.include_router(appointments_router)
 app.include_router(journal_router)
 app.include_router(account_router)
+app.include_router(getstream_router)
 app.include_router(misc_router)
 app.add_middleware(SessionMiddleware, secret_key=settings.SECRET_KEY)
 
 
+# ============================================================================
+# ======================= GLOBAL EXCEPTION HANDLERS ==========================
+# ============================================================================
 @app.exception_handler(IntegrityError)
 async def integrity_error_handler(_: Request, e: IntegrityError):
     return JSONResponse(
@@ -64,7 +83,7 @@ async def general_exception_handler(_: Request, e: Exception):
 
 
 # ===========================================================================
-# ========================= HIDING API ENDPOINTS ============================
+# ==================== PASSWORD-PROTECT API ENDPOINTS =======================
 # ===========================================================================
 security = HTTPBasic()
 

@@ -26,7 +26,10 @@ class Settings(BaseSettings):
     S3_BUCKET_NAME: str
     S3_BUCKET_REGION: str
 
-    JWT_EXPIRATION_MINUTES: int
+    JWT_EXP_SECONDS: int
+
+    STREAM_API_KEY: str | None = None
+    STREAM_API_SECRET: str | None = None
 
     DOCS_USERNAME: str | None = None
     DOCS_PASSWORD: str | None = None

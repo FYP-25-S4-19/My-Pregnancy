@@ -78,11 +78,12 @@ class UsersGenerator:
                 middle_name=fullname_parts[1] if len(fullname_parts) >= 3 else "",
                 last_name=fullname_parts[2] if len(fullname_parts) >= 3 else fullname_parts[1],
                 email=f"{full_name}@gmail.com",
-                password_hash=password_hasher.hash(full_name),
+                hashed_password=password_hasher.hash(full_name),
                 created_at=fake_created_at,
                 due_date=(  # 30% chance of the "due date" being null
                     fake_created_at + timedelta(days=random.randint(20, 260)) if random.random() > 0.3 else None
                 ),
+                date_of_birth=faker.date_of_birth(minimum_age=18, maximum_age=50),
             )
             db.add(preg_woman)
             db.flush()
@@ -90,7 +91,6 @@ class UsersGenerator:
             obj_key = S3StorageInterface.put_profile_img_from_filepath(preg_woman.id, str(folder_item))
             preg_woman.profile_img_key = obj_key
             all_preg_women.append(preg_woman)
-        db.commit()
         return all_preg_women
 
     @staticmethod
@@ -129,7 +129,7 @@ class UsersGenerator:
                 last_name=fullname_parts[2] if len(fullname_parts) >= 3 else fullname_parts[1],
                 role=UserRole.VOLUNTEER_DOCTOR,
                 email=f"{fullname}@gmail.com",
-                password_hash=password_hasher.hash(fullname),
+                hashed_password=password_hasher.hash(fullname),
                 qualification=doc_qualification,
                 created_at=faker.date_time_between(start_date="-3y", end_date="now"),
             )
@@ -154,7 +154,6 @@ class UsersGenerator:
 
             doc_qualification.doctor = doctor
             all_doctors.append(doctor)
-        db.commit()
         return all_doctors
 
     @staticmethod
@@ -191,7 +190,7 @@ class UsersGenerator:
                 last_name=fullname_parts[2] if len(fullname_parts) >= 3 else fullname_parts[1],
                 role=UserRole.NUTRITIONIST,
                 email=f"{fullname}@gmail.com",
-                password_hash=password_hasher.hash(fullname),
+                hashed_password=password_hasher.hash(fullname),
                 qualification=qualification,
                 created_at=faker.date_time_between(start_date="-3y", end_date="now"),
             )
@@ -216,7 +215,6 @@ class UsersGenerator:
 
             qualification.nutritionist = nutritionist
             all_nutritionists.append(nutritionist)
-        db.commit()
         return all_nutritionists
 
     # @staticmethod
@@ -236,7 +234,7 @@ class UsersGenerator:
     #             username=username,
     #             role=admin_role,
     #             email=f'{username}@gmail.com',
-    #             password_hash=password_hasher.hash(username),
+    #             hashed_password=password_hasher.hash(username),
     #             created_at=faker.date_time_between(start_date="-3y", end_date="now"),
     #         )
     #         db.add(admin)

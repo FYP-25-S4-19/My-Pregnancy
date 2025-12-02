@@ -141,7 +141,7 @@ class AccountService:
             middle_name=acc_creation_req.middle_name,
             last_name=acc_creation_req.last_name,
             email=acc_creation_req.email,
-            password_hash=password_hasher.hash(acc_creation_req.password),
+            hashed_password=password_hasher.hash(acc_creation_req.password),
             qualification=dr_qualification,
         )
         self.db.add(new_doctor)
@@ -197,7 +197,7 @@ class AccountService:
             middle_name=acc_creation_req.middle_name,
             last_name=acc_creation_req.last_name,
             email=acc_creation_req.email,
-            password_hash=password_hasher.hash(acc_creation_req.password),
+            hashed_password=password_hasher.hash(acc_creation_req.password),
             qualification=nutri_qualification,
         )
         self.db.add(new_nutritionist)

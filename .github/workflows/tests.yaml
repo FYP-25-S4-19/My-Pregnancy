@@ -81,4 +81,6 @@ jobs:
           LOCALSTACK_ENDPOINT_URL: http://localhost:4566
           S3_BUCKET_NAME: mypregnancy-bucket
           S3_BUCKET_REGION: ap-southeast-1
-          JWT_EXPIRATION_MINUTES: 8
+          JWT_EXP_SECONDS: 600
+          STREAM_API_KEY: SOME_DUMMY_VALUE
+          STREAM_API_SECRET: SOME_OTHER_DUMMY_VALUE

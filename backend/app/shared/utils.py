@@ -1,11 +1,9 @@
-import jwt
 from fastapi import UploadFile
 from PIL import Image, UnidentifiedImageError
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from app.core.security import TokenData
-from app.core.settings import settings
+from app.db.db_schema import User
 
 
 def clear_db(db: Session):
@@ -21,10 +19,6 @@ def clear_db(db: Session):
     db.commit()
 
 
-def create_access_token(token_data: TokenData) -> str:
-    return jwt.encode(token_data.model_dump(), settings.SECRET_KEY, algorithm="HS256")
-
-
 def is_valid_image(upload_file: UploadFile) -> bool:
     try:
         Image.open(upload_file.file)
@@ -33,3 +27,7 @@ def is_valid_image(upload_file: UploadFile) -> bool:
     except UnidentifiedImageError:
         upload_file.file.seek(0)
         return False
+
+
+def format_user_fullname(user: User) -> str:
+    return "".join(name_part for name_part in [user.first_name, user.middle_name, user.last_name] if name_part).strip()

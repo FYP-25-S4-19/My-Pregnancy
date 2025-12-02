@@ -36,7 +36,6 @@ class JournalAndMetricsGenerator:
                 )
                 journal_entries.append(journal_entry)
                 db.add(journal_entry)
-        db.commit()
         return journal_entries
 
     @staticmethod
@@ -80,5 +79,3 @@ class JournalAndMetricsGenerator:
                 continue
             journal_entry.systolic = random.randint(90, 140)
             journal_entry.diastolic = random.randint(60, 90)
-
-        db.commit()

@@ -6,25 +6,20 @@ build-backend = "setuptools.build_meta"
 name = "mypregnancy-api"
 version = "0.1.0"
 description = "The FastAPI backend for the 'MyPregnancy' mobile app and dashboard web-app"
-requires-python = ">=3.12"
+requires-python = ">=3.13"
 
 # -------------------------------------------
 # -------- PRODUCTION DEPENDENCIES ----------
 # -------------------------------------------
 dependencies = [
     "itsdangerous>=2.2.0",
-    "fastapi>=0.121.2",
     "uvicorn>=0.38.0",
-    "sqlalchemy>=2.0.44",
     "alembic>=1.17.2",
     "psycopg2-binary>=2.9.11",
     "pydantic-settings>=2.12.0",
-    "argon2-cffi>=25.1.0",
-    "pwdlib>=0.3.0",
     "boto3>=1.40.74",
     "python-dotenv>=1.2.1",
-    "python-multipart>=0.0.20",
-    "pyjwt>=2.10.1",
+    "pyjwt",
     "authlib>=1.6.5",
     "loguru>=0.7.3",
     "sentry-sdk>=2.44.0",
@@ -33,6 +28,10 @@ dependencies = [
     "asyncpg>=0.31.0",
     "pillow>=12.0.0",
     "pre-commit>=4.5.0",
+    "ujson>=5.11.0",
+    "fastapi-users[sqlalchemy, oauth]>=15.0.1",
+    "setuptools>=80.9.0",
+    "getstream>=2.5.16",
 ]
 
 # --------------------------------------------

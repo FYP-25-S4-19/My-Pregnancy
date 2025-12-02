@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import date, datetime
 from enum import Enum
 
+from fastapi_users_db_sqlalchemy import SQLAlchemyBaseUserTable
 from sqlalchemy import (
     DateTime,
     ForeignKey,
@@ -11,9 +12,7 @@ from sqlalchemy import (
     func,
     text,
 )
-from sqlalchemy import (
-    Enum as SQLAlchemyEnum,
-)
+from sqlalchemy import Enum as SQLAlchemyEnum
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
@@ -99,28 +98,27 @@ class NotificationType(Enum):
 # ===========================================
 # ============= GENERAL USER ================
 # ===========================================
-class User(Base):
+class User(SQLAlchemyBaseUserTable[int], Base):
     __tablename__ = "users"
     __mapper_args__ = {"polymorphic_identity": "user", "polymorphic_on": "type"}
     type: Mapped[str]
 
-    id: Mapped[int] = mapped_column(primary_key=True)
     profile_img_key: Mapped[str | None]
 
+    id: Mapped[int] = mapped_column(primary_key=True)
     first_name: Mapped[str] = mapped_column(String(64))
     middle_name: Mapped[str | None] = mapped_column(String(64))  # Middle name optional
     last_name: Mapped[str] = mapped_column(String(64))
 
     role: Mapped["UserRole"] = mapped_column(SQLAlchemyEnum(UserRole))
 
-    email: Mapped[str] = mapped_column(String(255), unique=True)
-    password_hash: Mapped[str] = mapped_column(String(128))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
-    is_active: Mapped[bool] = mapped_column(server_default=text("TRUE"))
 
     threads_created: Mapped[list["CommunityThread"]] = relationship(back_populates="creator")
     thread_comments: Mapped[list["ThreadComment"]] = relationship(back_populates="commenter")
     threads_liked: Mapped[list["CommunityThreadLike"]] = relationship(back_populates="liker")
+    comments_liked: Mapped[list["CommentLike"]] = relationship(back_populates="liker")
+
     feedback_given: Mapped["UserAppFeedback"] = relationship(back_populates="author")
     saved_edu_articles: Mapped[list["SavedEduArticle"]] = relationship(back_populates="saver")
     notifications: Mapped[list["Notification"]] = relationship(back_populates="recipient")
@@ -154,6 +152,7 @@ class PregnantWoman(User):
     id: Mapped[int] = mapped_column(ForeignKey("users.id"), primary_key=True)
 
     due_date: Mapped[date | None]  # Nullable (may not be expecting)
+    date_of_birth: Mapped[date]
 
     saved_volunteer_doctors: Mapped[list["SavedVolunteerDoctor"]] = relationship(back_populates="mother")
     appointments: Mapped[list["Appointment"]] = relationship(back_populates="mother")
@@ -391,6 +390,20 @@ class ThreadComment(Base):
     commented_at: Mapped[datetime]
     content: Mapped[str] = mapped_column(Text)
 
+    comment_likes: Mapped[list["CommentLike"]] = relationship(back_populates="comment")
+
+
+# Assocation table that defines a "user" liking a "comment"
+class CommentLike(Base):
+    __tablename__ = "comment_likes"
+    id: Mapped[int] = mapped_column(primary_key=True)
+
+    liker_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    liker: Mapped["User"] = relationship(back_populates="comments_liked")
+
+    comment_id: Mapped[int] = mapped_column(ForeignKey("thread_comments.id"))
+    comment: Mapped["ThreadComment"] = relationship(back_populates="comment_likes")
+
 
 # ============================================
 # =============== RECIPES ====================
@@ -448,11 +461,11 @@ class KickTrackerSession(Base):
 
     started_at: Mapped[datetime]
     ended_at: Mapped[datetime]
-    kicks: Mapped[list["KickTrackerKicks"]] = relationship(back_populates="session")
+    kicks: Mapped[list["KickTrackerDataPoint"]] = relationship(back_populates="session")
 
 
-class KickTrackerKicks(Base):
-    __tablename__ = "kick_tracker_kicks"
+class KickTrackerDataPoint(Base):
+    __tablename__ = "kick_tracker_data_points"
     id: Mapped[int] = mapped_column(primary_key=True)
     kick_at: Mapped[datetime]
 
