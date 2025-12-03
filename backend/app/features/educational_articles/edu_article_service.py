@@ -9,6 +9,7 @@ from app.features.educational_articles.edu_article_models import (
     ArticleOverviewResponse,
 )
 from app.shared.s3_storage_interface import S3StorageInterface
+from app.shared.utils import format_user_fullname
 
 
 class EduArticleService:
@@ -35,12 +36,10 @@ class EduArticleService:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
 
         author: VolunteerDoctor = article.author
-        full_name: str = " ".join(part for part in [author.first_name, author.middle_name, author.last_name] if part)
-
         return ArticleDetailedResponse(
             id=article.id,
             author_id=article.author_id,
-            author=full_name,
+            author=format_user_fullname(author),
             category=article.category.value,
             img_key=None,
             title=article.title,

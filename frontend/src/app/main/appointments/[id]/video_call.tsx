@@ -1,6 +1,7 @@
-import VideoUI from "@/src/components/video_ui";
+import VideoUI from "@/src/components/VideoUI";
 import api from "@/src/constants/api";
 import useAuthStore from "@/src/stores/authStore";
+import { StreamApiResponse } from "@/src/types/apiResponseModels";
 import {
   Call,
   CallControls,
@@ -12,12 +13,6 @@ import {
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { Text, View, ActivityIndicator } from "react-native";
-
-interface StreamApiResponse {
-  token: string;
-  api_key: string;
-  user_id: string;
-}
 
 export default function VideoCallScreen() {
   const router = useRouter();
@@ -62,11 +57,15 @@ export default function VideoCallScreen() {
     joinCall();
 
     return () => {
-      newCall.leave().catch((err) => console.error("Error leaving call", err));
-      newClient.disconnectUser().catch((err) => console.error("Error disconnecting", err));
+      newCall
+        .leave()
+        .then(() => setCall(null))
+        .catch((err) => console.error("Error leaving call", err));
 
-      setClient(null);
-      setCall(null);
+      newClient
+        .disconnectUser()
+        .then(() => setClient(null))
+        .catch((err) => console.error("Error disconnecting", err));
     };
   }, [me, id, streamApiData]);
 

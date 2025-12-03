@@ -18,7 +18,7 @@ export default function HomeScreen() {
           borderWidth: 1.5,
           borderColor: "#FADADD",
         }}
-        onPress={() => router.push("/main/appointments")}
+        onPress={() => router.push("/main/consultations")}
       >
         <Text
           style={{
@@ -27,7 +27,7 @@ export default function HomeScreen() {
             fontWeight: "500",
           }}
         >
-          Go to the list of Appointments
+          {'Go to the "CONSULTATIONS" screen'}
         </Text>
       </TouchableOpacity>
     </SafeAreaView>

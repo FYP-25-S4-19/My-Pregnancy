@@ -74,7 +74,6 @@ class ThreadService:
         self.db.add(new_thread)
         await self.db.commit()
         await self.db.refresh(new_thread)
-        new_thread.creator = creator
 
     async def update_thread(self, thread_id: int, thread_data: ThreadUpdateData, current_user: User) -> None:
         stmt = select(CommunityThread).where(CommunityThread.id == thread_id)

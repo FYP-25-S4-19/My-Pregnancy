@@ -6,8 +6,8 @@ const utils = {
       const decoded: { exp: number } = jwtDecode(jwt);
       const currentTime = Math.floor(Date.now() / 1000);
       return decoded.exp < currentTime;
-    } catch (_) {
-      return false;
+    } catch {
+      return true;
     }
   },
 };

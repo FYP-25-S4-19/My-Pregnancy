@@ -111,6 +111,7 @@ class User(SQLAlchemyBaseUserTable[int], Base):
     last_name: Mapped[str] = mapped_column(String(64))
 
     role: Mapped["UserRole"] = mapped_column(SQLAlchemyEnum(UserRole))
+    is_active: Mapped[bool] = mapped_column(server_default=text("TRUE"), index=True)
 
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
