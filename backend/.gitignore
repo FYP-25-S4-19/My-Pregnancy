@@ -219,6 +219,7 @@ __marimo__/
 /localstack_data
 /my-localstack-data
 /.vscode
+**/.vscode
 
 # ==== EXCEPTIONS ====
 !.env.example

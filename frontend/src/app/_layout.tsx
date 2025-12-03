@@ -1,13 +1,14 @@
-import { Router, Slot, Stack, usePathname, useRouter } from "expo-router";
+import { Router, Stack, usePathname, useRouter } from "expo-router";
 import useAuthStore from "../stores/authStore";
 import { useEffect } from "react";
 import "react-native-reanimated";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import utils from "../utils";
 
 const useAuthRedirect = () => {
   const router: Router = useRouter();
   const pathname: string = usePathname();
-  const { accessToken } = useAuthStore();
+  const accessToken = useAuthStore((state) => state.accessToken);
   const isHydrated: boolean = useAuthStore.persist.hasHydrated();
 
   useEffect(() => {
@@ -15,19 +16,26 @@ const useAuthRedirect = () => {
       return;
     }
 
-    const isTokenValid: boolean = !!accessToken;
-    if (!isTokenValid) {
+    const isTokenValid: boolean = !utils.invalidOrExpiredJWT(accessToken || "");
+
+    // Logged-out, but trying to access a auth-only page
+    // Redirect to the intro page
+    if (!isTokenValid && pathname !== "/") {
       router.replace("/");
     }
 
-    router.replace("/main");
+    // Logged-in but just sitting in the intro page
+    // Redirect to the main page
+    if (isTokenValid && pathname === "/") {
+      router.replace("/main");
+    }
   }, [isHydrated, accessToken, pathname, router]);
 };
 
-const queryClient = new QueryClient();
-
 export default function RootLayout() {
   // useAuthRedirect();
+
+  const queryClient = new QueryClient();
   return (
     <QueryClientProvider client={queryClient}>
       <Stack screenOptions={{ headerShown: false }} />

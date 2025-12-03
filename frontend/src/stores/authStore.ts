@@ -14,11 +14,9 @@ export interface MeData {
 export interface AuthState {
   me: MeData | null;
   accessToken: string | null;
-  streamToken: string | null;
 
   setMe: (me: MeData | null) => void;
   setAccessToken: (token: string | null) => void;
-  setStreamToken: (token: string | null) => void;
 
   logout: () => void;
 }
@@ -45,12 +43,11 @@ const useAuthStore = create<AuthState>()(
 
       setMe: (me) => set({ me }),
       setAccessToken: (token) => set({ accessToken: token }),
-      setStreamToken: (token) => set({ streamToken: token }),
 
       logout: () =>
         set({
+          me: null,
           accessToken: null,
-          streamToken: null,
         }),
     }),
     {
