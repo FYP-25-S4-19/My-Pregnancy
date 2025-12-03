@@ -13,7 +13,6 @@
   "dependencies": {
     "@config-plugins/react-native-webrtc": "^13.0.0",
     "@expo/vector-icons": "^15.0.3",
-    "@notifee/react-native": "^9.1.8",
     "@radix-ui/react-dialog": "^1.1.15",
     "@react-native-community/netinfo": "11.4.1",
     "@react-navigation/bottom-tabs": "^7.4.0",
