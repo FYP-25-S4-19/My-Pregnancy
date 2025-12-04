@@ -30,4 +30,4 @@ def is_valid_image(upload_file: UploadFile) -> bool:
 
 
 def format_user_fullname(user: User) -> str:
-    return "".join(name_part for name_part in [user.first_name, user.middle_name, user.last_name] if name_part).strip()
+    return " ".join(name_part for name_part in [user.first_name, user.middle_name, user.last_name] if name_part).strip()

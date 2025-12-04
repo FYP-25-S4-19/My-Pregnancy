@@ -2,7 +2,8 @@ import axios from "axios";
 import Constants from "expo-constants";
 import { Platform } from "react-native";
 import * as Device from "expo-device";
-import useAuthStore from "../stores/authStore";
+import axiosRetry, { linearDelay } from "axios-retry";
+import useAuthStore from "./authStore";
 
 if (process.env.EXPO_PUBLIC_APP_ENV !== "dev" && process.env.EXPO_PUBLIC_APP_ENV !== "prod") {
   throw new Error("EXPO_PUBLIC_APP_ENV should be set to either 'dev' or 'prod' explicitly");
@@ -31,7 +32,8 @@ const getBaseUrl = () => {
   throw new Error("Could not determine API URL. Ensure you are running the development server.");
 };
 
-const api = axios.create({ baseURL: getBaseUrl() });
+const api = axios.create({ baseURL: getBaseUrl(), timeout: 10000 });
+axiosRetry(api, { retryDelay: linearDelay(), retries: 3 });
 
 /**
  * Request interceptor to add Authorization header if access token is available
@@ -58,7 +60,7 @@ api.interceptors.response.use(
   (error) => {
     if (error.response && error.response.status === 401) {
       console.log("Authentication error: Token expired or invalid.");
-      useAuthStore.getState().logout();
+      useAuthStore.getState().clearAuthState();
     }
     return Promise.reject(error);
   },

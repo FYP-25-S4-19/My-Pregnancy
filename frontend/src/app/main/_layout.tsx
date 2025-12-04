@@ -1,6 +1,5 @@
 import { Stack } from "expo-router";
-import "react-native-reanimated";
 
-export default function AppointmentsLayout() {
+export default function MainLayout() {
   return <Stack screenOptions={{ headerShown: false }} />;
 }

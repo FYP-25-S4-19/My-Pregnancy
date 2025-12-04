@@ -53,36 +53,34 @@ const styles = StyleSheet.create({
   },
   titleContainer: {
     alignItems: "center",
-    marginBottom: 80, // Space between title and question
+    marginBottom: 80, 
   },
   titleSmall: {
     fontSize: 24,
     color: "#6d2828",
-    // For a cursive font, you would load a custom font with Expo Font
-    // fontFamily: 'YourCursiveFont',
+    
     lineHeight: 26,
   },
   titleLarge: {
     fontSize: 40,
     fontWeight: "bold",
     color: "#6d2828",
-    // For a rounded, bold font, you would load a custom font
-    // fontFamily: 'YourRoundedBoldFont',
+    
   },
   questionText: {
     fontSize: 18,
     color: "#6d2828",
-    marginBottom: 30, // Space between question and first button
+    marginBottom: 30, 
   },
   button: {
     width: "90%",
     paddingVertical: 16,
-    borderRadius: 50, // This creates the pill shape
+    borderRadius: 50, 
     alignItems: "center",
     marginVertical: 8,
   },
   primaryButton: {
-    backgroundColor: "#FADADD", // A soft pink color
+    backgroundColor: "#FADADD",
   },
   primaryButtonText: {
     color: "#6d2828",
@@ -90,7 +88,7 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   secondaryButton: {
-    backgroundColor: "#FFF8F8", // A very light, almost white pink
+    backgroundColor: "#FFF8F8", 
     borderWidth: 1.5,
     borderColor: "#FADADD",
   },
@@ -100,10 +98,12 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   adminLogin: {
-    marginTop: 20, // Space above the admin login link
+    marginTop: 20,
   },
   adminLoginText: {
     fontSize: 14,
     color: "#6d2828",
   },
 });
+
+

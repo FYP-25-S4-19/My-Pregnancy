@@ -1,48 +1,19 @@
-import api from "@/src/constants/api";
-import { useQuery } from "@tanstack/react-query";
-import { useRouter } from "expo-router";
-import { FlatList, Text, TouchableOpacity } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import useAuthStore from "@/src/shared/authStore";
+import { RoleType } from "@/src/shared/typesAndInterfaces";
+import { Redirect } from "expo-router";
+import { useEffect } from "react";
 
-interface AppointmentData {
-  appointment_id: number;
-  doctor_id: number;
-  doctor_name: string;
-  mother_id: number;
-  mother_name: string;
-  start_time: string;
-  status: string;
-}
+export default function MainIndexScreen() {
+  const role: RoleType | undefined = useAuthStore((state) => state.me?.role);
 
-export default function HomeScreen() {
-  const router = useRouter();
+  useEffect(() => {}, []);
 
-  const query = useQuery({
-    queryKey: ["Video Calls"],
-    queryFn: async (): Promise<AppointmentData[]> => {
-      const res = await api.get("/appointments/");
-      return res.data;
-    },
-  });
-
-  return (
-    <SafeAreaView style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      <FlatList
-        data={query.data}
-        keyExtractor={(appt) => appt.appointment_id.toString()}
-        renderItem={({ item }) => {
-          return (
-            <TouchableOpacity
-              style={{ padding: 10, borderBottomWidth: 1, borderBottomColor: "#ccc" }}
-              onPress={() => router.push(`/appointments/${item.appointment_id.toString()}/video_call`)}
-            >
-              <Text>
-                Appointment with Dr. {item.doctor_name} at {new Date(item.start_time).toLocaleString()}
-              </Text>
-            </TouchableOpacity>
-          );
-        }}
-      />
-    </SafeAreaView>
-  );
+  if (role === "PREGNANT_WOMAN") {
+    return <Redirect href="/main/mother" />;
+  } else if (role === "VOLUNTEER_DOCTOR") {
+    return <Redirect href="/main/doctor" />;
+  } else if (role === "NUTRITIONIST") {
+    return <Redirect href="/main/nutritionist" />;
+  }
+  return <Redirect href="/main/guest" />;
 }
