@@ -11,17 +11,17 @@ import {
   StatusBar,
 } from "react-native";
 import { useRouter } from "expo-router";
-import api from "@/src/constants/api";
+import api from "@/src/shared/api";
 
 const { width, height } = Dimensions.get("window");
 
 /** ----- slide content ----- */
 type Slide = {
   id: string;
-  titleTop: string;      // e.g., "Track Baby's"
-  titleBottom?: string;  // e.g., "Growth"
+  titleTop: string; // e.g., "Track Baby's"
+  titleBottom?: string; // e.g., "Growth"
   subtitle: string;
-  image: any;            // require(...)
+  image: any; // require(...)
 };
 
 const SLIDES: Slide[] = [
@@ -114,10 +114,7 @@ export default function IntroPagerSinglePage() {
         </View>
 
         <TouchableOpacity
-          style={[
-            styles.arrowCircle,
-            index === SLIDES.length - 1 && styles.arrowDisabled,
-          ]}
+          style={[styles.arrowCircle, index === SLIDES.length - 1 && styles.arrowDisabled]}
           onPress={goNext}
           disabled={index === SLIDES.length - 1}
         >
@@ -154,10 +151,7 @@ export default function IntroPagerSinglePage() {
 
         {/* CTAs */}
         <View style={styles.cta}>
-          <TouchableOpacity
-            style={[styles.btn, styles.btnFilled]}
-            onPress={() => router.push("/(intro)/login")}
-          >
+          <TouchableOpacity style={[styles.btn, styles.btnFilled]} onPress={() => router.push("/(intro)/login")}>
             <Text style={styles.btnFilledText}>Login</Text>
           </TouchableOpacity>
 
@@ -184,7 +178,7 @@ const styles = StyleSheet.create({
 
   /* Slide area */
   slide: {
-    paddingTop: height * 0.06,  // more top spacing like Figma
+    paddingTop: height * 0.06, // more top spacing like Figma
     paddingHorizontal: 20,
   },
 
@@ -222,7 +216,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   illustrationWrap: {
-    width: width * 0.68,              // bigger hero like Figma
+    width: width * 0.68, // bigger hero like Figma
     height: Math.min(380, height * 0.42),
     alignItems: "center",
     justifyContent: "center",
