@@ -142,8 +142,8 @@ export default function VideoCallScreen() {
   }
 
   // Ready state
+  // This shouldn't happen if initState is "ready", but just in case
   if (!client || !call) {
-    // This shouldn't happen if initState is "ready", but just in case
     return (
       <View style={styles.centerContainer}>
         <ActivityIndicator size="large" />

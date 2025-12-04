@@ -2,11 +2,8 @@ import React, { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
-import { colors, sizes, font } from "../../../shared/designSystem";
-import SearchBar from "../../../components/SearchBar";
-import ChatItem from "../../../components/ChatItem";
-import FilterButton from "../../../components/FilterButton";
 import { Text, View, StyleSheet, ScrollView } from "react-native";
+import { colors, font, sizes } from "@/src/shared/designSystem";
 
 interface ChatData {
   id: string;
