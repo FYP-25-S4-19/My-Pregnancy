@@ -1,12 +1,9 @@
 import useAuthStore from "@/src/shared/authStore";
 import { RoleType } from "@/src/shared/typesAndInterfaces";
 import { Redirect } from "expo-router";
-import { useEffect } from "react";
 
 export default function MainIndexScreen() {
   const role: RoleType | undefined = useAuthStore((state) => state.me?.role);
-
-  useEffect(() => {}, []);
 
   if (role === "PREGNANT_WOMAN") {
     return <Redirect href="/main/mother" />;

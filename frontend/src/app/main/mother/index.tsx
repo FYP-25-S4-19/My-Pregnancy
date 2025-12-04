@@ -20,7 +20,7 @@ export default function MotherHomeScreen() {
         Logged in as a {me?.role.toLowerCase()}
       </Text>
 
-      <TouchableOpacity style={styles.touchable} onPress={() => router.push("/main/listOfDoctors")}>
+      <TouchableOpacity style={styles.touchable} onPress={() => router.push("/main/mother/listOfDoctors")}>
         <Text
           style={{
             color: "#6d2828",
@@ -31,7 +31,7 @@ export default function MotherHomeScreen() {
           {'Go to the "CONSULTATIONS" screen'}
         </Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.touchable} onPress={() => router.push("/main/appointments")}>
+      <TouchableOpacity style={styles.touchable} onPress={() => router.push("/main/mother/appointments")}>
         <Text
           style={{
             color: "#6d2828",
@@ -42,7 +42,18 @@ export default function MotherHomeScreen() {
           {'Go to the "APPOINTMENTS" screen'}
         </Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.touchable} onPress={() => router.push("/main/chats/")}>
+      <TouchableOpacity style={styles.touchable} onPress={() => router.push("/main/mother/journal/journal")}>
+        <Text
+          style={{
+            color: "#6d2828",
+            fontSize: font.m,
+            fontWeight: "500",
+          }}
+        >
+          {'Go to the "JOURNAL" screen'}
+        </Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.touchable} onPress={() => router.push("/main/mother/chats")}>
         <Text
           style={{
             color: "#6d2828",

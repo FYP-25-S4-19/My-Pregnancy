@@ -1,19 +1,8 @@
 import React, { useRef, useState, useCallback, useEffect } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  FlatList,
-  TouchableOpacity,
-  Image,
-  ImageBackground,
-  Dimensions,
-  StatusBar,
-} from "react-native";
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, ImageBackground, StatusBar } from "react-native";
 import { useRouter } from "expo-router";
 import api from "@/src/shared/api";
-
-const { width, height } = Dimensions.get("window");
+import { colors, sizes, font } from "@/src/shared/designSystem";
 
 /** ----- slide content ----- */
 type Slide = {
@@ -50,13 +39,6 @@ const SLIDES: Slide[] = [
 
 const WALLPAPER = require("../../../assets/images/wallpaper.jpg");
 
-/** ----- palette ----- */
-const MAROON = "#6d2828";
-const PINK = "#FADADD";
-const PINK_OUTLINE = "#f1cfd2";
-const PAPER = "#FFF8F8";
-const DOT_INACTIVE = "#e6c7cb";
-
 /** ----- screen ----- */
 export default function IntroPagerSinglePage() {
   const router = useRouter();
@@ -89,7 +71,7 @@ export default function IntroPagerSinglePage() {
   }, [index]);
 
   const renderItem = ({ item }: { item: Slide }) => (
-    <View style={[styles.slide, { width }]}>
+    <View style={[styles.slide, { width: sizes.screenWidth }]}>
       {/* Title block (matches Figma proportions) */}
       <View style={styles.titleBlock}>
         <Text style={styles.titleTop}>{item.titleTop}</Text>
@@ -139,7 +121,7 @@ export default function IntroPagerSinglePage() {
           showsHorizontalScrollIndicator={false}
           onViewableItemsChanged={onViewableItemsChanged}
           viewabilityConfig={viewabilityConfig}
-          getItemLayout={(_, i) => ({ length: width, offset: width * i, index: i })}
+          getItemLayout={(_, i) => ({ length: sizes.screenWidth, offset: sizes.screenWidth * i, index: i })}
         />
 
         {/* Dots just above CTAs */}
@@ -178,8 +160,8 @@ const styles = StyleSheet.create({
 
   /* Slide area */
   slide: {
-    paddingTop: height * 0.06, // more top spacing like Figma
-    paddingHorizontal: 20,
+    paddingTop: sizes.screenHeight * 0.06, // more top spacing like Figma
+    paddingHorizontal: sizes.m,
   },
 
   titleBlock: {
@@ -187,37 +169,37 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   titleTop: {
-    fontSize: 24,
-    color: MAROON,
+    fontSize: font.l,
+    color: colors.text,
     letterSpacing: 0.5,
     textTransform: "uppercase",
   },
   titleBottom: {
-    fontSize: 40,
+    fontSize: font.xxl + 6,
     fontWeight: "800",
-    color: MAROON,
+    color: colors.text,
     textTransform: "uppercase",
-    marginTop: 2,
+    marginTop: sizes.xs / 2,
   },
   subtitle: {
-    marginTop: 8,
-    fontSize: 13,
-    color: MAROON,
+    marginTop: sizes.s,
+    fontSize: font.xxs + 1,
+    color: colors.text,
     opacity: 0.9,
     textAlign: "center",
   },
 
   /* Illustration row with arrows hugging the image */
   heroArea: {
-    marginTop: 10,
+    marginTop: sizes.s + sizes.xs,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 10,
+    paddingHorizontal: sizes.s + sizes.xs,
   },
   illustrationWrap: {
-    width: width * 0.68, // bigger hero like Figma
-    height: Math.min(380, height * 0.42),
+    width: sizes.screenWidth * 0.68, // bigger hero like Figma
+    height: Math.min(380, sizes.screenHeight * 0.42),
     alignItems: "center",
     justifyContent: "center",
   },
@@ -230,56 +212,56 @@ const styles = StyleSheet.create({
     height: 44,
     borderRadius: 22,
     borderWidth: 1.5,
-    borderColor: PINK_OUTLINE,
-    backgroundColor: PAPER,
+    borderColor: colors.secondary,
+    backgroundColor: colors.background,
     alignItems: "center",
     justifyContent: "center",
   },
   arrowDisabled: { opacity: 0.35 },
-  arrowText: { fontSize: 20, color: MAROON, lineHeight: 20 },
+  arrowText: { fontSize: font.m, color: colors.text, lineHeight: 20 },
 
   /* Dots & CTAs */
   dotsRow: {
-    marginTop: 10,
+    marginTop: sizes.s + sizes.xs,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 8,
+    gap: sizes.s,
   },
   dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: DOT_INACTIVE,
+    width: sizes.s,
+    height: sizes.s,
+    borderRadius: sizes.s / 2,
+    backgroundColor: colors.lightGray,
   },
   dotActive: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: MAROON,
+    width: sizes.s + sizes.xs,
+    height: sizes.s + sizes.xs,
+    borderRadius: (sizes.s + sizes.xs) / 2,
+    backgroundColor: colors.text,
   },
 
   cta: {
     alignItems: "center",
-    paddingHorizontal: 20,
-    paddingBottom: 28,
-    marginTop: 12,
-    gap: 12,
+    paddingHorizontal: sizes.m,
+    paddingBottom: sizes.xl - sizes.s,
+    marginTop: sizes.m - sizes.xs,
+    gap: sizes.m - sizes.xs,
   },
   btn: {
     width: "88%",
-    paddingVertical: 14,
-    borderRadius: 28,
+    paddingVertical: sizes.m,
+    borderRadius: sizes.xl - sizes.s,
     alignItems: "center",
     justifyContent: "center",
   },
-  btnFilled: { backgroundColor: PINK },
-  btnFilledText: { color: MAROON, fontSize: 16, fontWeight: "700" },
+  btnFilled: { backgroundColor: colors.secondary },
+  btnFilledText: { color: colors.text, fontSize: font.s, fontWeight: "700" },
   btnOutline: {
     backgroundColor: "transparent",
     borderWidth: 1.5,
-    borderColor: PINK_OUTLINE,
+    borderColor: colors.secondary,
   },
-  btnOutlineText: { color: MAROON, fontSize: 16, fontWeight: "700" },
-  guest: { color: MAROON, fontSize: 13, marginTop: 2 },
+  btnOutlineText: { color: colors.text, fontSize: font.s, fontWeight: "700" },
+  guest: { color: colors.text, fontSize: font.xxs + 1, marginTop: sizes.xs / 2 },
 });

@@ -55,6 +55,7 @@ export default function MotherTabLayout() {
       {/*<Tabs.Screen name="appointments" options={{ href: null }} />*/}
       {/*<Tabs.Screen name="appointments/[id]/" options={{ href: null }} />*/}
       <Tabs.Screen name="chats/[id]" options={{ href: null }} />
+      <Tabs.Screen name="journal/journal" options={{ href: null }} />
     </Tabs>
   );
 }

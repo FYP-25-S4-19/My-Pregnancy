@@ -1,41 +1,20 @@
-import React, { useState } from 'react';
-import {
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  View,
-  ScrollView,
-  TextInput,
-  TouchableOpacity,
-  Platform,
-  StatusBar,
-} from 'react-native';
+import { StyleSheet, Text, View, ScrollView, TextInput, TouchableOpacity, StatusBar } from "react-native";
+import React, { useState } from "react";
 
-
-// --- CONFIGURATION ---
-const COLORS = {
-  primary: '#FF8A80', 
-  secondary: '#FFCDD2', 
-  background: '#FDFDFD',
-  card: '#FFFFFF',
-  text: '#5D4037', 
-  textLight: '#A1887F',
-  border: '#EF9A9A',
-};
-
+import { colors, sizes, font, shadows } from "@/src/shared/designSystem";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const Icon = ({ name, size, color }: { name: string; size: number; color: string }) => {
-  let symbol = '?';
-  if (name === 'chevron-left') symbol = '‹';
-  if (name === 'chevron-right') symbol = '›';
-  if (name === 'home') symbol = '🏠';
-  if (name === 'book-open-variant') symbol = '📖';
-  if (name === 'calendar-month') symbol = '📅';
-  if (name === 'account') symbol = '👤';
-  
-  return <Text style={{ fontSize: size, color: color }}>{symbol}</Text>;
-};
+  let symbol = "?";
+  if (name === "chevron-left") symbol = "‹";
+  if (name === "chevron-right") symbol = "›";
+  if (name === "home") symbol = "🏠";
+  if (name === "book-open-variant") symbol = "📖";
+  if (name === "calendar-month") symbol = "📅";
+  if (name === "account") symbol = "👤";
 
+  return <Text style={{ fontSize: size, color }}>{symbol}</Text>;
+};
 
 interface ChipProps {
   label: string;
@@ -53,13 +32,7 @@ interface VitalInputProps {
 
 const Chip: React.FC<ChipProps> = ({ label, selected, onPress }) => {
   return (
-    <TouchableOpacity
-      style={[
-        styles.chip,
-        selected ? styles.chipSelected : styles.chipUnselected,
-      ]}
-      onPress={onPress}
-    >
+    <TouchableOpacity style={[styles.chip, selected ? styles.chipSelected : styles.chipUnselected]} onPress={onPress}>
       <Text style={styles.chipText}>{label}</Text>
     </TouchableOpacity>
   );
@@ -73,9 +46,11 @@ function formatDate(date: Date) {
     date.getDate() === today.getDate() &&
     date.getMonth() === today.getMonth() &&
     date.getFullYear() === today.getFullYear();
-  const options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', year: 'numeric', weekday: 'long' };
+  const options: Intl.DateTimeFormatOptions = { day: "numeric", month: "long", year: "numeric", weekday: "long" };
   const formatted = date.toLocaleDateString(undefined, options);
-  return isToday ? `Today, ${date.getDate()} ${date.toLocaleString('default', { month: 'long' })} ${date.getFullYear()}` : formatted;
+  return isToday
+    ? `Today, ${date.getDate()} ${date.toLocaleString("default", { month: "long" })} ${date.getFullYear()}`
+    : formatted;
 }
 
 function addDays(date: Date, days: number) {
@@ -105,22 +80,22 @@ const VitalRow: React.FC<VitalInputProps & { value: string | [string, string]; o
           <TextInput
             style={styles.vitalInputSmall}
             keyboardType="numeric"
-            value={Array.isArray(value) ? value[0] : ''}
-            onChangeText={(t) => onChange([t, Array.isArray(value) ? value[1] : ''])}
+            value={Array.isArray(value) ? value[0] : ""}
+            onChangeText={(t) => onChange([t, Array.isArray(value) ? value[1] : ""])}
           />
           <Text style={styles.slashText}>/</Text>
           <TextInput
             style={styles.vitalInputSmall}
             keyboardType="numeric"
-            value={Array.isArray(value) ? value[1] : ''}
-            onChangeText={(t) => onChange([Array.isArray(value) ? value[0] : '', t])}
+            value={Array.isArray(value) ? value[1] : ""}
+            onChangeText={(t) => onChange([Array.isArray(value) ? value[0] : "", t])}
           />
         </>
       ) : (
         <TextInput
           style={styles.vitalInput}
           keyboardType="numeric"
-          value={typeof value === 'string' ? value : ''}
+          value={typeof value === "string" ? value : ""}
           onChangeText={onChange}
         />
       )}
@@ -132,7 +107,7 @@ const VitalRow: React.FC<VitalInputProps & { value: string | [string, string]; o
 export default function App() {
   // --- DATE STATE ---
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [activeTab, setActiveTab] = useState<'Journal' | 'Kicks'>('Journal');
+  const [activeTab, setActiveTab] = useState<"Journal" | "Kicks">("Journal");
 
   // --- JOURNAL DATA STATE ---
   type JournalData = {
@@ -146,12 +121,8 @@ export default function App() {
       weight: string;
     };
   };
-  const moods = [
-    'Calm', 'Happy', 'Energetic', 'Sad', 'Anxious', 'Low Energy', 'Depressed', 'Confused', 'Irritated'
-  ];
-  const symptoms = [
-    'Everything is fine', 'Cramps', 'Tender breasts', 'Headache', 'Cravings', 'Insomnia'
-  ];
+  const moods = ["Calm", "Happy", "Energetic", "Sad", "Anxious", "Low Energy", "Depressed", "Confused", "Irritated"];
+  const symptoms = ["Everything is fine", "Cramps", "Tender breasts", "Headache", "Cravings", "Insomnia"];
 
   // Store all data by date
   const [journals, setJournals] = useState<{ [date: string]: JournalData }>({});
@@ -163,34 +134,34 @@ export default function App() {
       setJournals((prev) => ({
         ...prev,
         [currentKey]: {
-          feeling: '',
+          feeling: "",
           moods: [],
           symptoms: [],
           vitals: {
-            bloodPressure: ['', ''],
-            sugar: '',
-            heartRate: '',
-            weight: '',
+            bloodPressure: ["", ""],
+            sugar: "",
+            heartRate: "",
+            weight: "",
           },
         },
       }));
     }
-  }, [currentKey]);
+  }, [currentKey, journals]);
 
   const journal = journals[currentKey] || {
-    feeling: '',
+    feeling: "",
     moods: [],
     symptoms: [],
     vitals: {
-      bloodPressure: ['', ''],
-      sugar: '',
-      heartRate: '',
-      weight: '',
+      bloodPressure: ["", ""],
+      sugar: "",
+      heartRate: "",
+      weight: "",
     },
   };
 
-  const handleDateChange = (direction: 'prev' | 'next') => {
-    setCurrentDate((prev) => addDays(prev, direction === 'next' ? 1 : -1));
+  const handleDateChange = (direction: "prev" | "next") => {
+    setCurrentDate((prev) => addDays(prev, direction === "next" ? 1 : -1));
   };
 
   const handleFeelingChange = (text: string) => {
@@ -230,7 +201,7 @@ export default function App() {
     }
   };
 
-  const handleVitalChange = (field: keyof JournalData['vitals'], value: string | [string, string]) => {
+  const handleVitalChange = (field: keyof JournalData["vitals"], value: string | [string, string]) => {
     setJournals((prev) => ({
       ...prev,
       [currentKey]: {
@@ -245,32 +216,32 @@ export default function App() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={COLORS.background} />
+      <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
       {/* --- HEADER SECTION --- */}
       <View style={styles.headerContainer}>
         {/* Toggle Switch */}
         <View style={styles.toggleContainer}>
           <TouchableOpacity
-            style={[styles.toggleBtn, activeTab === 'Journal' && styles.toggleBtnActive]}
-            onPress={() => setActiveTab('Journal')}
+            style={[styles.toggleBtn, activeTab === "Journal" && styles.toggleBtnActive]}
+            onPress={() => setActiveTab("Journal")}
           >
-            <Text style={[styles.toggleText, activeTab === 'Journal' && styles.toggleTextActive]}>Journal</Text>
+            <Text style={[styles.toggleText, activeTab === "Journal" && styles.toggleTextActive]}>Journal</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.toggleBtn, activeTab === 'Kicks' && styles.toggleBtnActive]}
-            onPress={() => setActiveTab('Kicks')}
+            style={[styles.toggleBtn, activeTab === "Kicks" && styles.toggleBtnActive]}
+            onPress={() => setActiveTab("Kicks")}
           >
-            <Text style={[styles.toggleText, activeTab === 'Kicks' && styles.toggleTextActive]}>Kicks Counter</Text>
+            <Text style={[styles.toggleText, activeTab === "Kicks" && styles.toggleTextActive]}>Kicks Counter</Text>
           </TouchableOpacity>
         </View>
         {/* Date Navigator */}
         <View style={styles.dateRow}>
-          <TouchableOpacity onPress={() => handleDateChange('prev')}>
-            <Icon name="chevron-left" size={30} color={COLORS.text} />
+          <TouchableOpacity onPress={() => handleDateChange("prev")}>
+            <Icon name="chevron-left" size={30} color={colors.text} />
           </TouchableOpacity>
           <Text style={styles.dateText}>{formatDate(currentDate)}</Text>
-          <TouchableOpacity onPress={() => handleDateChange('next')}>
-            <Icon name="chevron-right" size={30} color={COLORS.text} />
+          <TouchableOpacity onPress={() => handleDateChange("next")}>
+            <Icon name="chevron-right" size={30} color={colors.text} />
           </TouchableOpacity>
         </View>
       </View>
@@ -281,7 +252,7 @@ export default function App() {
           <TextInput
             style={styles.textArea}
             placeholder="Type here.."
-            placeholderTextColor={COLORS.secondary}
+            placeholderTextColor={colors.secondary}
             multiline
             value={journal.feeling}
             onChangeText={handleFeelingChange}
@@ -322,49 +293,49 @@ export default function App() {
             unit=""
             isDoubleInput
             value={journal.vitals.bloodPressure}
-            onChange={(v: [string, string]) => handleVitalChange('bloodPressure', v)}
+            onChange={(v: [string, string]) => handleVitalChange("bloodPressure", v)}
           />
           <VitalRow
             label="Sugar Level"
             unit="mmol/L"
             value={journal.vitals.sugar}
-            onChange={(v: string) => handleVitalChange('sugar', v)}
+            onChange={(v: string) => handleVitalChange("sugar", v)}
           />
           <VitalRow
             label="Heart Rate"
             unit="bpm"
             value={journal.vitals.heartRate}
-            onChange={(v: string) => handleVitalChange('heartRate', v)}
+            onChange={(v: string) => handleVitalChange("heartRate", v)}
           />
           <VitalRow
             label="Weight"
             unit="kg"
             value={journal.vitals.weight}
-            onChange={(v: string) => handleVitalChange('weight', v)}
+            onChange={(v: string) => handleVitalChange("weight", v)}
           />
         </View>
         {/* Spacer for bottom tab */}
         <View style={{ height: 80 }} />
       </ScrollView>
       {/* --- BOTTOM TAB BAR --- */}
-      <View style={styles.bottomBar}>
+      {/*<View style={styles.bottomBar}>
         <TouchableOpacity style={styles.tabItem}>
-          <Icon name="home" size={24} color={COLORS.primary} />
-          <Text style={[styles.tabLabel, { color: COLORS.primary }]}>Home</Text>
+          <Icon name="home" size={sizes.icon} color={colors.primary} />
+          <Text style={[styles.tabLabel, { color: colors.primary }]}>Home</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.tabItem}>
-          <Icon name="book-open-variant" size={24} color="#999" />
+          <Icon name="book-open-variant" size={sizes.icon} color={colors.tabIcon} />
           <Text style={styles.tabLabel}>Recipe</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.tabItem}>
-          <Icon name="calendar-month" size={24} color="#999" />
+          <Icon name="calendar-month" size={sizes.icon} color={colors.tabIcon} />
           <Text style={styles.tabLabel}>Appointment</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.tabItem}>
-          <Icon name="account" size={24} color="#999" />
+          <Icon name="account" size={sizes.icon} color={colors.tabIcon} />
           <Text style={styles.tabLabel}>Profile</Text>
         </TouchableOpacity>
-      </View>
+      </View>*/}
     </SafeAreaView>
   );
 }
@@ -373,184 +344,178 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: colors.background,
   },
   headerContainer: {
-    alignItems: 'center',
-    paddingVertical: 10,
-    backgroundColor: COLORS.background,
+    alignItems: "center",
+    paddingVertical: sizes.s + sizes.xs,
+    backgroundColor: colors.background,
   },
   // Toggle Switch Styles
   toggleContainer: {
-    flexDirection: 'row',
-    backgroundColor: '#FFF',
+    flexDirection: "row",
+    backgroundColor: colors.white,
     borderWidth: 1,
-    borderColor: COLORS.primary,
+    borderColor: colors.primary,
     borderRadius: 25,
-    padding: 2,
-    marginBottom: 15,
+    padding: sizes.xs / 2,
+    marginBottom: sizes.m - sizes.s,
   },
   toggleBtn: {
-    paddingVertical: 8,
+    paddingVertical: sizes.s,
     paddingHorizontal: 25,
-    borderRadius: 20,
+    borderRadius: sizes.m + sizes.xs,
   },
   toggleBtnActive: {
-    backgroundColor: COLORS.primary,
+    backgroundColor: colors.primary,
   },
   toggleText: {
-    color: COLORS.text,
-    fontWeight: '600',
-    fontSize: 16,
+    color: colors.text,
+    fontWeight: "600",
+    fontSize: font.s,
   },
   toggleTextActive: {
-    color: '#FFF',
+    color: colors.white,
   },
   // Date Row
   dateRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    width: '90%',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    width: "90%",
   },
   dateText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: COLORS.text,
+    fontSize: font.m - 2,
+    fontWeight: "bold",
+    color: colors.text,
   },
   // ScrollView
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: 20,
-    paddingTop: 10,
+    paddingHorizontal: sizes.m,
+    paddingTop: sizes.s + sizes.xs,
   },
   // Cards
   card: {
-    backgroundColor: COLORS.card,
-    borderRadius: 15,
-    padding: 15,
-    marginBottom: 15,
-    // Shadow for iOS
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    // Elevation for Android
-    elevation: 3,
+    backgroundColor: colors.white,
+    borderRadius: sizes.m - sizes.s,
+    padding: sizes.m - sizes.s,
+    marginBottom: sizes.m - sizes.s,
+    ...shadows.medium,
     borderWidth: 1,
-    borderColor: '#F0F0F0',
+    borderColor: colors.inputFieldBackground,
   },
   cardTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: COLORS.text,
-    marginBottom: 10,
+    fontSize: font.m - 2,
+    fontWeight: "bold",
+    color: colors.text,
+    marginBottom: sizes.s + sizes.xs,
   },
   // Input Area
   textArea: {
     height: 100,
-    textAlignVertical: 'top', // Android fix
-    color: COLORS.text,
-    fontSize: 16,
+    textAlignVertical: "top", // Android fix
+    color: colors.text,
+    fontSize: font.s,
     borderWidth: 1,
-    borderColor: '#EEEEEE',
-    borderRadius: 10,
-    padding: 10,
+    borderColor: colors.inputFieldBackground,
+    borderRadius: sizes.s + sizes.xs,
+    padding: sizes.s + sizes.xs,
   },
   // Chips
   chipContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
   },
   chip: {
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 15,
-    marginRight: 8,
-    marginBottom: 8,
+    paddingVertical: sizes.s - 2,
+    paddingHorizontal: sizes.m - sizes.xs,
+    borderRadius: sizes.m,
+    marginRight: sizes.s,
+    marginBottom: sizes.s,
     borderWidth: 1,
   },
   chipUnselected: {
-    backgroundColor: COLORS.secondary,
-    borderColor: COLORS.secondary,
+    backgroundColor: colors.secondary,
+    borderColor: colors.secondary,
   },
   chipSelected: {
-    backgroundColor: COLORS.secondary, // Keep background pinkish
-    borderColor: COLORS.text, // Dark border to indicate selection like image
+    backgroundColor: colors.secondary, // Keep background pinkish
+    borderColor: colors.text, // Dark border to indicate selection like image
     borderWidth: 1.5,
   },
   chipText: {
-    color: COLORS.text,
-    fontWeight: '500',
+    color: colors.text,
+    fontWeight: "500",
   },
   // Vitals
   vitalRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: sizes.m - sizes.xs,
   },
   vitalLabel: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: COLORS.text,
+    fontSize: font.s,
+    fontWeight: "bold",
+    color: colors.text,
     flex: 1,
   },
   vitalInputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     flex: 1,
-    justifyContent: 'flex-end',
+    justifyContent: "flex-end",
   },
   vitalInput: {
     width: 60,
     height: 35,
     borderWidth: 1,
-    borderColor: COLORS.text,
-    borderRadius: 5,
-    textAlign: 'center',
-    color: COLORS.text,
-    marginRight: 8,
+    borderColor: colors.text,
+    borderRadius: sizes.s - 3,
+    textAlign: "center",
+    color: colors.text,
+    marginRight: sizes.s,
   },
   vitalInputSmall: {
     width: 50,
     height: 35,
     borderWidth: 1,
-    borderColor: COLORS.text,
-    borderRadius: 5,
-    textAlign: 'center',
-    color: COLORS.text,
+    borderColor: colors.text,
+    borderRadius: sizes.s - 3,
+    textAlign: "center",
+    color: colors.text,
   },
   slashText: {
-    fontSize: 20,
-    color: COLORS.text,
-    marginHorizontal: 5,
+    fontSize: font.m,
+    color: colors.text,
+    marginHorizontal: sizes.s - 3,
   },
   unitText: {
-    color: COLORS.textLight,
+    color: colors.tabIcon,
     width: 50,
   },
   // Bottom Bar
   bottomBar: {
-    flexDirection: 'row',
-    backgroundColor: '#FFF',
-    paddingVertical: 10,
+    flexDirection: "row",
+    backgroundColor: colors.white,
+    paddingVertical: sizes.s + sizes.xs,
     borderTopWidth: 1,
-    borderTopColor: '#EEEEEE',
-    justifyContent: 'space-around',
-    position: 'absolute',
+    borderTopColor: colors.inputFieldBackground,
+    justifyContent: "space-around",
+    position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
   },
   tabItem: {
-    alignItems: 'center',
+    alignItems: "center",
   },
   tabLabel: {
-    fontSize: 12,
-    marginTop: 4,
-    color: '#999',
+    fontSize: font.xxs,
+    marginTop: sizes.xs,
+    color: colors.tabIcon,
   },
 });
