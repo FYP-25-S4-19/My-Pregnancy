@@ -47,7 +47,7 @@ export default function AppointmentsScreen() {
             return (
               <TouchableOpacity
                 style={{ padding: 10, borderBottomWidth: 1, borderBottomColor: "#ccc" }}
-                onPress={() => router.push(`/main/appointments/${item.appointment_id.toString()}/video_call`)}
+                onPress={() => router.push(`/main/mother/appointments/${item.appointment_id}/`)}
               >
                 <Text>
                   {((): string => {
