@@ -10,24 +10,21 @@ import {
   Platform,
   StatusBar,
 } from 'react-native';
-// If you have react-native-vector-icons installed:
-// import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-// If not, we will use a temporary text placeholder component below.
+
 
 // --- CONFIGURATION ---
 const COLORS = {
-  primary: '#FF8A80', // Salmon pink
-  secondary: '#FFCDD2', // Light pink
+  primary: '#FF8A80', 
+  secondary: '#FFCDD2', 
   background: '#FDFDFD',
   card: '#FFFFFF',
-  text: '#5D4037', // Brownish text
+  text: '#5D4037', 
   textLight: '#A1887F',
   border: '#EF9A9A',
 };
 
-// --- MOCK ICON COMPONENT (Replace with real icons) ---
+
 const Icon = ({ name, size, color }: { name: string; size: number; color: string }) => {
-  // Mapping names to simple unicode chars for demonstration if library isn't present
   let symbol = '?';
   if (name === 'chevron-left') symbol = '‹';
   if (name === 'chevron-right') symbol = '›';
@@ -39,7 +36,7 @@ const Icon = ({ name, size, color }: { name: string; size: number; color: string
   return <Text style={{ fontSize: size, color: color }}>{symbol}</Text>;
 };
 
-// --- TYPES ---
+
 interface ChipProps {
   label: string;
   selected?: boolean;
@@ -54,7 +51,6 @@ interface VitalInputProps {
 
 // --- COMPONENTS ---
 
-// 1. Reusable Chip (Mood/Symptoms)
 const Chip: React.FC<ChipProps> = ({ label, selected, onPress }) => {
   return (
     <TouchableOpacity
@@ -157,10 +153,10 @@ export default function App() {
     'Everything is fine', 'Cramps', 'Tender breasts', 'Headache', 'Cravings', 'Insomnia'
   ];
 
-  // --- Store all journals by date key ---
+  // Store all data by date
   const [journals, setJournals] = useState<{ [date: string]: JournalData }>({});
 
-  // --- Ensure journal exists for current date (without causing infinite re-render) ---
+  // Ensure journal exists for current date infinitely rendering
   const currentKey = dateKey(currentDate);
   React.useEffect(() => {
     if (!journals[currentKey]) {
@@ -179,7 +175,6 @@ export default function App() {
         },
       }));
     }
-    // eslint-disable-next-line
   }, [currentKey]);
 
   const journal = journals[currentKey] || {
@@ -194,7 +189,6 @@ export default function App() {
     },
   };
 
-  // --- HANDLERS ---
   const handleDateChange = (direction: 'prev' | 'next') => {
     setCurrentDate((prev) => addDays(prev, direction === 'next' ? 1 : -1));
   };
