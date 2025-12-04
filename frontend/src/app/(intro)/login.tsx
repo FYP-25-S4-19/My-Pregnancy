@@ -1,15 +1,16 @@
-import api from "@/src/constants/api";
-import useAuthStore, { MeData } from "../../stores/authStore";
 import React, { useState } from "react";
 import { View, TextInput, Button, StyleSheet, Text } from "react-native";
 import { jwtDecode } from "jwt-decode";
-import { router, useRouter } from "expo-router";
+import { router } from "expo-router";
+import useAuthStore from "@/src/shared/authStore";
+import api from "@/src/shared/api";
+import { MeData } from "@/src/shared/typesAndInterfaces";
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const { setMe, setAccessToken, logout } = useAuthStore((state) => state);
+  const { setMe, setAccessToken, clearAuthState: logout } = useAuthStore((state) => state);
   // useEffect(() => {
   //   try {
   //     console.log("Me Data: ", me);

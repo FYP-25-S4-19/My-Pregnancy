@@ -2,10 +2,10 @@ import { Dimensions } from "react-native";
 const { width, height } = Dimensions.get("window");
 
 export const colors = {
-  primary: "#FF9B9B",
-  secondary: "#FFCCCC",
-  background: "#FFFFFF",
-  text: "#732727",
+  primary: "#FF9B9B", // Light Pink
+  secondary: "#FFCCCC", // VERY Light Pink
+  background: "#FFFFFF", // White
+  text: "#732727", // Very dark red
   tabIcon: "#A2A2A2",
   inputFieldBackground: "#EEEEEE",
 

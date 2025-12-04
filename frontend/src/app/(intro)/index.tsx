@@ -1,4 +1,4 @@
-import api from "@/src/constants/api";
+import api from "@/src/shared/api";
 import { useRouter } from "expo-router";
 import React, { useEffect } from "react";
 import { ImageBackground, StatusBar, StyleSheet, Text, TouchableOpacity, View } from "react-native";

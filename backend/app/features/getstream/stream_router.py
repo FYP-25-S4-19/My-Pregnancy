@@ -22,6 +22,6 @@ async def get_stream_token(user: User = Depends(current_active_user)):
     token: str = client.create_token(str(user.id))
     try:
         client.upsert_users(UserRequest(id=str(user.id), name=format_user_fullname(user)))
-        return {"token": token, "api_key": settings.STREAM_API_KEY, "user_id": str(user.id)}
+        return {"token": token}
     except Exception:
         raise

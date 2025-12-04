@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { colors, sizes, font } from "../constants/designSystem";
+import { colors, sizes, font } from "../shared/designSystem";
 
 interface DoctorCardProps {
   id: string;
@@ -35,8 +35,7 @@ export default function DoctorCard({
         </View>
 
         <View style={styles.footerRow}>
-          {/*<TouchableOpacity style={styles.chatButton} onPress={onChatPress}>*/}
-          <TouchableOpacity style={styles.chatButton}>
+          <TouchableOpacity style={styles.chatButton} onPress={onChatPress}>
             <Text style={styles.chatButtonText}>Chat</Text>
           </TouchableOpacity>
 
@@ -52,30 +51,30 @@ export default function DoctorCard({
 
 const styles = StyleSheet.create({
   card: {
+    flex: 1,
     flexDirection: "row",
     backgroundColor: "#f2f9f8",
     borderRadius: sizes.borderRadius * 1.5,
     padding: sizes.m,
-    marginHorizontal: sizes.m,
+    marginHorizontal: sizes.l,
     marginBottom: sizes.m,
     alignItems: "center",
   },
   image: {
     width: 100,
     height: 120,
-    borderRadius: sizes.borderRadius + 4,
+    borderRadius: sizes.borderRadius * 2,
     backgroundColor: colors.lightGray,
   },
   contentContainer: {
     flex: 1,
     marginLeft: sizes.m,
-    justifyContent: "space-between",
+    gap: sizes.xl,
   },
   headerRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: sizes.l,
   },
   name: {
     fontSize: font.m,

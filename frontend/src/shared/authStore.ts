@@ -1,15 +1,7 @@
 import * as SecureStore from "expo-secure-store";
 import { create } from "zustand";
 import { createJSONStorage, persist, StateStorage } from "zustand/middleware";
-
-export interface MeData {
-  id: number;
-  email: string;
-  first_name: string;
-  middle_name: string | null;
-  last_name: string;
-  role: string;
-}
+import { MeData } from "./typesAndInterfaces";
 
 export interface AuthState {
   me: MeData | null;
@@ -18,7 +10,7 @@ export interface AuthState {
   setMe: (me: MeData | null) => void;
   setAccessToken: (token: string | null) => void;
 
-  logout: () => void;
+  clearAuthState: () => void;
 }
 
 const expoSecureStore: StateStorage = {
@@ -44,7 +36,7 @@ const useAuthStore = create<AuthState>()(
       setMe: (me) => set({ me }),
       setAccessToken: (token) => set({ accessToken: token }),
 
-      logout: () =>
+      clearAuthState: () =>
         set({
           me: null,
           accessToken: null,

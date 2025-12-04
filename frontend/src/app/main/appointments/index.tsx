@@ -1,10 +1,19 @@
-import api from "@/src/constants/api";
-import useAuthStore from "@/src/stores/authStore";
-import { AppointmentData } from "@/src/types/apiResponseModels";
+import api from "@/src/shared/api";
+import useAuthStore from "@/src/shared/authStore";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { FlatList, Text, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+
+interface AppointmentData {
+  appointment_id: number;
+  doctor_id: number;
+  doctor_name: string;
+  mother_id: number;
+  mother_name: string;
+  start_time: string;
+  status: string;
+}
 
 export default function AppointmentsScreen() {
   const router = useRouter();

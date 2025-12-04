@@ -1,13 +1,20 @@
 import React, { useState } from "react";
 import { Text, View, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { colors, sizes, font } from "../../constants/designSystem";
+import { colors, sizes, font } from "../../shared/designSystem";
 import SearchBar from "../../components/SearchBar";
 import DoctorCard from "../../components/DoctorCard";
 import { useQuery } from "@tanstack/react-query";
-import { DoctorPreviewData } from "@/src/types/apiResponseModels";
-import api from "@/src/constants/api";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { router } from "expo-router";
+import api from "@/src/shared/api";
+
+interface DoctorPreviewData {
+  doctor_id: string;
+  profile_img_url: string | null;
+  first_name: string;
+  is_liked: boolean;
+}
 
 export default function ConsultationsScreen() {
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -22,6 +29,10 @@ export default function ConsultationsScreen() {
       return [];
     },
   });
+
+  const onChatPress = (doctorID: string): void => {
+    router.push(`/main/chats/${doctorID}/`);
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -58,6 +69,7 @@ export default function ConsultationsScreen() {
                 name={"Dr. " + doctorPreview.first_name}
                 image={doctorPreview.profile_img_url}
                 isFavorite={doctorPreview.is_liked}
+                onChatPress={() => onChatPress(doctorPreview.doctor_id)}
               />
             ))}
         </View>
