@@ -1,8 +1,8 @@
-import { useRouter } from "expo-router";
 import { Text, TouchableOpacity, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import useAuthStore from "@/src/shared/authStore";
 import { font, sizes } from "@/src/shared/designSystem";
+import useAuthStore from "@/src/shared/authStore";
+import { useRouter } from "expo-router";
 
 export default function NutritionistHomeScreen() {
   const router = useRouter();
@@ -20,7 +20,7 @@ export default function NutritionistHomeScreen() {
         Logged in as a {me?.role.toLowerCase()}
       </Text>
 
-      <TouchableOpacity style={styles.touchable} onPress={() => router.push("/main/listOfDoctors")}>
+      <TouchableOpacity style={styles.touchable} onPress={() => router.push("/main/nutritionist/articles")}>
         <Text
           style={{
             color: "#6d2828",
@@ -28,10 +28,10 @@ export default function NutritionistHomeScreen() {
             fontWeight: "500",
           }}
         >
-          {'Go to the "CONSULTATIONS" screen'}
+          {"Articles"}
         </Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.touchable} onPress={() => router.push("/main/appointments")}>
+      <TouchableOpacity style={styles.touchable} onPress={() => router.push("/main/nutritionist/threads")}>
         <Text
           style={{
             color: "#6d2828",
@@ -39,18 +39,7 @@ export default function NutritionistHomeScreen() {
             fontWeight: "500",
           }}
         >
-          {'Go to the "APPOINTMENTS" screen'}
-        </Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.touchable} onPress={() => router.push("/main/chats/")}>
-        <Text
-          style={{
-            color: "#6d2828",
-            fontSize: font.m,
-            fontWeight: "500",
-          }}
-        >
-          {'Go to the "CHATS" screen'}
+          {"Threads"}
         </Text>
       </TouchableOpacity>
     </SafeAreaView>
