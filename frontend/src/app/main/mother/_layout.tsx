@@ -1,6 +1,6 @@
 import { Tabs } from "expo-router";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { colors, font, sizes } from "@/src/shared/designSystem";
+import { colors, font } from "@/src/shared/designSystem";
 
 export default function MotherTabLayout() {
   return (
@@ -24,38 +24,40 @@ export default function MotherTabLayout() {
       }}
     >
       <Tabs.Screen
-        name="index"
+        name="(home)"
         options={{
           title: "Home",
           tabBarIcon: ({ color, size = 24 }) => <MaterialCommunityIcons name="home" size={size} color={color} />,
         }}
       />
       <Tabs.Screen
-        name="listOfDoctors"
+        name="recipe"
         options={{
-          title: "Doctors",
-          tabBarIcon: ({ color, size = 24 }) => <MaterialCommunityIcons name="home" size={size} color={color} />,
+          title: "Recipe",
+          tabBarIcon: ({ color, size = 24 }) => (
+            <MaterialCommunityIcons name="food-fork-drink" size={size} color={color} />
+          ),
         }}
       />
       <Tabs.Screen
-        name="appointments"
+        name="appointment"
         options={{
-          title: "Appointments",
+          title: "Appointment",
           tabBarIcon: ({ color, size = 24 }) => <MaterialCommunityIcons name="calendar" size={size} color={color} />,
         }}
       />
       <Tabs.Screen
-        name="chats"
+        name="profile"
         options={{
-          title: "Chat",
-          tabBarIcon: ({ color, size = 24 }) => <MaterialCommunityIcons name="chat" size={size} color={color} />,
+          title: "Profile",
+          tabBarIcon: ({ color, size = 24 }) => <MaterialCommunityIcons name="human" size={size} color={color} />,
         }}
       />
 
       {/*<Tabs.Screen name="appointments" options={{ href: null }} />*/}
       {/*<Tabs.Screen name="appointments/[id]/" options={{ href: null }} />*/}
-      <Tabs.Screen name="chats/[id]" options={{ href: null }} />
-      <Tabs.Screen name="journal/journal" options={{ href: null }} />
+      {/*<Tabs.Screen name="chats/[id]" options={{ href: null }} />
+      <Tabs.Screen name="journal/journal" options={{ href: null }} />*/}
     </Tabs>
   );
 }

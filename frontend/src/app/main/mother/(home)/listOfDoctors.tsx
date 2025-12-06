@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { Text, View, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { colors, sizes, font } from "../../../shared/designSystem";
-import SearchBar from "../../../components/SearchBar";
-import DoctorCard from "../../../components/DoctorCard";
+import { colors, sizes, font } from "../../../../shared/designSystem";
+import SearchBar from "../../../../components/SearchBar";
+import DoctorCard from "../../../../components/DoctorCard";
 import { useQuery } from "@tanstack/react-query";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
