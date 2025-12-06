@@ -1,7 +1,5 @@
 import { useRouter } from "expo-router";
 import { Text, TouchableOpacity, StyleSheet } from "react-native";
-// import { View } from "react-native-safe-area-context";
-//
 import useAuthStore from "@/src/shared/authStore";
 import { font, sizes } from "@/src/shared/designSystem";
 import { SafeAreaView } from "react-native-safe-area-context";
