@@ -2,7 +2,7 @@ import { TAB_BAR_ICON_SIZE, tabScreenOptions } from "@/src/shared/globalStyles";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 
-export default function MotherTabLayout() {
+export default function NutritionistTabLayout() {
   return (
     <Tabs screenOptions={tabScreenOptions}>
       <Tabs.Screen
@@ -24,15 +24,6 @@ export default function MotherTabLayout() {
         }}
       />
       <Tabs.Screen
-        name="appointment"
-        options={{
-          title: "Appointment",
-          tabBarIcon: ({ color, size = TAB_BAR_ICON_SIZE }) => (
-            <MaterialCommunityIcons name="calendar" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
         name="profile"
         options={{
           title: "Profile",
@@ -41,11 +32,6 @@ export default function MotherTabLayout() {
           ),
         }}
       />
-
-      {/*<Tabs.Screen name="appointments" options={{ href: null }} />*/}
-      {/*<Tabs.Screen name="appointments/[id]/" options={{ href: null }} />*/}
-      {/*<Tabs.Screen name="chats/[id]" options={{ href: null }} />
-      <Tabs.Screen name="journal/journal" options={{ href: null }} />*/}
     </Tabs>
   );
 }

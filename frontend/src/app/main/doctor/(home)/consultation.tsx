@@ -1,11 +1,11 @@
-import React, { useState } from "react";
 import { Text, View, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { colors, sizes, font } from "../../../shared/designSystem";
-import SearchBar from "../../../components/SearchBar";
-import DoctorCard from "../../../components/DoctorCard";
-import { useQuery } from "@tanstack/react-query";
+import { colors, sizes, font } from "../../../../shared/designSystem";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import DoctorCard from "../../../../components/DoctorCard";
+import SearchBar from "../../../../components/SearchBar";
+import { useQuery } from "@tanstack/react-query";
+import React, { useState } from "react";
 import { router } from "expo-router";
 import api from "@/src/shared/api";
 
@@ -31,11 +31,11 @@ export default function ConsultationsScreen() {
   });
 
   const onChatPress = (doctorID: string): void => {
-    router.push(`/main/chats/${doctorID}/`);
+    router.push(`/main/mother/chats`);
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView edges={["top"]} style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View style={styles.header}>
@@ -88,8 +88,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     gap: sizes.m,
-    paddingTop: sizes.xl * 1.2,
-    paddingBottom: sizes.xl * 1.1,
+    paddingTop: sizes.m,
+    paddingBottom: sizes.l,
   },
   headerTitle: {
     fontSize: font.l,

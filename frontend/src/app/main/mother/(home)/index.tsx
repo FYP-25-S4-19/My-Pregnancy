@@ -1,15 +1,15 @@
 import { useRouter } from "expo-router";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-// import { View } from "react-native-safe-area-context";
-import { font, sizes } from "../../../shared/designSystem";
+import { Text, TouchableOpacity, StyleSheet } from "react-native";
 import useAuthStore from "@/src/shared/authStore";
+import { font, sizes } from "@/src/shared/designSystem";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function MotherHomeScreen() {
   const router = useRouter();
   const me = useAuthStore((state) => state.me);
 
   return (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+    <SafeAreaView edges={["top"]} style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
       <Text
         style={{
           fontSize: font.l,
@@ -20,7 +20,7 @@ export default function MotherHomeScreen() {
         Logged in as a {me?.role.toLowerCase()}
       </Text>
 
-      <TouchableOpacity style={styles.touchable} onPress={() => router.push("/main/mother/listOfDoctors")}>
+      <TouchableOpacity style={styles.touchable} onPress={() => router.push("/main/mother/journal")}>
         <Text
           style={{
             color: "#6d2828",
@@ -28,10 +28,10 @@ export default function MotherHomeScreen() {
             fontWeight: "500",
           }}
         >
-          {'Go to the "CONSULTATIONS" screen'}
+          {"Journal"}
         </Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.touchable} onPress={() => router.push("/main/mother/appointments")}>
+      <TouchableOpacity style={styles.touchable} onPress={() => router.push("/main/mother/articles")}>
         <Text
           style={{
             color: "#6d2828",
@@ -39,10 +39,10 @@ export default function MotherHomeScreen() {
             fontWeight: "500",
           }}
         >
-          {'Go to the "APPOINTMENTS" screen'}
+          {"Articles"}
         </Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.touchable} onPress={() => router.push("/main/mother/journal/journal")}>
+      <TouchableOpacity style={styles.touchable} onPress={() => router.push("/main/mother/consultation")}>
         <Text
           style={{
             color: "#6d2828",
@@ -50,7 +50,7 @@ export default function MotherHomeScreen() {
             fontWeight: "500",
           }}
         >
-          {'Go to the "JOURNAL" screen'}
+          {"Consultation"}
         </Text>
       </TouchableOpacity>
       <TouchableOpacity style={styles.touchable} onPress={() => router.push("/main/mother/chats")}>
@@ -61,10 +61,10 @@ export default function MotherHomeScreen() {
             fontWeight: "500",
           }}
         >
-          {'Go to the "CHATS" screen'}
+          {"Chats"}
         </Text>
       </TouchableOpacity>
-    </View>
+    </SafeAreaView>
   );
 }
 

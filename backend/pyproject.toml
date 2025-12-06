@@ -31,7 +31,7 @@ dependencies = [
     "ujson>=5.11.0",
     "fastapi-users[sqlalchemy, oauth]>=15.0.1",
     "setuptools>=80.9.0",
-    "getstream>=2.5.16",
+    "stream-chat>=4.28.0",
 ]
 
 # --------------------------------------------

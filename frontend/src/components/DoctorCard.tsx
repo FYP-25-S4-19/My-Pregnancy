@@ -23,7 +23,13 @@ export default function DoctorCard({
 }: DoctorCardProps) {
   return (
     <View style={styles.card}>
-      <Image source={{ uri: image || "" }} style={styles.image} />
+      <Image
+        source={{ uri: image || "" }}
+        style={styles.image}
+        onError={(err) => {
+          console.log("Failed to load image:", err.nativeEvent.error);
+        }}
+      />
 
       <View style={styles.contentContainer}>
         <View style={styles.headerRow}>
