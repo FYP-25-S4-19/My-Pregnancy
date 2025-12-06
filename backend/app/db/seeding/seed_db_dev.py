@@ -29,10 +29,10 @@ if __name__ == "__main__":
             db=db_session,
             faker=faker,
             password_hasher=password_hasher,
-            preg_women_profiles_filepath="./app/db/seeding/images/profiles/pregnant_women",
-            doctor_profiles_filepath="./app/db/seeding/images/profiles/volunteer_doctors",
-            nutritionists_profiles_filepath="./app/db/seeding/images/profiles/nutritionists",
-            qualifications_filepath="./app/db/seeding/images/qualifications",
+            preg_women_profiles_filepath="./seed_data/profiles/pregnant_women",
+            doctor_profiles_filepath="./seed_data/profiles/volunteer_doctors",
+            nutritionists_profiles_filepath="./seed_data/profiles/nutritionists",
+            qualifications_filepath="./seed_data/qualifications",
         )
         all_users = preg_women + doctors + nutritionists
         print("Finished seeding the database users!\n")
@@ -62,7 +62,7 @@ if __name__ == "__main__":
         print("Finished seeding educational article content!\n")
 
         # -------- Generation of recipe data ---------
-        RecipesGenerator.generate_all_recipes(db_session)
+        RecipesGenerator.generate_all_recipes(db_session, nutritionists, "./seed_data/recipes")
         print("Finished seeding all recipes!\n")
 
         # ------- Generation of miscellaneous content -------
