@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { HttpStatusCode } from "axios";
 import Constants from "expo-constants";
 import { Platform } from "react-native";
 import * as Device from "expo-device";
@@ -9,35 +9,68 @@ if (process.env.EXPO_PUBLIC_APP_ENV !== "dev" && process.env.EXPO_PUBLIC_APP_ENV
   throw new Error("EXPO_PUBLIC_APP_ENV should be set to either 'dev' or 'prod' explicitly");
 }
 
-const getBaseUrl = () => {
+const getDevHostIp = (): string => {
+  // Emulator check
+  const isEmulator = !Device.isDevice;
+  if (isEmulator) {
+    if (Platform.OS === "android") {
+      return "10.0.2.2";
+    }
+    return "localhost"; // iOS Simulator uses standard localhost
+  }
+
+  // Physical Device Check (LAN IP)
+  const debuggerHost = Constants.expoConfig?.hostUri;
+  const localhostIp = debuggerHost?.split(":")[0];
+  if (localhostIp) {
+    return localhostIp;
+  }
+
+  return "localhost"; // Fallback to localhost
+};
+
+const getBaseUrl = (): string => {
   if (process.env.EXPO_PUBLIC_APP_ENV === "prod") {
     return "https://api.my-pregnancy.click/";
   }
 
-  // EMULATOR CHECK: Device.isDevice returns 'false' if it's an emulator/simulator
-  const isEmulator = !Device.isDevice;
-  if (isEmulator) {
-    if (Platform.OS === "android") {
-      return "http://10.0.2.2:8000/"; // Android Emulator uses special localhost
-    }
-    return "http://localhost:8000/"; // iOS Simulator can use localhost
-  }
-
-  // PHYSICAL DEVICE (Dynamic IP Detection): We extract the IP address of your machine from the manifest
-  const debuggerHost = Constants.expoConfig?.hostUri;
-  const localhostIp = debuggerHost?.split(":")[0];
-  if (localhostIp) {
-    return `http://${localhostIp}:8000/`;
-  }
-  throw new Error("Could not determine API URL. Ensure you are running the development server.");
+  const host: string = getDevHostIp();
+  return `http://${host}:8000/`;
 };
 
 const api = axios.create({ baseURL: getBaseUrl(), timeout: 10000 });
 axiosRetry(api, { retryDelay: linearDelay(), retries: 3 });
 
-/**
- * Request interceptor to add Authorization header if access token is available
- */
+// Recursively walks through the JSON response to find and fix S3 URLs
+const replaceS3Localhost = (data: any, hostIp: string): any => {
+  // Handle Strings (The actual fix)
+  if (typeof data === "string") {
+    // All the pre-signed URLs from S3 start with this as the prefix
+    if (data.includes("http://localhost:4567")) {
+      return data.replace("localhost", hostIp);
+    }
+    return data;
+  }
+
+  // Handle Arrays (Recursion)
+  if (Array.isArray(data)) {
+    return data.map((item) => replaceS3Localhost(item, hostIp));
+  }
+
+  // Handle Objects (Recursion)
+  if (typeof data === "object" && data !== null) {
+    const newData: any = {};
+    for (const key in data) {
+      if (Object.prototype.hasOwnProperty.call(data, key)) {
+        newData[key] = replaceS3Localhost(data[key], hostIp);
+      }
+    }
+    return newData;
+  }
+
+  return data; // Return primitives as is
+};
+
 api.interceptors.request.use(
   (config) => {
     const token = useAuthStore.getState().accessToken;
@@ -51,14 +84,19 @@ api.interceptors.request.use(
   },
 );
 
-/**
- * Response interceptor to handle 401 errors globally.
- * If a 401 error is encountered, the user is logged out.
- */
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    if (process.env.EXPO_PUBLIC_APP_ENV === "dev" && response.data) {
+      const hostIp: string = getDevHostIp();
+      // Only run the recursive replace if the host isn't already 'localhost'
+      if (hostIp !== "localhost") {
+        response.data = replaceS3Localhost(response.data, hostIp);
+      }
+    }
+    return response;
+  },
   (error) => {
-    if (error.response && error.response.status === 401) {
+    if (error.response && error.response.status === HttpStatusCode.Unauthorized) {
       console.log("Authentication error: Token expired or invalid.");
       useAuthStore.getState().clearAuthState();
     }
