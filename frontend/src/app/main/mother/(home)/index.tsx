@@ -1,73 +1,72 @@
 import { useRouter } from "expo-router";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { Text, TouchableOpacity, StyleSheet } from "react-native";
 // import { View } from "react-native-safe-area-context";
 //
 import useAuthStore from "@/src/shared/authStore";
+import { font, sizes } from "@/src/shared/designSystem";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function MotherHomeScreen() {
   const router = useRouter();
   const me = useAuthStore((state) => state.me);
 
   return (
-    <View>
-      <Text>Mother home screen</Text>
-    </View>
-    // <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-    //   <Text
-    //     style={{
-    //       fontSize: font.l,
-    //       fontWeight: "600",
-    //       marginBottom: sizes.m,
-    //     }}
-    //   >
-    //     Logged in as a {me?.role.toLowerCase()}
-    //   </Text>
+    <SafeAreaView edges={["top"]} style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <Text
+        style={{
+          fontSize: font.l,
+          fontWeight: "600",
+          marginBottom: sizes.m,
+        }}
+      >
+        Logged in as a {me?.role.toLowerCase()}
+      </Text>
 
-    //   <TouchableOpacity style={styles.touchable} onPress={() => router.push("/main/mother/listOfDoctors")}>
-    //     <Text
-    //       style={{
-    //         color: "#6d2828",
-    //         fontSize: font.m,
-    //         fontWeight: "500",
-    //       }}
-    //     >
-    //       {'Go to the "CONSULTATIONS" screen'}
-    //     </Text>
-    //   </TouchableOpacity>
-    //   <TouchableOpacity style={styles.touchable} onPress={() => router.push("/main/mother/appointments")}>
-    //     <Text
-    //       style={{
-    //         color: "#6d2828",
-    //         fontSize: font.m,
-    //         fontWeight: "500",
-    //       }}
-    //     >
-    //       {'Go to the "APPOINTMENTS" screen'}
-    //     </Text>
-    //   </TouchableOpacity>
-    //   <TouchableOpacity style={styles.touchable} onPress={() => router.push("/main/mother/journal/journal")}>
-    //     <Text
-    //       style={{
-    //         color: "#6d2828",
-    //         fontSize: font.m,
-    //         fontWeight: "500",
-    //       }}
-    //     >
-    //       {'Go to the "JOURNAL" screen'}
-    //     </Text>
-    //   </TouchableOpacity>
-    //   <TouchableOpacity style={styles.touchable} onPress={() => router.push("/main/mother/chats")}>
-    //     <Text
-    //       style={{
-    //         color: "#6d2828",
-    //         fontSize: font.m,
-    //         fontWeight: "500",
-    //       }}
-    //     >
-    //       {'Go to the "CHATS" screen'}
-    //     </Text>
-    //   </TouchableOpacity>
-    // </View>
+      <TouchableOpacity style={styles.touchable} onPress={() => router.push("/main/mother/journal")}>
+        <Text
+          style={{
+            color: "#6d2828",
+            fontSize: font.m,
+            fontWeight: "500",
+          }}
+        >
+          {"Journal"}
+        </Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.touchable} onPress={() => router.push("/main/mother/articles")}>
+        <Text
+          style={{
+            color: "#6d2828",
+            fontSize: font.m,
+            fontWeight: "500",
+          }}
+        >
+          {"Articles"}
+        </Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.touchable} onPress={() => router.push("/main/mother/consultation")}>
+        <Text
+          style={{
+            color: "#6d2828",
+            fontSize: font.m,
+            fontWeight: "500",
+          }}
+        >
+          {"Consultation"}
+        </Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.touchable} onPress={() => router.push("/main/mother/chats")}>
+        <Text
+          style={{
+            color: "#6d2828",
+            fontSize: font.m,
+            fontWeight: "500",
+          }}
+        >
+          {"Chats"}
+        </Text>
+      </TouchableOpacity>
+    </SafeAreaView>
   );
 }
 

@@ -31,11 +31,11 @@ export default function ConsultationsScreen() {
   });
 
   const onChatPress = (doctorID: string): void => {
-    router.push(`/main/chats/${doctorID}/`);
+    router.push(`/main/mother/chats`);
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView edges={["top"]} style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View style={styles.header}>
@@ -88,8 +88,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     gap: sizes.m,
-    paddingTop: sizes.xl * 1.2,
-    paddingBottom: sizes.xl * 1.1,
+    paddingTop: sizes.m,
+    paddingBottom: sizes.l,
   },
   headerTitle: {
     fontSize: font.l,

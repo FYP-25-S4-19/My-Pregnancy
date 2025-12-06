@@ -15,7 +15,7 @@ import useAuthStore from "@/src/shared/authStore";
 
 type InitState = "loading" | "ready" | "error";
 
-export default function VideoCallScreen() {
+export default function MotherVideoCallScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams();
   const me = useAuthStore((state) => state.me);

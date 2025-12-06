@@ -1,8 +1,6 @@
-import React, { useState } from "react";
+import React from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useQuery } from "@tanstack/react-query";
-import { router } from "expo-router";
-import { Text, View, StyleSheet, ScrollView } from "react-native";
+import { Text, StyleSheet } from "react-native";
 import { colors, font, sizes } from "@/src/shared/designSystem";
 
 interface ChatData {
@@ -14,7 +12,7 @@ interface ChatData {
   avatar_url: string | null;
 }
 
-export default function AllChatsScreen() {
+export default function MotherChatListScreen() {
   // const [searchQuery, setSearchQuery] = useState<string>("");
   // const [activeFilter, setActiveFilter] = useState<"all" | "unread">("all");
 
@@ -27,7 +25,9 @@ export default function AllChatsScreen() {
   // });
 
   return (
-    <View></View>
+    <SafeAreaView edges={["top"]}>
+      <Text>Mother Chat Screen - TODO: Show list of doctors that you are chatting with</Text>
+    </SafeAreaView>
     // <SafeAreaView style={styles.container} edges={["top"]}>
     //   <ScrollView showsVerticalScrollIndicator={false}>
     //     {/* Header */}
