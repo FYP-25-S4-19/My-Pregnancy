@@ -31,7 +31,6 @@ async def submit_doctor_account_creation_request(
     first_name: str = Form(...),
     middle_name: str | None = Form(None),
     last_name: str = Form(...),
-    qualification_option: str = Form(...),
     qualification_img: UploadFile = File(),
     service: AccountService = Depends(get_account_service),
     db: AsyncSession = Depends(get_db),
@@ -44,7 +43,6 @@ async def submit_doctor_account_creation_request(
             middle_name,
             last_name,
             UserRole.VOLUNTEER_DOCTOR.value,
-            qualification_option,
             qualification_img,
         )
         await db.commit()
@@ -60,7 +58,6 @@ async def submit_nutritionist_account_creation_request(
     first_name: str = Form(...),
     middle_name: str | None = Form(None),
     last_name: str = Form(...),
-    qualification_option: str = Form(...),
     qualification_img: UploadFile = File(),
     service: AccountService = Depends(get_account_service),
     db: AsyncSession = Depends(get_db),
@@ -73,7 +70,6 @@ async def submit_nutritionist_account_creation_request(
             middle_name,
             last_name,
             UserRole.NUTRITIONIST.value,
-            qualification_option,
             qualification_img,
         )
         await db.commit()

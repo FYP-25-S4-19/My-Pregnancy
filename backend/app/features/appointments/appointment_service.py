@@ -1,4 +1,5 @@
 from datetime import datetime
+from uuid import UUID
 
 from fastapi import HTTPException, status
 from sqlalchemy import select
@@ -84,7 +85,7 @@ class AppointmentService:
 
         appointment.start_time = req.new_start_time
 
-    async def delete_appointment(self, appointment_id: int, mother_id: int) -> None:
+    async def delete_appointment(self, appointment_id: UUID, mother_id: int) -> None:
         appointment = await self.db.get(Appointment, appointment_id)
         if appointment is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
@@ -92,7 +93,7 @@ class AppointmentService:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
         await self.db.delete(appointment)
 
-    async def accept_appointment(self, appointment_id: int, doctor_id: int) -> None:
+    async def accept_appointment(self, appointment_id: UUID, doctor_id: int) -> None:
         appointment = await self.db.get(Appointment, appointment_id)
         if appointment is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
@@ -106,7 +107,7 @@ class AppointmentService:
             )
         appointment.status = AppointmentStatus.ACCEPTED
 
-    async def reject_appointment(self, appointment_id: int, doctor_id: int) -> None:
+    async def reject_appointment(self, appointment_id: UUID, doctor_id: int) -> None:
         appointment = await self.db.get(Appointment, appointment_id)
         if appointment is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)

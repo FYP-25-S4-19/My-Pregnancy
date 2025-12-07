@@ -1,4 +1,5 @@
 from datetime import datetime
+from uuid import UUID
 
 from app.core.custom_base_model import CustomBaseModel
 
@@ -9,7 +10,7 @@ class CreateAppointmentRequest(CustomBaseModel):
 
 
 class AppointmentResponse(CustomBaseModel):
-    appointment_id: int
+    appointment_id: UUID
 
     doctor_id: int
     doctor_name: str
@@ -22,5 +23,5 @@ class AppointmentResponse(CustomBaseModel):
 
 
 class EditAppointmentRequest(CustomBaseModel):
-    appointment_id: int
+    appointment_id: UUID
     new_start_time: datetime

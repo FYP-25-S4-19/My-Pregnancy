@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -57,7 +59,7 @@ async def edit_appointment_start_time(
 
 @appointments_router.delete("/{appointment_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_appointment(
-    appointment_id: int,
+    appointment_id: UUID,
     service: AppointmentService = Depends(get_appointment_service),
     db: AsyncSession = Depends(get_db),
     mother: PregnantWoman = Depends(require_role(PregnantWoman)),
@@ -72,7 +74,7 @@ async def delete_appointment(
 
 @appointments_router.patch("/{appointment_id}/accept", status_code=status.HTTP_204_NO_CONTENT)
 async def accept_appointment(
-    appointment_id: int,
+    appointment_id: UUID,
     service: AppointmentService = Depends(get_appointment_service),
     db: AsyncSession = Depends(get_db),
     doctor: VolunteerDoctor = Depends(require_role(VolunteerDoctor)),
@@ -87,7 +89,7 @@ async def accept_appointment(
 
 @appointments_router.patch("/{appointment_id}/reject", status_code=status.HTTP_204_NO_CONTENT)
 async def reject_appointment(
-    appointment_id: int,
+    appointment_id: UUID,
     service: AppointmentService = Depends(get_appointment_service),
     db: AsyncSession = Depends(get_db),
     doctor: VolunteerDoctor = Depends(require_role(VolunteerDoctor)),
