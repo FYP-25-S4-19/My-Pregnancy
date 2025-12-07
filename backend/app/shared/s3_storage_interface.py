@@ -10,6 +10,28 @@ from app.core.settings import settings
 
 
 class S3StorageInterface:
+    # =================================================================
+    # =========================== RECIPES =============================
+    # =================================================================
+    RECIPE_PREFIX = "recipes"
+
+    @staticmethod
+    def put_recipe_img(recipe_id: int, recipe_img: UploadFile) -> str | None:
+        return S3StorageInterface._upload_file_stream(
+            prefix=S3StorageInterface.RECIPE_PREFIX,
+            file_name=str(recipe_id),
+            file_obj=recipe_img.file,
+            content_type=str(recipe_img.content_type),
+        )
+
+    @staticmethod
+    def put_recipe_img_from_filepath(recipe_id: int, recipe_img_filepath: str) -> str | None:
+        return S3StorageInterface._put_img_from_filepath(
+            prefix=S3StorageInterface.RECIPE_PREFIX,
+            file_name=str(recipe_id),
+            img_filepath=recipe_img_filepath,
+        )
+
     # =======================================================================================
     # ============== STAGING AREA FOR QUALIFICATIONS (DOCTOR + NUTRITIONIST) ================
     # =======================================================================================

@@ -1,18 +1,116 @@
+import json
+import random
+from pathlib import Path
+
 from sqlalchemy.orm import Session
 
-from app.db.db_schema import Nutritionist
+from app.core.custom_base_model import CustomBaseModel
+from app.db.db_schema import (
+    Nutritionist,
+    PregnantWoman,
+    Recipe,
+    RecipeCategory,
+    RecipeToCategoryAssociation,
+    SavedRecipe,
+)
+from app.shared.s3_storage_interface import S3StorageInterface
+
+
+class RecipeModel(CustomBaseModel):
+    name: str
+    description: str
+    est_calories: str
+    pregnancy_benefit: str
+    serving: int
+    instructions_markdown: str
+    photo_url: str
+    categories: list[str]
 
 
 class RecipesGenerator:
     @staticmethod
-    def generate_all_recipes(db: Session, all_nutritionists: list[Nutritionist], food_img_path: str) -> None:
-        print("Generating Recipes...")
-        RecipesGenerator.generate_fake_recipes(db, all_nutritionists, food_img_path)
+    def generate_all_recipes(
+        db: Session,
+        all_mothers: list[PregnantWoman],
+        all_nutritionists: list[Nutritionist],
+        recipe_data_file: str,
+    ) -> None:
+        print("Generating Recipes....")
+        recipes = RecipesGenerator.generate_fake_recipes(db, all_nutritionists, recipe_data_file)
+        RecipesGenerator.generate_saved_recipes(db, all_mothers, recipes)
 
     @staticmethod
-    def generate_fake_recipes(db: Session, all_nutritionists: list[Nutritionist], food_img_path: str) -> None:
-        pass
-        # for nutritionist in all_nutritionists:
+    def generate_fake_recipes(
+        db: Session, all_nutritionists: list[Nutritionist], recipe_data_file: str
+    ) -> list[Recipe]:
+        # --------- Validating that the image files match the recipe data ---------
+        recipes_path: Path = Path(recipe_data_file).parent
+        try:
+            with open(recipe_data_file, "r", encoding="utf-8") as f:
+                raw_recipe_data = json.load(f)
+        except FileNotFoundError:
+            raise FileNotFoundError(f"Recipe data file not found: {recipe_data_file}")
+        except json.JSONDecodeError:
+            raise ValueError(f"Invalid JSON format in file: {recipe_data_file}")
+        recipe_data: list[RecipeModel] = [RecipeModel(**recipe) for recipe in raw_recipe_data]
+
+        missing_images: list[str] = []
+        for new_recipe in recipe_data:
+            photo_filename = new_recipe.photo_url
+            if photo_filename:
+                image_path = recipes_path / photo_filename
+                if not image_path.is_file():
+                    missing_images.append(photo_filename)
+
+        if missing_images:
+            missing_count = len(missing_images)
+            raise FileNotFoundError(
+                f"FATAL ERROR: Found {missing_count} missing image file(s) in directory '{recipes_path}'. "
+                f"Missing files: {', '.join(missing_images[:5])}{'...' if missing_count > 5 else ''}"
+            )
+
+        # --- Continue with seeding logic here ---
+        all_recipes: list[Recipe] = []
+        all_recipe_categories: dict[str, RecipeCategory] = {}
+
+        for recipe_json in recipe_data:
+            new_recipe = Recipe(
+                nutritionist=random.choice(all_nutritionists),
+                name=recipe_json.name,
+                description=recipe_json.description,
+                est_calories=recipe_json.est_calories,
+                pregnancy_benefit=recipe_json.pregnancy_benefit,
+                img_key=recipe_json.photo_url,
+                serving_count=recipe_json.serving,
+                instructions_markdown=recipe_json.instructions_markdown,
+            )
+            recipe_cat_assocs_to_add: list[RecipeToCategoryAssociation] = []
+            for category_name in recipe_json.categories:
+                if category_name not in all_recipe_categories:
+                    all_recipe_categories[category_name] = RecipeCategory(label=category_name)
+                category_obj = all_recipe_categories[category_name]
+                recipe_cat_assocs_to_add.append(RecipeToCategoryAssociation(recipe=new_recipe, category=category_obj))
+            new_recipe.recipe_category_associations = recipe_cat_assocs_to_add
+
+            db.add(new_recipe)
+            db.flush()
+
+            img_key = S3StorageInterface.put_recipe_img_from_filepath(
+                new_recipe.id, recipes_path / recipe_json.photo_url
+            )
+            new_recipe.img_key = img_key
+            if img_key is None:
+                raise ValueError(f"Failed to upload image for recipe '{new_recipe.name}'")
+            all_recipes.append(new_recipe)
+        return all_recipes
+
+    @staticmethod
+    def generate_saved_recipes(db: Session, all_mothers: list[PregnantWoman], all_recipes: list[Recipe]) -> None:
+        for recipe_to_save in all_recipes:
+            sample_size: int = random.randint(0, len(all_mothers) // 5)
+            mothers_sample: list[PregnantWoman] = random.sample(all_mothers, k=sample_size)
+            for mother in mothers_sample:
+                db.add(SavedRecipe(saver=mother, recipe=recipe_to_save))
 
     # @staticmethod
     # def generate_ingredients(db: Session) -> list[Ingredient]:
