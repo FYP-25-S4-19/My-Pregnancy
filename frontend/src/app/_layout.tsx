@@ -1,46 +1,49 @@
-// import { Router, Stack, usePathname, useRouter } from "expo-router";
-// import useAuthStore from "../stores/authStore";
-// import { useEffect } from "react";
-// import utils from "../utils";
-
-import "react-native-reanimated";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { useStreamSetup } from "../shared/hooks/useStreamSetup";
+import { OverlayProvider } from "stream-chat-expo";
+import useAuthStore from "../shared/authStore";
 import { Stack } from "expo-router";
+import utils from "../shared/utils";
+import { useEffect } from "react";
+import "react-native-reanimated";
 
-// const useAuthRedirect = () => {
-//   const router: Router = useRouter();
-//   const pathname: string = usePathname();
-//   const accessToken = useAuthStore((state) => state.accessToken);
-//   const isHydrated: boolean = useAuthStore.persist.hasHydrated();
+const useRemoveAccessTokenFromStoreIfInvalid = () => {
+  const isHydrated = useAuthStore.persist.hasHydrated();
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const clearAuthState = useAuthStore((state) => state.clearAuthState);
 
-//   useEffect(() => {
-//     if (!isHydrated) {
-//       return;
-//     }
+  useEffect(() => {
+    if (!isHydrated) {
+      return;
+    }
+    if (!accessToken) {
+      return;
+    }
 
-//     const isTokenValid: boolean = !utils.invalidOrExpiredJWT(accessToken || "");
+    const decodedToken = utils.safeDecodeUnexpiredJWT(accessToken);
+    const isTokenInvalid = decodedToken === null;
 
-//     // Logged-out, but trying to access a auth-only page
-//     // Redirect to the intro page
-//     if (!isTokenValid && pathname !== "/") {
-//       router.replace("/");
-//     }
-
-//     // Logged-in but just sitting in the intro page
-//     // Redirect to the main page
-//     if (isTokenValid && pathname === "/") {
-//       router.replace("/main");
-//     }
-//   }, [isHydrated, accessToken, pathname, router]);
-// };
+    if (isTokenInvalid) {
+      console.log("Access token is invalid or expired, clearing auth state");
+      clearAuthState();
+    }
+  }, [isHydrated, accessToken, clearAuthState]);
+};
 
 const queryClient = new QueryClient();
 
 export default function RootLayout() {
-  // useAuthRedirect();
+  useRemoveAccessTokenFromStoreIfInvalid();
+  useStreamSetup();
+
   return (
-    <QueryClientProvider client={queryClient}>
-      <Stack screenOptions={{ headerShown: false }} />
-    </QueryClientProvider>
+    <GestureHandlerRootView>
+      <QueryClientProvider client={queryClient}>
+        <OverlayProvider>
+          <Stack screenOptions={{ headerShown: false }} />
+        </OverlayProvider>
+      </QueryClientProvider>
+    </GestureHandlerRootView>
   );
 }

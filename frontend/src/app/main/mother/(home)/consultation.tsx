@@ -31,7 +31,7 @@ export default function ConsultationsScreen() {
   });
 
   const onChatPress = (doctorID: string): void => {
-    router.push(`/main/mother/chats`);
+    router.push(`/main/mother/chats/`);
   };
 
   return (

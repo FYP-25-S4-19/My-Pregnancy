@@ -1,5 +1,5 @@
 import { jwtDecode } from "jwt-decode";
-import { JwtData } from "./typesAndInterfaces";
+import { JwtData, MeData } from "./typesAndInterfaces";
 
 const utils = {
   /**
@@ -12,6 +12,11 @@ const utils = {
     } catch {
       return null;
     }
+  },
+  formatFullname(me: MeData): string {
+    return [me.first_name, me.middle_name, me.last_name]
+      .filter((namePart) => namePart && namePart.trim().length > 0)
+      .join(" ");
   },
 };
 
