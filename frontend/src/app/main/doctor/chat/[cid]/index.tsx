@@ -1,19 +1,20 @@
 import { Channel, MessageInput, MessageList, useChatContext } from "stream-chat-expo";
 import { ActivityIndicator, Text, View, StyleSheet } from "react-native";
-import { colors, font, sizes } from "@/src/shared/designSystem";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { colors, font } from "@/src/shared/designSystem";
 import { useLocalSearchParams } from "expo-router";
 
 export default function IndividualChatScreen() {
   const { cid } = useLocalSearchParams();
-
   const { client } = useChatContext();
   const [channelType, channelID] = (cid as string)?.split(":") || [null, null];
 
   if (!client || !channelType || !channelID) {
     return (
       <View>
-        <Text>Loading or Invalid channel....</Text>
+        {!client && <Text>Client is invalid</Text>}
+        {!channelType && <Text>ChannelType is invalid</Text>}
+        {!channelID && <Text>ChannelID is invalid</Text>}
         <ActivityIndicator />
       </View>
     );

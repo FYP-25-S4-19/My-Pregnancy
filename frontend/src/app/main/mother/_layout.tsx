@@ -1,12 +1,8 @@
 import { TAB_BAR_ICON_SIZE, tabScreenOptions } from "@/src/shared/globalStyles";
-import { useStreamSetup } from "@/src/shared/hooks/useStreamSetup";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
-import { ActivityIndicator } from "react-native";
 
 export default function MotherTabLayout() {
-  const { chatClient, isReady } = useStreamSetup();
-
   return (
     <Tabs screenOptions={tabScreenOptions}>
       <Tabs.Screen
@@ -45,11 +41,6 @@ export default function MotherTabLayout() {
           ),
         }}
       />
-
-      {/*<Tabs.Screen name="appointments" options={{ href: null }} />*/}
-      {/*<Tabs.Screen name="appointments/[id]/" options={{ href: null }} />*/}
-      {/*<Tabs.Screen name="chats/[id]" options={{ href: null }} />
-      <Tabs.Screen name="journal/journal" options={{ href: null }} />*/}
     </Tabs>
   );
 }

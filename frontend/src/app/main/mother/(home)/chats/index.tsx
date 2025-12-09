@@ -4,8 +4,8 @@ import useChatStore from "@/src/shared/chatStore";
 import useAuthStore from "@/src/shared/authStore";
 import { StyleSheet, View } from "react-native";
 import { ChannelList } from "stream-chat-expo";
-import React from "react";
 import { router } from "expo-router";
+import React from "react";
 
 export default function MotherChatListScreen() {
   const me = useAuthStore((state) => state.me);

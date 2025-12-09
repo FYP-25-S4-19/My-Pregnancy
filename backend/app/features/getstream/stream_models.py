@@ -11,6 +11,5 @@ class ChannelCreationArgs(CustomBaseModel):
     doctor_id: UUID
 
 
-class StreamChatMessage(CustomBaseModel):
+class ChannelCreationResponse(CustomBaseModel):
     channel_id: str
-    text: str

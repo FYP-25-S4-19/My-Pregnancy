@@ -7,7 +7,7 @@ from app.core.settings import settings
 from app.core.users_manager import current_active_user
 from app.db.db_config import get_db
 from app.db.db_schema import PregnantWoman, User
-from app.features.getstream.stream_models import ChannelCreationArgs, TokenResponse
+from app.features.getstream.stream_models import ChannelCreationArgs, ChannelCreationResponse, TokenResponse
 from app.features.getstream.stream_service import StreamService
 
 stream_router = APIRouter(prefix="/stream", tags=["GetStream"])
@@ -34,13 +34,13 @@ async def get_stream_token(
         raise
 
 
-@stream_router.post("/chat/channel", status_code=status.HTTP_200_OK)
+@stream_router.post("/chat/channel", status_code=status.HTTP_200_OK, response_model=ChannelCreationResponse)
 async def create_chat_channel(
     args: ChannelCreationArgs,
     mother: PregnantWoman = Depends(require_role(PregnantWoman)),
     stream_service: StreamService = Depends(get_stream_service),
-) -> None:
-    await stream_service.create_chat_channel(args, mother)
+) -> ChannelCreationResponse:
+    return await stream_service.create_chat_channel(args, mother)
 
 
 # @stream_router.post("/chat/channel/message")
