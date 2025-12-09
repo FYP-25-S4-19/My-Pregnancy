@@ -17,7 +17,7 @@ class AppointmentService:
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    async def create_appointment_request(self, doctor_id: int, requester_id: int, start_time: datetime) -> None:
+    async def create_appointment_request(self, doctor_id: UUID, requester_id: UUID, start_time: datetime) -> None:
         doctor = await self.db.get(VolunteerDoctor, doctor_id)
         if doctor is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Specified doctor does not exist")
@@ -72,7 +72,7 @@ class AppointmentService:
             )
         return response
 
-    async def edit_appointment_start_time(self, req: EditAppointmentRequest, mother_id: int) -> None:
+    async def edit_appointment_start_time(self, req: EditAppointmentRequest, mother_id: UUID) -> None:
         appointment = await self.db.get(Appointment, req.appointment_id)
         if appointment is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Invalid appointment ID")
@@ -85,7 +85,7 @@ class AppointmentService:
 
         appointment.start_time = req.new_start_time
 
-    async def delete_appointment(self, appointment_id: UUID, mother_id: int) -> None:
+    async def delete_appointment(self, appointment_id: UUID, mother_id: UUID) -> None:
         appointment = await self.db.get(Appointment, appointment_id)
         if appointment is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
@@ -93,7 +93,7 @@ class AppointmentService:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
         await self.db.delete(appointment)
 
-    async def accept_appointment(self, appointment_id: UUID, doctor_id: int) -> None:
+    async def accept_appointment(self, appointment_id: UUID, doctor_id: UUID) -> None:
         appointment = await self.db.get(Appointment, appointment_id)
         if appointment is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
@@ -107,7 +107,7 @@ class AppointmentService:
             )
         appointment.status = AppointmentStatus.ACCEPTED
 
-    async def reject_appointment(self, appointment_id: UUID, doctor_id: int) -> None:
+    async def reject_appointment(self, appointment_id: UUID, doctor_id: UUID) -> None:
         appointment = await self.db.get(Appointment, appointment_id)
         if appointment is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)

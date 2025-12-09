@@ -11,7 +11,7 @@ misc_router = APIRouter(tags=["Miscellaneous"])
 
 
 @misc_router.get("/avail-mcr", response_model=list[str])
-async def get_available_mcr_numbers(db: AsyncSession) -> list[str]:
+async def get_available_mcr_numbers(db: AsyncSession = Depends(get_db)) -> list[str]:
     stmt = select(MCRNumber).where(MCRNumber.doctor == null)
     all_mcr_obj = (await db.execute(stmt)).scalars().all()
     return [mcr_obj.value for mcr_obj in all_mcr_obj]
@@ -19,7 +19,7 @@ async def get_available_mcr_numbers(db: AsyncSession) -> list[str]:
 
 @misc_router.get("/doctors", response_model=list[DoctorPreviewData])
 async def list_of_doctors(db: AsyncSession = Depends(get_db)) -> list[DoctorPreviewData]:
-    stmt = select(VolunteerDoctor).where(VolunteerDoctor.is_active)  # This doesn't
+    stmt = select(VolunteerDoctor).where(VolunteerDoctor.is_active)  # type: ignore
     doctors = (await db.execute(stmt)).scalars().all()
 
     return [

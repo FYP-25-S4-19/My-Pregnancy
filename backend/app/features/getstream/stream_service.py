@@ -5,7 +5,7 @@ from stream_chat import StreamChat
 from stream_chat.channel import Channel
 
 from app.db.db_schema import PregnantWoman, User, VolunteerDoctor
-from app.features.getstream.stream_models import ChannelCreationArgs
+from app.features.getstream.stream_models import ChannelCreationArgs, TokenResponse
 from app.shared.utils import format_user_fullname
 
 
@@ -14,10 +14,10 @@ class StreamService:
         self.db = db
         self.client = client
 
-    async def get_stream_token(self, user: User) -> dict[str, str]:
+    async def get_stream_token(self, user: User) -> TokenResponse:
         self.client.upsert_user({"id": str(user.id), "name": format_user_fullname(user)})
-        token: str = self.client.create_token(str(user.id))
-        return {"token": token}
+        stream_token: str = self.client.create_token(str(user.id))
+        return TokenResponse(token=stream_token)
 
     async def create_chat_channel(self, args: ChannelCreationArgs, mother: PregnantWoman) -> None:
         doctor = await self.db.get(VolunteerDoctor, args.doctor_id)
