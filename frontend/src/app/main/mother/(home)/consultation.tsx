@@ -30,8 +30,15 @@ export default function ConsultationsScreen() {
     },
   });
 
-  const onChatPress = (doctorID: string): void => {
-    router.push(`/main/mother/chats/`);
+  const onChatPress = async (doctorID: string): Promise<void> => {
+    try {
+      const res = await api.post("/stream/chat/channel", {
+        doctor_id: doctorID,
+      });
+    } catch (err) {
+      // console.error("Channel error:", err);
+    }
+    // router.push(`/main/mother/chats/${doctorID}`);
   };
 
   return (

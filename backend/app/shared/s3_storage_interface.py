@@ -219,3 +219,20 @@ class S3StorageInterface:
         except (BotoCoreError, ClientError) as e:
             print(f"Error uploading file stream: {e}")
             return None
+
+    # @staticmethod
+    # def clear_bucket() -> None:
+    #     response = s3_client.list_objects_v2(Bucket=bucket_name)
+
+    #     if "Contents" in response:
+    #         # Loop through each object and delete it
+    #         for obj in response["Contents"]:
+    #             print(f"Deleting {obj['Key']}...")
+    #             s3.delete_object(Bucket=bucket_name, Key=obj["Key"])
+
+    #         # Check for pagination
+    #         while response.get("IsTruncated"):  # If there are more objects to be listed
+    #             response = s3.list_objects_v2(Bucket=bucket_name, ContinuationToken=response["NextContinuationToken"])
+    #             for obj in response["Contents"]:
+    #                 print(f"Deleting {obj['Key']}...")
+    #                 s3.delete_object(Bucket=bucket_name, Key=obj["Key"])

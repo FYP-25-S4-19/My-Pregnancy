@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useStreamSetup } from "../shared/hooks/useStreamSetup";
-import { OverlayProvider } from "stream-chat-expo";
+import { Chat, OverlayProvider } from "stream-chat-expo";
 import useAuthStore from "../shared/authStore";
 import { Stack } from "expo-router";
 import utils from "../shared/utils";
@@ -35,15 +35,28 @@ const queryClient = new QueryClient();
 
 export default function RootLayout() {
   useRemoveAccessTokenFromStoreIfInvalid();
-  useStreamSetup();
+  const { chatClient, isReady } = useStreamSetup();
 
+  if (chatClient && isReady) {
+    return (
+      <GestureHandlerRootView>
+        <OverlayProvider>
+          <QueryClientProvider client={queryClient}>
+            <Chat client={chatClient}>
+              <Stack screenOptions={{ headerShown: false }} />
+            </Chat>
+          </QueryClientProvider>
+        </OverlayProvider>
+      </GestureHandlerRootView>
+    );
+  }
   return (
     <GestureHandlerRootView>
-      <QueryClientProvider client={queryClient}>
-        <OverlayProvider>
+      <OverlayProvider>
+        <QueryClientProvider client={queryClient}>
           <Stack screenOptions={{ headerShown: false }} />
-        </OverlayProvider>
-      </QueryClientProvider>
+        </QueryClientProvider>
+      </OverlayProvider>
     </GestureHandlerRootView>
   );
 }

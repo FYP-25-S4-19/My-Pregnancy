@@ -590,7 +590,7 @@ class MCRNumber(Base):
     __tablename__ = "mcr_numbers"
     id: Mapped[int] = mapped_column(primary_key=True)
     value: Mapped[str] = mapped_column(String(7), unique=True)
-    doctor: Mapped["VolunteerDoctor"] = relationship(back_populates="mcr_no")
+    doctor: Mapped[VolunteerDoctor | None] = relationship(back_populates="mcr_no")
 
 
 class ExpoPushToken(Base):
