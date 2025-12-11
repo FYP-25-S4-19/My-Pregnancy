@@ -253,7 +253,7 @@ class Appointment(Base):
     mother_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("pregnant_women.id"))
     mother: Mapped[PregnantWoman] = relationship(back_populates="appointments")
 
-    start_time: Mapped[datetime]
+    start_time: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     status: Mapped[AppointmentStatus] = mapped_column(SQLAlchemyEnum(AppointmentStatus))
 
 
@@ -357,7 +357,7 @@ class CommunityThread(Base):
 
     title: Mapped[str] = mapped_column(String(255))
     content: Mapped[str] = mapped_column(Text)
-    posted_at: Mapped[datetime]
+    posted_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     comments: Mapped[list["ThreadComment"]] = relationship(back_populates="thread")
     community_thread_likes: Mapped[list["CommunityThreadLike"]] = relationship(back_populates="thread")
@@ -396,7 +396,7 @@ class ThreadComment(Base):
     commenter_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"))
     commenter: Mapped["User"] = relationship(back_populates="thread_comments")
 
-    commented_at: Mapped[datetime]
+    commented_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     content: Mapped[str] = mapped_column(Text)
 
     comment_likes: Mapped[list["CommentLike"]] = relationship(back_populates="comment")
@@ -500,15 +500,15 @@ class KickTrackerSession(Base):
     mother_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("pregnant_women.id"))
     mother: Mapped["PregnantWoman"] = relationship(back_populates="kick_tracker_sessions")
 
-    started_at: Mapped[datetime]
-    ended_at: Mapped[datetime]
+    started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    ended_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     kicks: Mapped[list["KickTrackerDataPoint"]] = relationship(back_populates="session")
 
 
 class KickTrackerDataPoint(Base):
     __tablename__ = "kick_tracker_data_points"
     id: Mapped[int] = mapped_column(primary_key=True)
-    kick_at: Mapped[datetime]
+    kick_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 
     session_id: Mapped[int] = mapped_column(ForeignKey("kick_tracker_sessions.id"))
     session: Mapped["KickTrackerSession"] = relationship(back_populates="kicks")
@@ -536,7 +536,7 @@ class Notification(Base):
     recipient: Mapped["User"] = relationship(back_populates="notifications")
 
     content: Mapped[str]
-    sent_at: Mapped[datetime]
+    sent_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 
     # Intention - at the time of writing - is for the application layer to mark
     # a notification as "seen" once you click it

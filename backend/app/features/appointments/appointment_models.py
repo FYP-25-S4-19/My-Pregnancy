@@ -9,6 +9,14 @@ class CreateAppointmentRequest(CustomBaseModel):
     start_time: datetime
 
 
+class CreateAppointmentResponse(CustomBaseModel):
+    appointment_id: UUID
+
+
+class AcceptRejectAppointmentRequest(CustomBaseModel):
+    message_id: UUID
+
+
 class AppointmentResponse(CustomBaseModel):
     appointment_id: UUID
 

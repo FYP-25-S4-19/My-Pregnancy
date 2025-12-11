@@ -2,7 +2,7 @@ from argon2 import PasswordHasher
 from fastapi import APIRouter, Depends, File, Form, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.password_hasher_config import get_password_hasher
+from app.core.password_hasher import get_password_hasher
 from app.core.security import require_role
 from app.db.db_config import get_db
 from app.db.db_schema import Admin, UserRole

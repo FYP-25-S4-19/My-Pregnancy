@@ -1,10 +1,15 @@
-import { Channel, MessageInput, MessageList, useChatContext } from "stream-chat-expo";
-import { ActivityIndicator, Text, View, StyleSheet } from "react-native";
+import { Channel as ChannelElement, MessageInput, MessageList, useChatContext } from "stream-chat-expo";
+import { ActivityIndicator, Text, View, KeyboardAvoidingView, Platform } from "react-native";
+import ConsultationMessageFooter from "@/src/components/ConsultationMessageFooter";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { colors, font } from "@/src/shared/designSystem";
+import { chatStyles } from "@/src/shared/globalStyles";
+import ChatHeader from "@/src/components/ChatHeader";
 import { useLocalSearchParams } from "expo-router";
+import useAuthStore from "@/src/shared/authStore";
+import utils from "@/src/shared/utils";
 
 export default function IndividualChatScreen() {
+  const me = useAuthStore((state) => state.me);
   const { cid } = useLocalSearchParams();
   const { client } = useChatContext();
   const [channelType, channelID] = (cid as string)?.split(":") || [null, null];
@@ -21,26 +26,28 @@ export default function IndividualChatScreen() {
   }
 
   const channel = client.channel(channelType, channelID);
+  if (!me?.id) {
+    return;
+  }
+  const mother = utils.getOtherMemberFromChannel(channel, me.id.toString());
+  if (mother === undefined) {
+    return;
+  }
+  const motherFirstName = mother.name?.split(" ")[0] || "Missing name wthelly";
+
   return (
-    <SafeAreaView style={styles.container}>
-      {/*<Text style={styles.headerText}>Dr John</Text>*/}
-      <Channel channel={channel}>
+    <SafeAreaView edges={["top", "left", "right"]}>
+      <ChatHeader title={`${motherFirstName}`} />
+
+      <ChannelElement channel={channel} MessageFooter={ConsultationMessageFooter}>
         <MessageList />
-        <MessageInput />
-      </Channel>
+
+        <KeyboardAvoidingView keyboardVerticalOffset={Platform.OS === "ios" ? 10 : 0}>
+          <View style={chatStyles.inputWrapper}>
+            <MessageInput />
+          </View>
+        </KeyboardAvoidingView>
+      </ChannelElement>
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: colors.background,
-  },
-  headerText: {
-    // paddingTop: sizes.l,
-    fontSize: font.xl,
-    fontWeight: "700",
-    color: colors.text,
-    textAlign: "center",
-  },
-});

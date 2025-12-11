@@ -1,9 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from stream_chat import StreamChat
 
+from app.core.clients import get_stream_client
 from app.core.security import require_role
-from app.core.settings import settings
 from app.core.users_manager import current_active_user
 from app.db.db_config import get_db
 from app.db.db_schema import PregnantWoman, User
@@ -13,13 +13,7 @@ from app.features.getstream.stream_service import StreamService
 stream_router = APIRouter(prefix="/stream", tags=["GetStream"])
 
 
-def get_server_client() -> StreamChat:
-    if not settings.STREAM_API_KEY or not settings.STREAM_API_SECRET:
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE)
-    return StreamChat(api_key=settings.STREAM_API_KEY, api_secret=settings.STREAM_API_SECRET)
-
-
-def get_stream_service(db: AsyncSession = Depends(get_db), client: StreamChat = Depends(get_server_client)):
+def get_stream_service(db: AsyncSession = Depends(get_db), client: StreamChat = Depends(get_stream_client)):
     return StreamService(db, client)
 
 

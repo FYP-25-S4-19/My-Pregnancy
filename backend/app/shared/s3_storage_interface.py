@@ -6,7 +6,7 @@ from uuid import UUID
 from botocore.exceptions import BotoCoreError, ClientError
 from fastapi import UploadFile
 
-from app.core.aws_clients import s3_client
+from app.core.clients import s3_client
 from app.core.settings import settings
 
 

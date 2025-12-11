@@ -37,5 +37,11 @@ declare module "stream-chat" {
 
   interface CustomThreadData extends DefaultThreadData {}
 
+  interface CustomMessageData {
+    consultData?: {
+      appointmentID: string;
+      status: "pending" | "accepted" | "rejected";
+    };
+  }
   /* eslint-enable @typescript-eslint/no-empty-object-type */
 }
