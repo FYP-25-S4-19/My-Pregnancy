@@ -106,13 +106,19 @@ async def accept_appointment(
 @appointments_router.patch("/{appointment_id}/reject", status_code=status.HTTP_204_NO_CONTENT)
 async def reject_appointment(
     appointment_id: UUID,
-    message_id: UUID,
+    request: AcceptRejectAppointmentRequest,
     service: AppointmentService = Depends(get_appointment_service),
     db: AsyncSession = Depends(get_db),
+    stream_client: StreamChat = Depends(get_stream_client),
     doctor: VolunteerDoctor = Depends(require_role(VolunteerDoctor)),
 ) -> None:
     try:
-        await service.reject_appointment(appointment_id, doctor.id)
+        await service.reject_appointment(
+            appointment_id=appointment_id,
+            message_id=request.message_id,
+            doctor_id=doctor.id,
+            stream_client=stream_client,
+        )
         await db.commit()
     except:
         await db.rollback()

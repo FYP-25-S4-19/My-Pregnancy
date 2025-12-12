@@ -116,7 +116,9 @@ class AppointmentService:
         )
         appointment.status = AppointmentStatus.ACCEPTED
 
-    async def reject_appointment(self, appointment_id: UUID, doctor_id: UUID) -> None:
+    async def reject_appointment(
+        self, appointment_id: UUID, message_id: UUID, doctor_id: UUID, stream_client: StreamChat
+    ) -> None:
         appointment = await self.db.get(Appointment, appointment_id)
         if appointment is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
@@ -128,5 +130,7 @@ class AppointmentService:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST, detail="Only pending appointments can be rejected"
             )
-        # stream_client.update_message_partial(str(message_id), {"consultData.status": "accepted"}, str(doctor_id))
+        stream_client.update_message_partial(
+            str(message_id), {"set": {"consultData.status": "rejected"}}, str(doctor_id)
+        )
         appointment.status = AppointmentStatus.REJECTED

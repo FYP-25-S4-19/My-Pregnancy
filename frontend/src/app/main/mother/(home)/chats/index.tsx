@@ -1,6 +1,5 @@
 import { SafeAreaView } from "react-native-safe-area-context";
 import { colors } from "@/src/shared/designSystem";
-import useChatStore from "@/src/shared/chatStore";
 import useAuthStore from "@/src/shared/authStore";
 import { StyleSheet, View } from "react-native";
 import { ChannelList } from "stream-chat-expo";
@@ -14,7 +13,6 @@ export default function MotherChatListScreen() {
     type: "messaging",
   };
   const memoizedFilters = React.useMemo(() => filters, []);
-  const setChannel = useChatStore((state) => state.setChannel);
 
   return (
     <View style={styles.container}>
@@ -22,7 +20,6 @@ export default function MotherChatListScreen() {
         <ChannelList
           filters={memoizedFilters}
           onSelect={(channel) => {
-            setChannel(channel);
             router.push(`/main/mother/(home)/chats/${channel.cid}`);
           }}
           options={{ state: true, watch: true }}

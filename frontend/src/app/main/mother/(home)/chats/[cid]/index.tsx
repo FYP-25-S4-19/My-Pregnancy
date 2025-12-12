@@ -3,7 +3,7 @@ import { colors, font, sizes, shadows } from "@/src/shared/designSystem";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { chatStyles } from "@/src/shared/globalStyles";
 import ChatHeader from "@/src/components/ChatHeader";
-import { Channel as ChannelType, Message } from "stream-chat";
+import { Channel as ChannelType } from "stream-chat";
 import { useLocalSearchParams } from "expo-router";
 import useAuthStore from "@/src/shared/authStore";
 import React from "react";

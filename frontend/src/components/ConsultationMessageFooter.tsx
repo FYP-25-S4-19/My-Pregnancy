@@ -23,7 +23,6 @@ const ConsultationMessageFooter = () => {
         message_id: message.id,
       });
       setStatus("accepted");
-      console.log("Message ID:", message.id);
     } catch (err) {
       console.error("Error accepting consultation request: ", err);
     }
@@ -35,7 +34,9 @@ const ConsultationMessageFooter = () => {
     }
 
     try {
-      await api.patch(`/appointments/${message.consultData?.appointmentID}/reject`);
+      await api.patch(`/appointments/${message.consultData?.appointmentID}/reject`, {
+        message_id: message.id,
+      });
       setStatus("rejected");
     } catch (err) {
       console.error("Error rejecting consultation request: ", err);
