@@ -55,7 +55,7 @@ async def test_create_appointment_doctor_not_found(
 ) -> None:
     client, _ = authenticated_pregnant_woman_client
     start_time: datetime = datetime.now() + timedelta(days=1)
-    invalid_doctor_id: int = 9999
+    invalid_doctor_id = uuid.uuid4()
     response = await client.post(
         "/appointments/",
         content=CreateAppointmentRequest(doctor_id=invalid_doctor_id, start_time=start_time).model_dump_json(),

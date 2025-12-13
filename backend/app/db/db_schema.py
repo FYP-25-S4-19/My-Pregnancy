@@ -4,7 +4,7 @@ import uuid
 from datetime import date, datetime
 from enum import Enum
 
-from fastapi_users_db_sqlalchemy import SQLAlchemyBaseUserTable
+from fastapi_users.db import SQLAlchemyBaseUserTableUUID
 from sqlalchemy import (
     DateTime,
     ForeignKey,
@@ -78,20 +78,18 @@ class NotificationType(Enum):
 # ===========================================
 # ============= GENERAL USER ================
 # ===========================================
-class User(SQLAlchemyBaseUserTable[int], Base):
+class User(SQLAlchemyBaseUserTableUUID, Base):
     __tablename__ = "users"
     __mapper_args__ = {"polymorphic_identity": "user", "polymorphic_on": "type"}
     type: Mapped[str]
 
     profile_img_key: Mapped[str | None]
 
-    id: Mapped[int] = mapped_column(primary_key=True)
     first_name: Mapped[str] = mapped_column(String(64))
     middle_name: Mapped[str | None] = mapped_column(String(64))  # Middle name optional
     last_name: Mapped[str] = mapped_column(String(64))
 
     role: Mapped["UserRole"] = mapped_column(SQLAlchemyEnum(UserRole))
-    is_active: Mapped[bool] = mapped_column(server_default=text("TRUE"), index=True)
 
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
@@ -109,13 +107,13 @@ class User(SQLAlchemyBaseUserTable[int], Base):
 class Admin(User):
     __tablename__ = "admins"
     __mapper_args__ = {"polymorphic_identity": "admin"}
-    id: Mapped[int] = mapped_column(ForeignKey("users.id"), primary_key=True)
+    id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"), primary_key=True)  # type: ignore
 
 
 class VolunteerDoctor(User):
     __tablename__ = "volunteer_doctors"
     __mapper_args__ = {"polymorphic_identity": "volunteer_doctor"}
-    id: Mapped[int] = mapped_column(ForeignKey("users.id"), primary_key=True)
+    id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"), primary_key=True)  # type: ignore
 
     mcr_no_id: Mapped[int] = mapped_column(ForeignKey("mcr_numbers.id"))
     mcr_no: Mapped["MCRNumber"] = relationship(back_populates="doctor")
@@ -133,7 +131,7 @@ class VolunteerDoctor(User):
 class PregnantWoman(User):
     __tablename__ = "pregnant_women"
     __mapper_args__ = {"polymorphic_identity": "pregnant_woman"}
-    id: Mapped[int] = mapped_column(ForeignKey("users.id"), primary_key=True)
+    id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"), primary_key=True)  # type: ignore
 
     due_date: Mapped[date | None]  # Nullable (may not be expecting)
     date_of_birth: Mapped[date]
@@ -148,7 +146,8 @@ class PregnantWoman(User):
 class Nutritionist(User):
     __tablename__ = "nutritionists"
     __mapper_args__ = {"polymorphic_identity": "nutritionist"}
-    id: Mapped[int] = mapped_column(ForeignKey("users.id"), primary_key=True)
+    id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"), primary_key=True)  # type: ignore
+
     qualification_img_key: Mapped[str | None]
     recipes_created: Mapped[list["Recipe"]] = relationship(back_populates="nutritionist")
 
@@ -192,7 +191,7 @@ class EduArticle(Base):
     # >Nullable
     # Just in case we pull external articles, and they DON'T link
     # to one of the Doctors within our database
-    author_id: Mapped[int | None] = mapped_column(ForeignKey("volunteer_doctors.id"))
+    author_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("volunteer_doctors.id"))
     author: Mapped["VolunteerDoctor"] = relationship(back_populates="articles_written")
 
     # Each article has exactly 1 category (for now)
@@ -208,7 +207,7 @@ class EduArticle(Base):
 
 class SavedEduArticle(Base):
     __tablename__ = "saved_edu_articles"
-    saver_id: Mapped[int] = mapped_column(ForeignKey("users.id"), primary_key=True)
+    saver_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"), primary_key=True)
     saver: Mapped["User"] = relationship(back_populates="saved_edu_articles")
 
     article_id: Mapped[int] = mapped_column(ForeignKey("edu_articles.id"), primary_key=True)
@@ -221,10 +220,10 @@ class SavedEduArticle(Base):
 class DoctorRating(Base):
     __tablename__ = "doctor_ratings"
 
-    rater_id: Mapped[int] = mapped_column(ForeignKey("pregnant_women.id"), primary_key=True)
+    rater_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("pregnant_women.id"), primary_key=True)
     rater: Mapped["PregnantWoman"] = relationship(back_populates="doctor_ratings")
 
-    doctor_id: Mapped[int] = mapped_column(ForeignKey("volunteer_doctors.id"), primary_key=True)
+    doctor_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("volunteer_doctors.id"), primary_key=True)
     doctor: Mapped["VolunteerDoctor"] = relationship(back_populates="doctor_ratings")
 
     rating: Mapped[int]
@@ -235,10 +234,10 @@ class DoctorRating(Base):
 class SavedVolunteerDoctor(Base):
     __tablename__ = "saved_volunteer_doctors"
 
-    mother_id: Mapped[int] = mapped_column(ForeignKey("pregnant_women.id"), primary_key=True)
+    mother_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("pregnant_women.id"), primary_key=True)
     mother: Mapped["PregnantWoman"] = relationship(back_populates="saved_volunteer_doctors")
 
-    volunteer_doctor_id: Mapped[int] = mapped_column(ForeignKey("volunteer_doctors.id"), primary_key=True)
+    volunteer_doctor_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("volunteer_doctors.id"), primary_key=True)
     volunteer_doctor: Mapped["VolunteerDoctor"] = relationship(back_populates="saved_by")
 
 
@@ -248,13 +247,13 @@ class Appointment(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(PgUUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
 
-    volunteer_doctor_id: Mapped[int] = mapped_column(ForeignKey("volunteer_doctors.id"))
+    volunteer_doctor_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("volunteer_doctors.id"))
     volunteer_doctor: Mapped[VolunteerDoctor] = relationship(back_populates="appointments")
 
-    mother_id: Mapped[int] = mapped_column(ForeignKey("pregnant_women.id"))
+    mother_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("pregnant_women.id"))
     mother: Mapped[PregnantWoman] = relationship(back_populates="appointments")
 
-    start_time: Mapped[datetime]
+    start_time: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     status: Mapped[AppointmentStatus] = mapped_column(SQLAlchemyEnum(AppointmentStatus))
 
 
@@ -281,7 +280,7 @@ class JournalEntry(Base):
     __tablename__ = "journal_entries"
     id: Mapped[int] = mapped_column(primary_key=True)
 
-    author_id: Mapped[int] = mapped_column(ForeignKey("pregnant_women.id"))
+    author_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("pregnant_women.id"))
     author: Mapped["PregnantWoman"] = relationship(back_populates="journal_entries")
 
     content: Mapped[str] = mapped_column(Text)
@@ -353,12 +352,12 @@ class CommunityThread(Base):
     __tablename__ = "community_threads"
     id: Mapped[int] = mapped_column(primary_key=True)
 
-    creator_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    creator_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"))
     creator: Mapped["User"] = relationship(back_populates="threads_created")
 
     title: Mapped[str] = mapped_column(String(255))
     content: Mapped[str] = mapped_column(Text)
-    posted_at: Mapped[datetime]
+    posted_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     comments: Mapped[list["ThreadComment"]] = relationship(back_populates="thread")
     community_thread_likes: Mapped[list["CommunityThreadLike"]] = relationship(back_populates="thread")
@@ -380,7 +379,7 @@ class ThreadCategoryAssociation(Base):
 class CommunityThreadLike(Base):
     __tablename__ = "community_thread_likes"
 
-    liker_id: Mapped[int] = mapped_column(ForeignKey("users.id"), primary_key=True)
+    liker_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"), primary_key=True)
     liker: Mapped["User"] = relationship(back_populates="threads_liked")
 
     thread_id: Mapped[int] = mapped_column(ForeignKey("community_threads.id"), primary_key=True)
@@ -394,10 +393,10 @@ class ThreadComment(Base):
     thread_id: Mapped[int] = mapped_column(ForeignKey("community_threads.id"))
     thread: Mapped["CommunityThread"] = relationship(back_populates="comments")
 
-    commenter_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    commenter_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"))
     commenter: Mapped["User"] = relationship(back_populates="thread_comments")
 
-    commented_at: Mapped[datetime]
+    commented_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     content: Mapped[str] = mapped_column(Text)
 
     comment_likes: Mapped[list["CommentLike"]] = relationship(back_populates="comment")
@@ -408,7 +407,7 @@ class CommentLike(Base):
     __tablename__ = "comment_likes"
     id: Mapped[int] = mapped_column(primary_key=True)
 
-    liker_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    liker_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"))
     liker: Mapped["User"] = relationship(back_populates="comments_liked")
 
     comment_id: Mapped[int] = mapped_column(ForeignKey("thread_comments.id"))
@@ -422,7 +421,7 @@ class Recipe(Base):
     __tablename__ = "recipes"
     id: Mapped[int] = mapped_column(primary_key=True)
 
-    nutritionist_id: Mapped[int] = mapped_column(ForeignKey("nutritionists.id"))
+    nutritionist_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("nutritionists.id"))
     nutritionist: Mapped["Nutritionist"] = relationship(back_populates="recipes_created")
 
     name: Mapped[str]
@@ -460,7 +459,7 @@ class SavedRecipe(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
 
-    saver_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    saver_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"))
     saver: Mapped["User"] = relationship(back_populates="saved_recipes")
 
     recipe_id: Mapped[int] = mapped_column(ForeignKey("recipes.id"))
@@ -498,18 +497,18 @@ class KickTrackerSession(Base):
     __tablename__ = "kick_tracker_sessions"
     id: Mapped[int] = mapped_column(primary_key=True)
 
-    mother_id: Mapped[int] = mapped_column(ForeignKey("pregnant_women.id"))
+    mother_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("pregnant_women.id"))
     mother: Mapped["PregnantWoman"] = relationship(back_populates="kick_tracker_sessions")
 
-    started_at: Mapped[datetime]
-    ended_at: Mapped[datetime]
+    started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    ended_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     kicks: Mapped[list["KickTrackerDataPoint"]] = relationship(back_populates="session")
 
 
 class KickTrackerDataPoint(Base):
     __tablename__ = "kick_tracker_data_points"
     id: Mapped[int] = mapped_column(primary_key=True)
-    kick_at: Mapped[datetime]
+    kick_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 
     session_id: Mapped[int] = mapped_column(ForeignKey("kick_tracker_sessions.id"))
     session: Mapped["KickTrackerSession"] = relationship(back_populates="kicks")
@@ -522,7 +521,7 @@ class UserAppFeedback(Base):
     __tablename__ = "user_app_feedback"
     id: Mapped[int] = mapped_column(primary_key=True)
 
-    author_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    author_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"))
     author: Mapped["User"] = relationship(back_populates="feedback_given")
 
     rating: Mapped[int]
@@ -533,11 +532,11 @@ class Notification(Base):
     __tablename__ = "notifications"
     id: Mapped[int] = mapped_column(primary_key=True)
 
-    recipient_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
+    recipient_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"), index=True)
     recipient: Mapped["User"] = relationship(back_populates="notifications")
 
     content: Mapped[str]
-    sent_at: Mapped[datetime]
+    sent_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 
     # Intention - at the time of writing - is for the application layer to mark
     # a notification as "seen" once you click it
@@ -590,10 +589,10 @@ class MCRNumber(Base):
     __tablename__ = "mcr_numbers"
     id: Mapped[int] = mapped_column(primary_key=True)
     value: Mapped[str] = mapped_column(String(7), unique=True)
-    doctor: Mapped["VolunteerDoctor"] = relationship(back_populates="mcr_no")
+    doctor: Mapped[VolunteerDoctor | None] = relationship(back_populates="mcr_no")
 
 
 class ExpoPushToken(Base):
     __tablename__ = "expo_push_tokens"
-    id: Mapped[int] = mapped_column(ForeignKey("users.id"), primary_key=True)
+    id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"), primary_key=True)
     token: Mapped[str]

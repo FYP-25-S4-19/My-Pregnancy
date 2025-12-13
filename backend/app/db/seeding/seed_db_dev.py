@@ -1,7 +1,7 @@
 from faker import Faker
 from sqlalchemy.orm import Session
 
-from app.core.password_hasher_config import get_password_hasher
+from app.core.password_hasher import get_password_hasher
 from app.db.db_config import SessionLocal
 from app.db.db_schema import (
     CommunityThread,
@@ -98,7 +98,7 @@ if __name__ == "__main__":
         # ------- Generation of miscellaneous content -------
         MiscGenerator.generate_user_app_feedback(db_session, faker, all_users, 0.25)
         MiscGenerator.generate_kick_tracker_sessions(db_session, faker, preg_women)
-        MiscGenerator.generate_appointments(db_session, faker, doctors, preg_women, 0.7)
+        # MiscGenerator.generate_appointments(db_session, faker, doctors, preg_women, 0.7)
         MiscGenerator.generate_doctor_ratings(db_session, preg_women, doctors)
         MiscGenerator.generate_mother_save_doctor(db_session, preg_women, doctors)
         print("Finished seeding miscellaneous content!\n")
